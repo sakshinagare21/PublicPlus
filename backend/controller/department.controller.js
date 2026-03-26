@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Department from "../models/department.model.js";
 import Issue from "../models/issue.model.js";
 import Operator from "../models/operator.model.js";
@@ -246,55 +247,111 @@ export const getPendingOperators = async (req, res) => {
 
 
 /*========update issue types of department controller========*/
+
+
 export const updateIssueTypes = async (req, res) => {
   try {
-    const departmentId = req.department._id;
+    const departmentId = req.department?._id;
     const { issueTypes } = req.body;
 
+    console.log("REQ BODY:", req.body);
+
+    // ✅ 1. VALIDATE
+    if (!issueTypes || !Array.isArray(issueTypes)) {
+      return res.status(400).json({
+        message: "issueTypes must be a valid array"
+      });
+    }
+
+    // ✅ 2. FILTER INVALID IDS
+    const validIds = issueTypes.filter(id =>
+      mongoose.Types.ObjectId.isValid(id)
+    );
+
+    if (validIds.length === 0) {
+      return res.status(400).json({
+        message: "No valid issue types selected"
+      });
+    }
+
+    // ✅ 3. FIND DEPARTMENT
     const department = await Department.findById(departmentId);
 
-    /* ================= MERGE ================= */
+    if (!department) {
+      return res.status(404).json({
+        message: "Department not found"
+      });
+    }
+
+    const existingTypes = department.issueTypes || [];
+
     const mergedTypes = [
-      ...new Set([...department.issueTypes, ...issueTypes]),
+      ...new Set([
+        ...existingTypes.map(id => id.toString()),
+        ...validIds
+      ])
     ];
 
-    /* ================= CHECK DUPLICATE ================= */
+    // ✅ 4. DUPLICATE CHECK
     const existing = await Department.find({
       _id: { $ne: departmentId },
-      issueTypes: { $in: mergedTypes },
+      issueTypes: { $in: mergedTypes }
     });
 
     if (existing.length > 0) {
       return res.status(400).json({
-        message: "Some issue types already assigned to another department",
+        message: "Issue type already assigned to another department"
       });
     }
 
-    /* ================= UPDATE ================= */
-    department.issueTypes = mergedTypes;
+    // ✅ 5. SAVE
+    department.issueTypes = mergedTypes.map(
+      id => new mongoose.Types.ObjectId(id)
+    );
+
     await department.save();
 
     res.json({
       message: "Updated successfully",
-      department,
+      department
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log("🔥 FINAL ERROR:", error); // IMPORTANT
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
 
 /*=================taken issue types of department controller=================*/
 export const getTakenIssueTypes = async (req, res) => {
-  const departments = await Department.find({}, "issueTypes");
+  try {
+    const departments = await Department.find()
+      .populate("issueTypes", "name"); // 🔥 important
 
-  let taken = [];
+    let taken = [];
 
-  departments.forEach((dept) => {
-    taken.push(...dept.issueTypes);
-  });
+    departments.forEach((dept) => {
+      dept.issueTypes.forEach((type) => {
+        taken.push({
+          _id: type._id,
+          name: type.name
+        });
+      });
+    });
 
-  res.json(taken);
+    res.json({
+      success: true,
+      taken
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 };
 
 
@@ -327,15 +384,24 @@ export const getMyDepartment = async (req, res) => {
 export const getDepartmentOperators = async (req, res) => {
   try {
     const department = await Department.findById(req.department._id)
-      .populate("operators", "fullName email assignedZone currentActiveTasks maxCapacity status");
+      .populate(
+        "operators",
+        "fullName email assignedZone currentActiveTasks maxCapacity status"
+      );
 
-    res.json(department.operators);
+    // ✅ REMOVE DUPLICATES HERE
+    const uniqueOperators = Array.from(
+      new Map(
+        department.operators.map(op => [op._id.toString(), op])
+      ).values()
+    );
+
+    res.json(uniqueOperators);
 
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 /*get operator detail*/
 export const getOperatorDetails = async (req, res) => {
   try {

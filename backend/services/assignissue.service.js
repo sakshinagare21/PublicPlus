@@ -1,5 +1,12 @@
-import Operator from "../models/operator.model.js";
 import Department from "../models/department.model.js";
+import Operator from "../models/operator.model.js";
+import { sendIssueToAdminEmail } from "../utils/email.js";
+import {
+  sendIssueAssignedToDepartmentEmail,
+  sendIssueAssignedToOperatorEmail
+} from "../utils/email.js";
+
+import { sendNotification } from "../utils/notify.js";
 export const assignIssue = async (issue) => {
 
   /* ================= FIND DEPARTMENT ================= */
@@ -17,7 +24,7 @@ export const assignIssue = async (issue) => {
     approvalStatus: "approved",
   });
 
-  /* ================= FALLBACK TO GENERAL ZONE ================= */
+  /* ================= FALLBACK ================= */
   if (!operators.length) {
     console.log("⚠️ No operator in zone → using General Pune Zone");
 
@@ -59,10 +66,49 @@ export const assignIssue = async (issue) => {
 
   selected.currentActiveTasks += 1;
   selected.totalTasksAssigned += 1;
+  await selected.save();
+
   console.log("Category:", issue.category);
   console.log("Zone:", issue.zone);
-  console.log("Department:", department);
-  console.log("Operators:", operators);
-  console.log("Available:", available);
-  await selected.save();  
+
+  /* ================= EMAIL ================= */
+
+  try {
+    await sendIssueAssignedToDepartmentEmail(department, issue, selected);
+    await sendIssueAssignedToOperatorEmail(selected, issue);
+     await sendIssueToAdminEmail(issue, department, selected);
+
+  } catch (err) {
+    console.log("Email failed:", err.message);
+  }
+
+  /* ================= NOTIFICATION ================= */
+
+  try {
+    // 🏢 Department
+    await sendNotification({
+      title: "New Issue Assigned",
+      message: `${issue.title} assigned to ${selected.fullName}`,
+      type: "issue_created",
+      targetRole: "department",
+      departmentId: department._id,
+      createdBy: issue.reportedBy,
+      createdByModel: "User"
+    });
+
+    // 👷 Operator
+    await sendNotification({
+      title: "New Task Assigned",
+      message: `You received issue: ${issue.title}`,
+      type: "issue_created",
+      targetRole: "operator",
+      operatorId: selected._id,
+      createdBy: issue.reportedBy,
+      createdByModel: "User"
+    });
+
+  } catch (err) {
+    console.log("Notification failed:", err.message);
+  }
+
 };

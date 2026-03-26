@@ -34,7 +34,7 @@ const AdminLogin = () => {
 
       // 2️⃣ Get Firebase token
       const token = await userCredential.user.getIdToken();
-
+      console.log("FRONTEND UID:", userCredential.user.uid);
       // 3️⃣ Verify admin from backend
       const response = await fetch(
         "http://localhost:5000/api/admin/dashboard",

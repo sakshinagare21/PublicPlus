@@ -28,7 +28,7 @@ const notificationSchema = new mongoose.Schema({
 
   targetRole: {
     type: String,
-    enum: ["admin", "department", "user"], // ✅ added user
+    enum: ["admin", "department", "user","operator"], // ✅ added user
     required: true
   },
 
@@ -44,6 +44,11 @@ const notificationSchema = new mongoose.Schema({
     ref: "User",
     default: null
   },
+  operatorId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Operator",
+  default: null
+},
 
   /* who triggered */
   createdBy: {

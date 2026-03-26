@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import {
   Search,
@@ -12,70 +12,6 @@ import {
 } from "lucide-react";
 import AdminLayout from "../../layout/AdminLayout";
 
-const users = [
-  {
-    name: "David Martinez",
-    email: "dmartinez@civic.org",
-    role: "Citizen",
-    trust: 88,
-    trustColor: "text-green-400",
-    lastActivity: "12 mins ago",
-    lastDetail: "Voted on Ref. #882",
-    status: "ACTIVE",
-  },
-  {
-    name: "Elena Rodriguez",
-    email: "e.rodriguez@domain.com",
-    role: "Citizen",
-    trust: 64,
-    trustColor: "text-blue-400",
-    lastActivity: "2 hours ago",
-    lastDetail: "Reported Infrastructure",
-    status: "ACTIVE",
-  },
-  {
-    name: "Liam Thompson",
-    email: "thompson.l@city.gov",
-    role: "Operator",
-    trust: 42,
-    trustColor: "text-yellow-400",
-    lastActivity: "3 days ago",
-    lastDetail: "System Login",
-    status: "FLAGGED",
-  },
-  {
-    name: "Sarah Kim",
-    email: "sarah.k@provider.net",
-    role: "Citizen",
-    trust: 15,
-    trustColor: "text-red-400",
-    lastActivity: "1 week ago",
-    lastDetail: "Appeal Rejected",
-    status: "SUSPENDED",
-  },
-];
-
-const activityLog = [
-  {
-    event: "Voted on Proposal #882",
-    date: "Dec 20, 2023 • 14:22",
-    detail: "IP: 192.168.1.4",
-    color: "bg-blue-500",
-  },
-  {
-    event: "Commented on Public Transit Reform",
-    date: "Dec 18, 2023 • 09:15",
-    detail: "IP: 192.168.1.4",
-    color: "bg-gray-500",
-  },
-  {
-    event: "Identity Re-verified",
-    date: "Dec 15, 2023 • 11:40",
-    detail: "System Process",
-    color: "bg-green-500",
-  },
-];
-
 const statusColors = {
   ACTIVE: "bg-green-500/20 text-green-400",
   FLAGGED: "bg-yellow-500/20 text-yellow-400",
@@ -85,18 +21,76 @@ const statusColors = {
 const roleColors = {
   Citizen: "text-blue-400",
   Operator: "text-green-400",
+  Admin: "text-purple-400",
 };
 
 export default function UserManagement() {
-  const [selectedUser, setSelectedUser] = useState(users[0]);
+
+  const [users, setUsers] = useState([]);
+  const [counts, setCounts] = useState({
+    citizens: 0,
+    operators: 0,
+    admins: 0,
+    total: 0
+  });
+
+  const [selectedUser, setSelectedUser] = useState(null);
   const [activeTab, setActiveTab] = useState("Citizen Accounts");
-  const [trustScore, setTrustScore] = useState(users[0].trust);
+  const [trustScore, setTrustScore] = useState(0);
   const [adjustReason, setAdjustReason] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  /* ================= FETCH ================= */
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/accounts", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setUsers(data.users);
+        setCounts(data.counts);
+
+        if (data.users.length > 0) {
+          setSelectedUser(data.users[0]);
+          setTrustScore(data.users[0].trust);
+        }
+      }
+
+    } catch (err) {
+      toast.error("Failed to load users");
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  /* ================= FILTER ================= */
+
+  const filteredUsers = users
+    .filter((u) =>
+      activeTab === "Citizen Accounts"
+        ? u.role === "Citizen"
+        : activeTab === "Operator Accounts"
+        ? u.role === "Operator"
+        : u.role === "Admin"
+    )
+    .filter((u) =>
+      u.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   const tabs = [
-    { label: "Citizen Accounts", count: "11.2k" },
-    { label: "Operator Accounts", count: "842" },
-    { label: "Admin Accounts", count: "46" },
+    { label: "Citizen Accounts", count: counts.citizens },
+    { label: "Operator Accounts", count: counts.operators },
+    { label: "Admin Accounts", count: counts.admins },
   ];
 
   return (
@@ -108,7 +102,7 @@ export default function UserManagement() {
         <div>
           <h1 className="text-2xl font-bold">User Management</h1>
           <p className="text-sm text-gray-400">
-            Manage 12,482 platform participants
+            Manage {counts.total} platform participants
           </p>
         </div>
 
@@ -134,10 +128,7 @@ export default function UserManagement() {
         {tabs.map((tab) => (
           <button
             key={tab.label}
-            onClick={() => {
-              setActiveTab(tab.label);
-              toast(tab.label);
-            }}
+            onClick={() => setActiveTab(tab.label)}
             className={`pb-3 text-sm border-b-2 ${
               activeTab === tab.label
                 ? "border-blue-500 text-blue-400"
@@ -154,22 +145,21 @@ export default function UserManagement() {
         <div className="flex-1 flex gap-2 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2">
           <Search className="w-4 h-4 text-gray-400" />
           <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search users..."
             className="bg-transparent outline-none flex-1 text-sm"
           />
         </div>
 
-        <button
-          onClick={() => toast("Filters")}
-          className="p-2 bg-gray-900 border border-gray-800 rounded-lg"
-        >
+        <button className="p-2 bg-gray-900 border border-gray-800 rounded-lg">
           <Filter className="w-4 h-4" />
         </button>
       </div>
 
       <div className="flex gap-4">
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="flex-1 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
 
           <table className="w-full text-sm">
@@ -183,37 +173,50 @@ export default function UserManagement() {
             </thead>
 
             <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user.email}
-                  onClick={() => {
-                    setSelectedUser(user);
-                    setTrustScore(user.trust);
-                  }}
-                  className="border-b border-gray-800 hover:bg-gray-800 cursor-pointer"
-                >
-                  <td className="p-4">{user.name}</td>
-                  <td className={`p-4 ${roleColors[user.role]}`}>
-                    {user.role}
-                  </td>
-                  <td className={`p-4 font-bold ${user.trustColor}`}>
-                    {user.trust}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs ${statusColors[user.status]}`}
-                    >
-                      {user.status}
-                    </span>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="p-6 text-center text-gray-500">
+                    No users found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr
+                    key={user._id}
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setTrustScore(user.trust);
+                    }}
+                    className="border-b border-gray-800 hover:bg-gray-800 cursor-pointer"
+                  >
+                    <td className="p-4">{user.name}</td>
+
+                    <td className={`p-4 ${roleColors[user.role]}`}>
+                      {user.role}
+                    </td>
+
+                    <td className="p-4 font-bold">{user.trust}</td>
+
+                    <td className="p-4">
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          statusColors[user.status] || "bg-gray-700"
+                        }`}
+                      >
+                        {user.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
 
           {/* Pagination */}
           <div className="flex justify-between px-4 py-3 border-t border-gray-800">
-            <span className="text-sm text-gray-400">Page 1 of 3</span>
+            <span className="text-sm text-gray-400">
+              Showing {filteredUsers.length} users
+            </span>
 
             <div className="flex gap-2">
               <ChevronLeft className="cursor-pointer" />
@@ -222,63 +225,45 @@ export default function UserManagement() {
           </div>
         </div>
 
-        {/* Side Panel */}
-        <div className="w-80 bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
+        {/* SIDE PANEL */}
+        {selectedUser && (
+          <div className="w-80 bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-4">
 
-          <h3 className="text-lg font-bold">{selectedUser.name}</h3>
+            <h3 className="text-lg font-bold">{selectedUser.name}</h3>
 
-          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setTrustScore(Math.max(0, trustScore - 5))}>
+                <Minus />
+              </button>
+
+              <span className="font-bold">{trustScore}%</span>
+
+              <button onClick={() => setTrustScore(Math.min(100, trustScore + 5))}>
+                <Plus />
+              </button>
+            </div>
+
+            <textarea
+              value={adjustReason}
+              onChange={(e) => setAdjustReason(e.target.value)}
+              placeholder="Adjustment reason..."
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3"
+            />
+
             <button
-              onClick={() =>
-                setTrustScore(Math.max(0, trustScore - 5))
-              }
-              className="p-2 bg-gray-800 rounded"
+              onClick={() => {
+                toast.success(`Trust updated to ${trustScore}%`);
+                setAdjustReason("");
+              }}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg"
             >
-              <Minus />
+              Update Trust
             </button>
 
-            <span className="font-bold">{trustScore}%</span>
-
-            <button
-              onClick={() =>
-                setTrustScore(Math.min(100, trustScore + 5))
-              }
-              className="p-2 bg-gray-800 rounded"
-            >
-              <Plus />
-            </button>
           </div>
-
-          <textarea
-            value={adjustReason}
-            onChange={(e) => setAdjustReason(e.target.value)}
-            placeholder="Adjustment reason..."
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3"
-          />
-
-          <button
-            onClick={() => {
-              toast.success(`Trust updated to ${trustScore}%`);
-              setAdjustReason("");
-            }}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg"
-          >
-            Update Trust
-          </button>
-
-          {/* Activity */}
-          <div className="space-y-2">
-            {activityLog.map((log, i) => (
-              <div key={i} className="flex gap-2 text-sm">
-                <span className={`w-2 h-2 rounded-full ${log.color}`} />
-                {log.event}
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </div>
     </AdminLayout>
   );
 }
-

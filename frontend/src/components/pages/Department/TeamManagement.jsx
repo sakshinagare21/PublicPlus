@@ -60,12 +60,15 @@ const TeamManagement = () => {
   };
 
   /* ================= FILTER ================= */
-  const filteredOperators =
-    activeTab === "All"
-      ? operators
-      : activeTab === "High"
-        ? operators.filter((op) => op.currentActiveTasks >= 7)
-        : operators.filter((op) => op.currentActiveTasks < 4);
+ const filteredOperators = operators.filter((op) => {
+  const percent =
+    ((op.currentActiveTasks || 0) / (op.maxCapacity || 1)) * 100;
+
+  if (activeTab === "High") return percent >= 80; // high workload
+  if (activeTab === "Available") return percent < 50; // free operators
+
+  return true; // All
+});
 
   return (
     <DepartmentLayout>

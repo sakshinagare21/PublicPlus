@@ -1,33 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import DashboardLayout from "../../layout/DashboardLayout";
-import {
-  Camera,
-  MapPin,
-  Mic,
-  MicOff,
-  Target,
-  ArrowLeft,
-} from "lucide-react";
-
+import { Camera, MapPin, Mic, MicOff, Target, ArrowLeft } from "lucide-react";
+import { detectZone } from "../../../api/zone";
 const steps = [
   { num: 1, label: "Media" },
   { num: 2, label: "Location" },
   { num: 3, label: "Details" },
-];
-
-const categories = [
-  "pothole",
-  "road_damage",
-  "garbage",
-  "drain",
-  "water",
-  "streetlight",
-  "traffic_signal",
-  "encroachment",
-  "public_toilet",
-  "fire",
 ];
 
 const ReportIssue = () => {
@@ -36,6 +16,8 @@ const ReportIssue = () => {
   const [listening, setListening] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
+  const [categories, setCategories] = useState([]); // 🔥 dynamic categories
+  const [zone, setZone] = useState("");
   const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
@@ -45,6 +27,25 @@ const ReportIssue = () => {
     lat: "",
     lng: "",
   });
+
+  /* ================= FETCH CATEGORIES ================= */
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/issue-types", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setCategories(res.data.types);
+    } catch (err) {
+      console.log("Error fetching categories");
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   /* INPUT */
   const handleChange = (e) => {
@@ -57,7 +58,6 @@ const ReportIssue = () => {
     setImages(files);
   };
 
-  /* REMOVE IMAGE */
   const removeImage = (index) => {
     setImages(images.filter((_, i) => i !== index));
   };
@@ -93,25 +93,43 @@ const ReportIssue = () => {
   const getLocation = () => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
         setForm((prev) => ({
           ...prev,
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
+          lat,
+          lng,
         }));
+
+        // 🔥 detect zone
+        const detectedZone = detectZone(lat, lng);
+        setZone(detectedZone);
+
         toast.success("Location detected");
       },
-      () => toast.error("Location denied")
+      () => toast.error("Location denied"),
     );
   };
+  useEffect(() => {
+    if (form.lat && form.lng) {
+      const z = detectZone(form.lat, form.lng);
+      setZone(z);
+    }
+  }, [form.lat, form.lng]);
 
   /* SUBMIT */
   const handleSubmit = async () => {
     try {
       const formData = new FormData();
 
-      Object.keys(form).forEach((key) => {
-        formData.append(key, form[key]);
-      });
+      formData.append("title", form.title);
+      formData.append("category", form.category); // ObjectId
+
+      formData.append("descriptionText", form.descriptionText);
+
+      formData.append("lat", form.lat);
+      formData.append("lng", form.lng);
 
       images.forEach((img) => {
         formData.append("images", img);
@@ -125,6 +143,7 @@ const ReportIssue = () => {
 
       toast.success("Issue submitted successfully 🚀");
 
+      // reset
       setShowPreview(false);
       setStep(0);
       setImages([]);
@@ -135,8 +154,8 @@ const ReportIssue = () => {
         lat: "",
         lng: "",
       });
-
     } catch (err) {
+      console.log("ERROR:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || "Error");
     }
   };
@@ -144,12 +163,13 @@ const ReportIssue = () => {
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-2xl p-6">
-
         {/* STEP BAR */}
         <div className="flex justify-between mb-6">
           {steps.map((s, i) => (
             <div key={i} className="flex-1 text-center">
-              <div className={`h-1 ${i <= step ? "bg-blue-600" : "bg-gray-300"}`} />
+              <div
+                className={`h-1 ${i <= step ? "bg-blue-600" : "bg-gray-300"}`}
+              />
               <p className="text-xs mt-2 text-gray-600">
                 Step {s.num}: {s.label}
               </p>
@@ -157,7 +177,7 @@ const ReportIssue = () => {
           ))}
         </div>
 
-        {/* ================= STEP 1 ================= */}
+        {/* STEP 1 */}
         {step === 0 && (
           <div>
             <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -171,7 +191,6 @@ const ReportIssue = () => {
               className="border p-2 rounded w-full"
             />
 
-            {/* IMAGE PREVIEW */}
             <div className="flex gap-3 mt-4 flex-wrap">
               {images.map((img, i) => (
                 <div key={i} className="relative">
@@ -198,7 +217,7 @@ const ReportIssue = () => {
           </div>
         )}
 
-        {/* ================= STEP 2 ================= */}
+        {/* STEP 2 */}
         {step === 1 && (
           <div>
             <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -228,7 +247,17 @@ const ReportIssue = () => {
             >
               <Target size={14} /> Detect Location
             </button>
-
+            {/* ZONE DISPLAY */}
+            <div className="mt-3">
+              <label className="text-sm text-gray-600">Detected Zone</label>
+              <input
+                type="text"
+                value={zone}
+                readOnly
+                className="w-full border p-2 rounded bg-gray-100"
+                placeholder="Zone will appear here"
+              />
+            </div>
             <div className="mt-4 flex justify-between">
               <button onClick={() => setStep(0)}>
                 <ArrowLeft /> Back
@@ -244,7 +273,7 @@ const ReportIssue = () => {
           </div>
         )}
 
-        {/* ================= STEP 3 ================= */}
+        {/* STEP 3 */}
         {step === 2 && (
           <div>
             <h2 className="text-lg font-semibold mb-4">Issue Details</h2>
@@ -265,7 +294,9 @@ const ReportIssue = () => {
             >
               <option value="">Select Category</option>
               {categories.map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c._id} value={c._id}>
+                  {c.label}
+                </option>
               ))}
             </select>
 
@@ -275,16 +306,16 @@ const ReportIssue = () => {
                 value={form.descriptionText}
                 onChange={handleChange}
                 placeholder="Describe issue..."
-                className="w-full border p-3 rounded h-28"
+                className="w-full border p-3 rounded h-28 pr-12"
               />
 
+              {/* 🎤 MIC BUTTON */}
               <button
+                type="button"
                 onClick={startVoice}
-                className={`absolute right-3 bottom-3 p-2 rounded-full ${
-                  listening ? "bg-red-500" : "bg-blue-600"
-                } text-white`}
+                className="absolute right-2 top-2 bg-blue-500 text-white p-2 rounded-full"
               >
-                {listening ? <MicOff /> : <Mic />}
+                {listening ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
             </div>
 
@@ -303,25 +334,23 @@ const ReportIssue = () => {
           </div>
         )}
 
-        {/* ================= PREVIEW ================= */}
+        {/* PREVIEW */}
         {showPreview && (
           <div className="mt-6 border p-5 rounded-xl bg-gray-50">
             <h2 className="text-xl font-semibold mb-4">Preview</h2>
 
-            <p><b>Title:</b> {form.title}</p>
-            <p><b>Category:</b> {form.category}</p>
-            <p className="mt-2"><b>Description:</b> {form.descriptionText}</p>
-            <p className="mt-2"><b>Location:</b> {form.lat}, {form.lng}</p>
-
-            <div className="flex gap-3 mt-3 flex-wrap">
-              {images.map((img, i) => (
-                <img
-                  key={i}
-                  src={URL.createObjectURL(img)}
-                  className="w-20 h-20 rounded"
-                />
-              ))}
-            </div>
+            <p>
+              <b>Title:</b> {form.title}
+            </p>
+            <p>
+              <b>Category:</b> {form.category}
+            </p>
+            <p>
+              <b>Description:</b> {form.descriptionText}
+            </p>
+            <p>
+              <b>Location:</b> {form.lat}, {form.lng}
+            </p>
 
             <div className="mt-4 flex justify-between">
               <button
@@ -340,7 +369,6 @@ const ReportIssue = () => {
             </div>
           </div>
         )}
-
       </div>
     </DashboardLayout>
   );

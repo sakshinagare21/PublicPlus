@@ -15,6 +15,8 @@ import departmentRoutes from "./routes/department.route.js";
 import adminRoutes from "./routes/admin.route.js";
 import operatorRoutes from "./routes/operator.route.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import SLARoute from "./routes/sla.route.js"
+import issueTypeRoutes from "./routes/issueType.routes.js";
 
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
 
@@ -64,6 +66,9 @@ app.use("/api/operator", operatorRoutes);
 
 app.use("/api/notification", notificationRoutes);
 
+app.use("/api/sla",SLARoute);
+
+app.use("/api/issue-types", issueTypeRoutes);
 // =============================
 // ERROR HANDLING
 // =============================

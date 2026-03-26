@@ -44,7 +44,7 @@ import AuditLogs from "./components/pages/Admin/AuditsLog";
 import Departments from "./components/pages/Admin/Departments";
 import IssueIntelligence from "./components/pages/Admin/IssueIntelligence";
 import TaskOperations from "./components/pages/Admin/TaskOperations";
-import SettingsPage from "./components/pages/Admin/Settings";
+import SettingsMain from "./components/pages/Admin/Settings";
 import UserManagement from "./components/pages/Admin/UserManagement";
 import ZoneMapping from "./components/pages/Admin/ZoneMapping";
 import AdminDepartmentNotification from "./components/pages/Admin/AdminDepartmentNotification";
@@ -85,12 +85,13 @@ function App() {
         <Route path="/tasks" element={<TaskOperations/>}/>
         <Route path="/users" element={<UserManagement/>}/>
         <Route path="/zones" element={<ZoneMapping/>}/>
-        <Route path="/settings" element={<SettingsPage/>}/>
+        <Route path="/settings" element={<SettingsMain/>}/>
         <Route path="/admin/notifications" element={<AdminDepartmentNotification/>}/>
 
         {/* Department */}
         <Route path="/department-login" element={<DepartmentLogin/>}/>
         <Route path="/department-register" element={<DepartmentRegister/>}/>
+        
         <Route path="/department/dashboard" element={<DepartmentDashboard/>}/>
         <Route path="/department/issues" element={<DepartmentIssue/>}/>
         <Route path="department/taskboard" element={<TaskBoard/>}/>

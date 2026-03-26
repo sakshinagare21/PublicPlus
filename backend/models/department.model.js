@@ -153,20 +153,9 @@ const departmentSchema = new mongoose.Schema(
   /*=======issue types=================*/
  issueTypes: [
   {
-    type: String,
-    enum: [
-      "pothole",
-      "road_damage",
-      "garbage",
-      "drain",
-      "water",
-      "streetlight",
-      "traffic_signal",
-      "encroachment",
-      "public_toilet",
-      "fire"
-    ],
-  },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "IssueType"
+  }
 ],
 
   /* ================= ACTIVITY ================= */

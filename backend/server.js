@@ -7,7 +7,7 @@ import app from "./app.js";
 import connectDB from "./config/db.js";
 import http from "http";
 import { Server } from "socket.io";
-
+import "./cron/escalation.js";
 // console.log(process.env);
 const PORT = process.env.PORT || 5000;
 
@@ -28,7 +28,11 @@ export const io = new Server(server, {
 // Socket connection event
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
-
+    // ✅ ADD THIS
+  socket.on("join", (id) => {
+    socket.join(id);
+    console.log("User joined room:", id);
+  });
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });

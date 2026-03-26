@@ -6,14 +6,14 @@ import { calculatePriority } from "../services/priority.service.js";
 import { validateImage } from "../services/image.service.js";
 
 import { assignIssue } from "../services/assignissue.service.js";
-
+import SLA from "../models/sla.model.js";
 /* ===== CITIZEN CREATE ISSUE ===== */
+
+import IssueType from "../models/issueType.model.js";
 
 export const createIssue = async (req, res) => {
   try {
     const { title, category, descriptionText, lat, lng } = req.body;
-
-    /* ================= VALIDATION ================= */
 
     if (!title || !category || lat === undefined || lng === undefined) {
       return res.status(400).json({
@@ -30,70 +30,87 @@ export const createIssue = async (req, res) => {
       });
     }
 
-    /* ================= IMAGE VALIDATION ================= */
+    /* ================= GET CATEGORY NAME ================= */
+    const categoryDoc = await IssueType.findById(category);
 
+    if (!categoryDoc) {
+      return res.status(400).json({
+        message: "Invalid category",
+      });
+    }
+
+    /* ================= IMAGE ================= */
     let imageData = {};
     if (req.file) {
       imageData = await validateImage(req.file);
     }
 
-    /* ================= ZONE DETECTION ================= */
-
+    /* ================= ZONE ================= */
     const zone = detectZone(parsedLat, parsedLng);
 
     /* ================= TRAFFIC ================= */
-
     let traffic = { level: "unknown", ratio: 0 };
 
     try {
       traffic = await getTrafficLevel(parsedLat, parsedLng);
-    } catch (err) {
-      console.log("Traffic API failed");
-    }
+    } catch (err) {}
 
     /* ================= PRIORITY ================= */
-
     const priority = calculatePriority({
-      category,
+      category: categoryDoc.name, // 🔥 FIX
       description: descriptionText || "",
       traffic,
       upvotes: 0,
     });
 
-    /* ================= CREATE ISSUE ================= */
+    /* ================= SLA ================= */
+    const slaConfig = await SLA.findOne({ priority: priority.level });
 
+    let deadline = new Date();
+    let level = 1;
+
+    if (slaConfig && slaConfig.levels.length > 0) {
+      const firstLevel = slaConfig.levels[0];
+
+      if (firstLevel.unit === "minutes") {
+        deadline.setMinutes(deadline.getMinutes() + firstLevel.value);
+      } else if (firstLevel.unit === "hours") {
+        deadline.setHours(deadline.getHours() + firstLevel.value);
+      } else if (firstLevel.unit === "days") {
+        deadline.setDate(deadline.getDate() + firstLevel.value);
+      }
+
+      level = firstLevel.level;
+    } else {
+      deadline.setHours(deadline.getHours() + 24);
+    }
+
+    /* ================= CREATE ISSUE ================= */
     const issue = await Issue.create({
       title,
-      category,
-
+      category, // ObjectId stored
       description: {
         text: descriptionText || "",
-        source: "web_speech", // later you can switch dynamically
+        source: "web_speech",
       },
-
       image: imageData,
-
       location: {
         type: "Point",
         coordinates: [parsedLng, parsedLat],
       },
-
       zone,
       traffic,
       priority,
-
+      sla: {
+        resolutionDeadline: deadline,
+        escalationLevel: level,
+        escalationHistory: [],
+      },
       reportedBy: req.user._id,
     });
 
-    /* ================= AUTO ASSIGN ================= */
-
-    try {
-      await assignIssue(issue);
-    } catch (err) {
-      console.log("Assignment failed:", err.message);
-    }
-
-    /* ================= RESPONSE ================= */
+    /* ================= ASSIGN ================= */
+    await assignIssue(issue);
 
     res.status(201).json({
       message: "Issue created successfully",
@@ -101,13 +118,9 @@ export const createIssue = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
-
-
 /*=====citizen get all issues controller=====*/
 export const getMyIssues = async (req, res) => {
   try {
@@ -129,7 +142,6 @@ export const getMyIssues = async (req, res) => {
       page: Number(page),
       issues,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -148,24 +160,16 @@ export const getIssueById = async (req, res) => {
     }
 
     res.status(200).json(issue);
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-
 /*======Department view
 all issues assigned to them controller=====*/
 export const getDepartmentIssues = async (req, res) => {
   try {
-    const {
-      status,
-      priority,
-      zone,
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { status, priority, zone, page = 1, limit = 10 } = req.query;
 
     const pageNum = Number(page);
     const limitNum = Number(limit);
@@ -200,7 +204,6 @@ export const getDepartmentIssues = async (req, res) => {
       issues,
       zones, // ✅ send zones for dropdown
     });
-
   } catch (error) {
     console.error("Department Issues Error:", error);
     res.status(500).json({ message: error.message });
@@ -236,24 +239,21 @@ export const getDepartmentStats = async (req, res) => {
       inProgress,
       resolved,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 /*get operator issue*/
-;
 export const getOperatorIssues = async (req, res) => {
   try {
     const issues = await Issue.find({
-      assignedTo: req.operator._id
+      assignedTo: req.operator._id,
     })
       .populate("assignedDepartment", "departmentName")
       .sort({ createdAt: -1 });
 
     res.status(200).json(issues);
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -288,20 +288,102 @@ export const getOperatorStats = async (req, res) => {
       inProgress,
       completed,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 
+/*======get issue for admin*/
+export const getAllIssuesAdmin = async (req, res) => {
+  try {
+    const { page = 1, limit = 50, search = "" } = req.query;
 
+    const filter = {};
 
+    // 🔍 SEARCH (title + category)
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { "description.text": { $regex: search, $options: "i" } }
+      ];
+    }
 
+    const issues = await Issue.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .populate("assignedDepartment", "departmentName")
+      .populate("assignedTo", "fullName");
+
+    const total = await Issue.countDocuments(filter);
+
+    res.json({
+      success: true,
+      total,
+      issues
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/*show admin statistics*/
+export const getAdminStats = async (req, res) => {
+  try {
+
+    const total = await Issue.countDocuments();
+
+    const critical = await Issue.countDocuments({
+      "priority.level": "critical"
+    });
+
+    const high = await Issue.countDocuments({
+      "priority.level": "high"
+    });
+
+    const medium = await Issue.countDocuments({
+      "priority.level": "medium"
+    });
+
+    const low = await Issue.countDocuments({
+      "priority.level": "low"
+    });
+
+    const pending = await Issue.countDocuments({
+      status: "reported"
+    });
+
+    const inProgress = await Issue.countDocuments({
+      status: "in_progress"
+    });
+
+    const resolved = await Issue.countDocuments({
+      status: "resolved"
+    });
+
+    res.json({
+      success: true,
+      stats: {
+        total,
+        critical,
+        high,
+        medium,
+        low,
+        pending,
+        inProgress,
+        resolved
+      }
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 /*assign issue to department controller=====*/
 export const assignDepartment = async (req, res) => {
   try {
-
     const { departmentId, priority, slaDeadline } = req.body;
 
     const issue = await Issue.findById(req.params.issueId);
@@ -318,18 +400,14 @@ export const assignDepartment = async (req, res) => {
     await issue.save();
 
     res.status(200).json({ message: "Department assigned successfully" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-
-
 /*=====Department update issue status controller=====*/
 export const updateIssueStatus = async (req, res) => {
   try {
-
     const { status } = req.body;
 
     const issue = await Issue.findById(req.params.issueId);
@@ -338,7 +416,9 @@ export const updateIssueStatus = async (req, res) => {
       return res.status(404).json({ message: "Issue not found" });
     }
 
-    if (issue.assignedDepartment?.toString() !== req.department._id.toString()) {
+    if (
+      issue.assignedDepartment?.toString() !== req.department._id.toString()
+    ) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
@@ -351,7 +431,6 @@ export const updateIssueStatus = async (req, res) => {
     await issue.save();
 
     res.status(200).json({ message: "Issue status updated" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -360,7 +439,6 @@ export const updateIssueStatus = async (req, res) => {
 /*=====delete issue only if pending and owner controller=====*/
 export const deleteIssue = async (req, res) => {
   try {
-
     const issue = await Issue.findById(req.params.issueId);
 
     if (!issue) {
@@ -377,9 +455,7 @@ export const deleteIssue = async (req, res) => {
     await issue.deleteOne();
 
     res.status(200).json({ message: "Issue deleted successfully" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-

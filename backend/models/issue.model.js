@@ -10,21 +10,9 @@ const issueSchema = new mongoose.Schema(
       required: true,
     },
 
-    category: {
-  type: String,
-  enum: [
-    "pothole",
-    "road_damage",
-    "garbage",
-    "drain",
-    "water",           // ✅ ADD THIS
-    "streetlight",
-    "traffic_signal",
-    "encroachment",
-    "public_toilet",
-    "fire"
-  ],
-  required: true,
+   category: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "IssueType"
 },
 
     status: {
@@ -55,11 +43,11 @@ const issueSchema = new mongoose.Schema(
        IMAGE (FOR VALIDATION)
     =============================== */
     images: [
-  {
-    url: String,
-    hash: String
-  }
-],
+      {
+        url: String,
+        hash: String,
+      },
+    ],
 
     /* ===============================
        LOCATION DATA
@@ -189,6 +177,19 @@ const issueSchema = new mongoose.Schema(
       responseDeadline: Date,
       resolutionDeadline: Date,
 
+      escalationLevel: {
+        type: Number,
+        default: 1,
+      },
+
+      escalationHistory: [
+        {
+          level: Number,
+          escalatedAt: Date,
+          nextDeadline: Date,
+        },
+      ],
+
       respondedAt: Date,
       resolvedAt: Date,
 
@@ -271,7 +272,7 @@ const issueSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 /* ===============================

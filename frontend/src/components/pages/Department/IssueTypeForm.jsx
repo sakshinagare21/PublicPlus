@@ -2,25 +2,33 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import DepartmentLayout from "../../layout/DepartmentLayout";
 import toast from "react-hot-toast";
+
 const IssueTypeForm = () => {
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [takenTypes, setTakenTypes] = useState([]);
+  const [issueTypes, setIssueTypes] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem("token");
 
-  const issueOptions = [
-    "pothole",
-    "road_damage",
-    "garbage",
-    "drain",
-    "water",
-    "streetlight",
-    "traffic_signal",
-    "encroachment",
-    "public_toilet",
-    "fire",
-  ];
+  /* ================= FETCH ISSUE TYPES (FROM ADMIN) ================= */
+  const fetchIssueTypes = async () => {
+    try {
+      const res = await axios.get(
+  "http://localhost:5000/api/issue-types",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+      setIssueTypes(res.data.types); // {_id, name, label}
+
+    } catch (err) {
+      console.log("Error fetching issue types");
+    }
+  };
 
   /* ================= FETCH TAKEN TYPES ================= */
   const fetchTaken = async () => {
@@ -31,7 +39,10 @@ const IssueTypeForm = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setTakenTypes(res.data);
+
+      // only store IDs
+      setTakenTypes(res.data.taken.map((t) => t._id));
+
     } catch (err) {
       console.log("Error fetching taken types");
     }
@@ -47,7 +58,11 @@ const IssueTypeForm = () => {
         }
       );
 
-      setSelectedTypes(res.data.issueTypes || []);
+      const ids =
+        res.data.issueTypes?.map((t) => t._id) || [];
+
+      setSelectedTypes(ids);
+
     } catch (err) {
       console.log("Error fetching department data");
     }
@@ -55,16 +70,17 @@ const IssueTypeForm = () => {
 
   /* ================= INITIAL LOAD ================= */
   useEffect(() => {
+    fetchIssueTypes();   // 🔥 from admin DB
     fetchTaken();
     fetchMyDepartment();
   }, []);
 
   /* ================= HANDLE CHANGE ================= */
-  const handleChange = (type) => {
+  const handleChange = (id) => {
     setSelectedTypes((prev) =>
-      prev.includes(type)
-        ? prev.filter((t) => t !== type)
-        : [...prev, type]
+      prev.includes(id)
+        ? prev.filter((t) => t !== id)
+        : [...prev, id]
     );
   };
 
@@ -86,10 +102,12 @@ const IssueTypeForm = () => {
         }
       );
 
-      /* 🔥 UPDATE UI WITHOUT REFRESH */
-      setSelectedTypes(res.data.department.issueTypes);
+      const updatedIds = res.data.department.issueTypes.map(
+        (id) => id.toString()
+      );
 
-      /* 🔥 REFRESH TAKEN TYPES */
+      setSelectedTypes(updatedIds);
+
       await fetchTaken();
 
       toast.success("Issue types updated successfully");
@@ -121,25 +139,25 @@ const IssueTypeForm = () => {
           {/* GRID */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
-            {issueOptions.map((type) => {
-              const isTaken = takenTypes.includes(type);
-              const isSelected = selectedTypes.includes(type);
+            {issueTypes.map((type) => {
+              const isTaken = takenTypes.includes(type._id);
+              const isSelected = selectedTypes.includes(type._id);
 
               return (
                 <div
-                  key={type}
+                  key={type._id}
                   className={`p-4 rounded-xl border cursor-pointer transition 
                   ${isTaken
                     ? "bg-gray-800 border-gray-700 opacity-50 cursor-not-allowed"
                     : "bg-[#0f172a] border-gray-700 hover:border-blue-500"}
                   ${isSelected ? "border-blue-500 bg-blue-500/10" : ""}
                   `}
-                  onClick={() => !isTaken && handleChange(type)}
+                  onClick={() => !isTaken && handleChange(type._id)}
                 >
                   <div className="flex items-center justify-between">
 
                     <span className="capitalize text-sm font-medium">
-                      {type.replace("_", " ")}
+                      {type.label}
                     </span>
 
                     <input
@@ -147,8 +165,8 @@ const IssueTypeForm = () => {
                       checked={isSelected}
                       disabled={isTaken}
                       onChange={(e) => {
-                        e.stopPropagation(); // 🔥 FIX DOUBLE CLICK BUG
-                        handleChange(type);
+                        e.stopPropagation();
+                        handleChange(type._id);
                       }}
                       className="accent-blue-500"
                     />
@@ -167,7 +185,6 @@ const IssueTypeForm = () => {
           {/* ACTION BUTTONS */}
           <div className="flex justify-end gap-4 mt-8">
 
-            {/* CANCEL */}
             <button
               onClick={handleReset}
               className="px-5 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition"
@@ -175,7 +192,6 @@ const IssueTypeForm = () => {
               Cancel
             </button>
 
-            {/* SAVE */}
             <button
               onClick={handleSubmit}
               disabled={loading || selectedTypes.length === 0}

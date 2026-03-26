@@ -2,6 +2,7 @@
 /* Admin Dashboard Controller */
 import User from "../models/user.model.js";
 import Department from "../models/department.model.js";
+import Operator from "../models/operator.model.js";
 import Issue from "../models/issue.model.js";
 import { io } from "../server.js";
 import Notification from "../models/notification.model.js";
@@ -116,193 +117,208 @@ io.emit("department-rejected", {
 
 
 /*get admin dashboard controller*/
+import Admin from "../models/superadmin.model.js";
+
 export const getAdminDashboard = async (req, res) => {
   try {
+    console.log("FIREBASE USER:", req.firebaseUser);
 
-    const totalUsers = await User.countDocuments();
-    const totalDepartments = await Department.countDocuments();
-    const totalIssues = await Issue.countDocuments();
+    const firebaseUID = req.firebaseUser?.uid;
+
+    if (!firebaseUID) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: No UID",
+      });
+    }
+
+    const admin = await Admin.findOne({ firebaseUID });
+
+    console.log("ADMIN:", admin);
+
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
 
     res.status(200).json({
-      admin: req.admin.email,
-      role: req.admin.role,
-      totalUsers,
-      totalDepartments,
-      totalIssues,
-      dashboardPreferences: req.admin.dashboardPreferences
+      success: true,
+      admin: {
+        id: admin._id,
+        email: admin.email,
+        role: admin.role,
+        status: admin.accountStatus,
+      },
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Dashboard Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 
-
-/*create admin*/
-export const createAdmin = async (req, res) => {
+/*get all department*/
+export const getAllDepartments = async (req, res) => {
   try {
 
-    if (req.admin.role !== "super_admin") {
-      return res.status(403).json({ message: "Only Super Admin can create admin" });
-    }
+    const departments = await Department.find()
+      .populate("issueTypes", "name") // optional (good for UI)
+      .sort({ createdAt: -1 });
 
-    const { firebaseUID, email, role, permissions } = req.body;
-
-    const newAdmin = await Admin.create({
-      firebaseUID,
-      email,
-      role,
-      permissions
-    });
-
-    res.status(201).json({
-      message: "Admin created successfully",
-      newAdmin
+    res.status(200).json({
+      success: true,
+      count: departments.length,
+      departments
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-
-/*get all admins controller*/
-export const getAllAdmins = async (req, res) => {
+/*get all operator*/
+export const getAllOperators = async (req, res) => {
   try {
 
-    const admins = await Admin.find().select("-loginHistory");
+    const operators = await Operator.find()
+      .populate("departmentId", "departmentName")
+      .sort({ createdAt: -1 });
 
-    res.status(200).json(admins);
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/*upadte role and permissions controller*/
-export const updateAdmin = async (req, res) => {
-  try {
-
-    if (req.admin.role !== "super_admin") {
-      return res.status(403).json({ message: "Only Super Admin can update roles" });
-    }
-
-    const { role, permissions } = req.body;
-
-    const admin = await Admin.findById(req.params.adminId);
-
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    admin.role = role || admin.role;
-    admin.permissions = permissions || admin.permissions;
-
-    await admin.save();
-
-    res.status(200).json({ message: "Admin updated successfully" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/*update admin status controller*/
-export const updateAdminStatus = async (req, res) => {
-  try {
-
-    if (req.admin.role !== "super_admin") {
-      return res.status(403).json({ message: "Only Super Admin allowed" });
-    }
-
-    const admin = await Admin.findById(req.params.adminId);
-
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-
-    admin.accountStatus = req.body.status;
-
-    await admin.save();
-
-    res.status(200).json({ message: "Admin status updated" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/*update sla settings controller*/
-export const updateSLASettings = async (req, res) => {
-  try {
-
-    if (!req.admin.permissions.includes("CONFIGURE_SLA")) {
-      return res.status(403).json({ message: "Permission denied" });
-    }
-
-    req.admin.slaSettings = req.body;
-
-    await req.admin.save();
-
-    res.status(200).json({ message: "SLA settings updated" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/*UPDATE AI ANALYTICS SETTINGS CONTROLLER*/
-export const updateAIConfiguration = async (req, res) => {
-  try {
-
-    if (!req.admin.permissions.includes("AI_CONFIGURATION")) {
-      return res.status(403).json({ message: "Permission denied" });
-    }
-
-    req.admin.aiConfiguration = req.body;
-
-    await req.admin.save();
-
-    res.status(200).json({ message: "AI configuration updated" });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/*admin logactivity log controller*/
-export const addAdminActivityLog = async (req, res) => {
-  try {
-
-    const { action, targetId, targetModel } = req.body;
-
-    req.admin.activityLogs.push({
-      action,
-      targetId,
-      targetModel,
-      timestamp: new Date()
+    res.status(200).json({
+      success: true,
+      count: operators.length,
+      operators
     });
 
-    await req.admin.save();
-
-    res.status(200).json({ message: "Activity logged" });
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-/*update admin dashboard preferences controller*/
-export const updateDashboardPreferences = async (req, res) => {
+/*get all zone*/
+export const getAllZones = async (req, res) => {
   try {
 
-    req.admin.dashboardPreferences = req.body;
+    const departments = await Department.find({}, "assignedZones");
 
-    await req.admin.save();
+    let zones = [];
 
-    res.status(200).json({ message: "Preferences updated" });
+    departments.forEach((dept) => {
+      if (dept.assignedZones?.length) {
+        zones.push(...dept.assignedZones);
+      }
+    });
+
+    // 🔥 remove duplicates
+    const uniqueZones = zones.filter(
+      (zone, index, self) =>
+        index ===
+        self.findIndex((z) => z.zoneName === zone.zoneName)
+    );
+
+    res.status(200).json({
+      success: true,
+      count: uniqueZones.length,
+      zones: uniqueZones
+    });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
+
+
+/*get all user*/
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: users.length,
+      users
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/*get all account*/
+export const getAllAccounts = async (req, res) => {
+  try {
+
+    const users = await User.find();
+    const operators = await Operator.find();
+    const departments = await Department.find();
+
+    /* ================= FORMAT USERS ================= */
+
+    const citizens = users.map(u => ({
+      _id: u._id,
+      name: u.fullName || "N/A",
+      email: u.email,
+      role: "Citizen",
+      trust: u.trustMetrics?.trustScore || 50,
+      status: u.accountStatus?.toUpperCase()
+    }));
+
+    const ops = operators.map(o => ({
+      _id: o._id,
+      name: o.fullName,
+      email: o.email,
+      role: "Operator",
+      trust: 60,
+      status: o.status?.toUpperCase()
+    }));
+
+    const admins = departments.map(d => ({
+      _id: d._id,
+      name: d.departmentName,
+      email: d.email,
+      role: "Admin",
+      trust: 80,
+      status: d.accountStatus?.toUpperCase()
+    }));
+
+    const all = [...citizens, ...ops, ...admins];
+
+    /* ================= COUNTS ================= */
+
+    const counts = {
+      citizens: citizens.length,
+      operators: ops.length,
+      admins: admins.length,
+      total: all.length
+    };
+
+    res.json({
+      success: true,
+      counts,
+      users: all
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+};
+

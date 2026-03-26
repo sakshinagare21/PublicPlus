@@ -1,26 +1,23 @@
 import express from "express";
 import { firebaseAuth } from "../middleware/firebase.middleware.js";
 import { verifyAdmin } from "../middleware/firebase.middleware.js";
-
-import {
-  getAdminDashboard,
-  createAdmin,
-  getAllAdmins,
-  updateAdmin,
-  updateAdminStatus,
-  updateSLASettings,
-  updateAIConfiguration,
-  addAdminActivityLog,
-  updateDashboardPreferences
-} from "../controller/admin.controller.js";
 import {
   getPendingDepartments,
   approveDepartment,
-  rejectDepartment
+  rejectDepartment,
+  getAllZones,getAllOperators,
+  getAllUsers,
+  getAllAccounts,
+  getAdminDashboard,
 } from "../controller/admin.controller.js";
+import { getAllDepartments } from "../controller/admin.controller.js";
 const router = express.Router();
 
-
+router.get(
+  "/dashboard",
+  firebaseAuth, // optional but good
+  getAdminDashboard
+);
 /*department approval routes */
 router.get(
   "/department-requests",
@@ -43,23 +40,10 @@ router.put(
   rejectDepartment
 );
 
-
-router.get("/dashboard", firebaseAuth, verifyAdmin, getAdminDashboard);
-
-router.post("/", firebaseAuth, verifyAdmin, createAdmin);
-
-router.get("/", firebaseAuth, verifyAdmin, getAllAdmins);
-
-router.put("/:adminId", firebaseAuth, verifyAdmin, updateAdmin);
-
-router.put("/:adminId/status", firebaseAuth, verifyAdmin, updateAdminStatus);
-
-router.put("/sla", firebaseAuth, verifyAdmin, updateSLASettings);
-
-router.put("/ai", firebaseAuth, verifyAdmin, updateAIConfiguration);
-
-router.post("/activity", firebaseAuth, verifyAdmin, addAdminActivityLog);
-
-router.put("/preferences", firebaseAuth, verifyAdmin, updateDashboardPreferences);
-
+/*admin*/
+router.get("/departments", firebaseAuth, verifyAdmin, getAllDepartments);
+router.get("/operators", firebaseAuth, verifyAdmin, getAllOperators);
+router.get("/zones", firebaseAuth, verifyAdmin, getAllZones);
+router.get("/users",firebaseAuth, verifyAdmin, getAllUsers);
+router.get("/accounts", firebaseAuth, verifyAdmin, getAllAccounts);
 export default router;
