@@ -4,104 +4,104 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema({
 
-  /* ================= FIREBASE AUTH ================= */
+ /* ================= FIREBASE AUTH ================= */
 
-  firebaseUID: {
-    type: String,
-    required: true,
-    unique: true
-  },
+ firebaseUID: {
+ type: String,
+ required: true,
+ unique: true
+ },
 
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
+ email: {
+ type: String,
+ required: true,
+ unique: true
+ },
 
-  fullName: String,
-  phoneNumber: String,
+ fullName: String,
+ phoneNumber: String,
 
-  role: {
-    type: String,
-    enum: ["citizen", "admin", "department"],
-    default: "citizen"
-  },
+ role: {
+ type: String,
+ enum: ["citizen", "admin", "department"],
+ default: "citizen"
+ },
 
-  accountStatus: {
-    type: String,
-    enum: ["active", "suspended", "blocked","deleted"],
-    default: "active"
-  },
+ accountStatus: {
+ type: String,
+ enum: ["active", "suspended", "blocked","deleted"],
+ default: "active"
+ },
 
-  lastLogin: Date,
-
-
-  /* ================= PROFILE ================= */
-
-  profilePhoto: String,
-  dateOfBirth: Date,
-  gender: String,
+ lastLogin: Date,
 
 
-  /* ================= LOCATION ================= */
+ /* ================= PROFILE ================= */
 
-  homeLocation: {
-    latitude: Number,
-    longitude: Number,
-    address: String
-  },
-
-  preferredZones: [String],
+ profilePhoto: String,
+ dateOfBirth: Date,
+ gender: String,
 
 
-  /* ================= TRUST SYSTEM ================= */
+ /* ================= LOCATION ================= */
 
-  trustMetrics: {
-    trustScore: { type: Number, default: 50 },
-    reportsSubmitted: { type: Number, default: 0 },
-    validReports: { type: Number, default: 0 },
-    rejectedReports: { type: Number, default: 0 }
-  },
+ homeLocation: {
+ latitude: Number,
+ longitude: Number,
+ address: String
+ },
 
-
-  /* ================= ENGAGEMENT ================= */
-
-  engagementMetrics: {
-    totalAppOpens: { type: Number, default: 0 },
-    lastActiveDate: Date
-  },
+ preferredZones: [String],
 
 
-  /* ================= DEVICES ================= */
+ /* ================= TRUST SYSTEM ================= */
 
-  devices: [
-    {
-      deviceId: String,
-      platform: String,
-      pushToken: String,
-      lastUsed: Date
-    }
-  ],
+ trustMetrics: {
+ trustScore: { type: Number, default: 50 },
+ reportsSubmitted: { type: Number, default: 0 },
+ validReports: { type: Number, default: 0 },
+ rejectedReports: { type: Number, default: 0 }
+ },
 
 
-  /* ================= NOTIFICATIONS ================= */
+ /* ================= ENGAGEMENT ================= */
 
-  notificationSettings: {
-    pushEnabled: { type: Boolean, default: true },
-    emailEnabled: { type: Boolean, default: true }
-  },
-
-
-  /* ================= AI PROFILE ================= */
-
-  aiProfile: {
-    reliabilityScore: { type: Number, default: 50 }
-  },
+ engagementMetrics: {
+ totalAppOpens: { type: Number, default: 0 },
+ lastActiveDate: Date
+ },
 
 
-  /* ================= RELATIONS ================= */
+ /* ================= DEVICES ================= */
 
-  reports: [{ type: Schema.Types.ObjectId, ref: "Report" }]
+ devices: [
+ {
+ deviceId: String,
+ platform: String,
+ pushToken: String,
+ lastUsed: Date
+ }
+ ],
+
+
+ /* ================= NOTIFICATIONS ================= */
+
+ notificationSettings: {
+ pushEnabled: { type: Boolean, default: true },
+ emailEnabled: { type: Boolean, default: true }
+ },
+
+
+ /* ================= AI PROFILE ================= */
+
+ aiProfile: {
+ reliabilityScore: { type: Number, default: 50 }
+ },
+
+
+ /* ================= RELATIONS ================= */
+
+ reports: [{ type: Schema.Types.ObjectId, ref: "Report" }]
 
 }, { timestamps: true });
 

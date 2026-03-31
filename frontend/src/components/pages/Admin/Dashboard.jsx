@@ -1,174 +1,172 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
-AlertTriangle,
-CheckCircle,
-Clock,
-TrendingUp,
-Eye,
-Settings as SettingsIcon,
-ArrowUpRight,
+ AlertTriangle,
+ CheckCircle,
+ Clock,
+ TrendingUp,
+ Settings as SettingsIcon,
+ Eye,
+ Activity
 } from "lucide-react";
 import AdminLayout from "../../layout/AdminLayout";
-
-const statsCards = [
-{ label: "CRITICAL ISSUES", value: "42", change: "+12% from last hour", changeType: "critical", icon: AlertTriangle },
-{ label: "PENDING TRIAGE", value: "184", change: "Stable volume", changeType: "neutral", icon: Clock },
-{ label: "RESOLVED (24H)", value: "1,205", change: "94% resolution rate", changeType: "success", icon: CheckCircle },
-];
-
-const slaAlerts = [
-{ id: "#8821", severity: "CRITICAL", title: "Traffic Signal Failure at Broadway & 7th Ave", time: "04:12" },
-{ id: "#8792", severity: "WARNING", title: "Public Health Concern: Sewage Leak reported", time: "18:45" },
-{ id: "#8910", severity: "CRITICAL", title: "Building Integrity: Zone 11 Crack Report", time: "01:30" },
-{ id: "#8944", severity: "WARNING", title: "Street Light Maintenance Backlog", time: "45:00" },
-];
-
-const departments = [
-{ name: "PUBLIC WORKS", load: 88, color: "bg-red-500" },
-{ name: "SANITATION & WASTE", load: 64, color: "bg-blue-500" },
-{ name: "PUBLIC SAFETY", load: 42, color: "bg-green-500" },
-{ name: "ENVIRONMENTAL CARE", load: 21, color: "bg-green-500" },
-];
-
-const aiLogs = [
-{ time: "14:22:01", tag: "SENTIMENT_ANALYSIS", msg: "Issue #9921 categorized as 'High Stress' from audio transcript." },
-{ time: "14:22:04", tag: "AUTO_DISPATCH", msg: "Sector 12 Public Works assigned to ticket #9921. Confidence: 0.98." },
-{ time: "14:22:15", tag: "ANOMALY_DETECTION", msg: "Detected spike in power surge reports in Zone 3." },
-{ time: "14:22:30", tag: "PROCESSOR_LOAD", msg: "LLM Node 4 processing batch of reports..." },
-];
-
-const tagColors = {
-SENTIMENT_ANALYSIS: "text-blue-400",
-AUTO_DISPATCH: "text-yellow-400",
-ANOMALY_DETECTION: "text-yellow-400",
-PROCESSOR_LOAD: "text-green-400",
-};
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
-const [activeFilter, setActiveFilter] = useState("INFRASTRUCTURE");
-const [timeRange, setTimeRange] = useState("Last 24 Hours");
+ const [activeFilter, setActiveFilter] = useState("INFRASTRUCTURE");
+ const [stats, setStats] = useState(null);
+ const [departments, setDepartments] = useState([]);
+ const [aiLogs, setAiLogs] = useState([]);
+ const [loading, setLoading] = useState(true);
 
-return ( 
-    <AdminLayout>
-<div className="space-y-6 p-6 bg-gray-950 min-h-screen text-white">
+ const fetchStats = async () => {
+ try {
+ const res = await axios.get("http://127.0.0.1:5000/api/issues/admin/stats", {
+ headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+ });
+ setStats(res.data.stats);
+ setDepartments(res.data.departments || []);
+ setAiLogs(res.data.logs || []);
+ } catch (err) {
+ console.error(err);
+ toast.error("Failed to fetch admin stats");
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  {/* Stats Cards */}
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-    {statsCards.map((stat) => (
-      <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex justify-between">
-        <div>
-          <p className="text-xs text-gray-400">{stat.label}</p>
-          <p className="text-3xl font-bold">{stat.value}</p>
-          <p className={`text-xs mt-2 flex gap-1 ${
-            stat.changeType === "critical"
-              ? "text-red-400"
-              : stat.changeType === "success"
-              ? "text-green-400"
-              : "text-gray-400"
-          }`}>
-            {stat.changeType !== "neutral" && <TrendingUp className="w-3 h-3" />}
-            {stat.change}
-          </p>
-        </div>
-        <div className="w-10 h-10 bg-blue-600/20 text-blue-400 rounded-lg flex items-center justify-center">
-          <stat.icon className="w-5 h-5" />
-        </div>
-      </div>
-    ))}
-  </div>
+ useEffect(() => {
+ fetchStats();
+ }, []);
 
-  {/* Map + Alerts */}
-  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+ if (loading || !stats) {
+ return (
+ <AdminLayout>
+ <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+ <Activity className="animate-spin text-primary" size={40} />
+ </div>
+ </AdminLayout>
+ );
+ }
 
-    {/* Map */}
-    <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+ const statsCards = [
+ { label: "CRITICAL ISSUES", value: stats.critical || 0, change: "Requires attention", changeType: "critical", icon: AlertTriangle },
+ { label: "PENDING", value: stats.pending || 0, change: "Awaiting assignment", changeType: "neutral", icon: Clock },
+ { label: "RESOLVED", value: stats.resolved || 0, change: "Successfully handled", changeType: "success", icon: CheckCircle },
+ ];
 
-      <div className="flex justify-between p-4 border-b border-gray-800">
-        <h3 className="font-semibold">Zone Mapping Overview</h3>
+ const tagColors = {
+ REPORTED: "text-blue-400",
+ ASSIGNED: "text-purple-400",
+ IN_PROGRESS: "text-yellow-400",
+ RESOLVED: "text-green-400",
+ CLOSED: "text-gray-400",
+ REOPENED: "text-red-400",
+ ESCALATED: "text-orange-500",
+ };
 
-        <div className="flex gap-2">
-          {["INFRASTRUCTURE", "SAFETY", "ENVIRONMENT"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
-              className={`text-xs px-3 py-1.5 rounded-md ${
-                activeFilter === f
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-400"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+ return (
+ <AdminLayout>
+ <div className="space-y-6 p-6 bg-background min-h-screen text-foreground font-sans animate-in fade-in duration-500 transition-colors">
 
-          <button className="p-2 bg-gray-800 text-gray-400 rounded-md">
-            <SettingsIcon className="w-4 h-4" />
-          </button>
+ <header className="mb-8">
+ <h1 className="text-3xl font-bold text-foreground tracking-tight">Command Center</h1>
+ <p className="text-muted-foreground text-sm mt-1">Real-time civic intelligence and system oversight.</p>
+ </header>
 
-          <button className="p-2 bg-gray-800 text-gray-400 rounded-md">
-            <Eye className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+ {/* Stats Cards */}
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+ {statsCards.map((stat) => (
+ <div key={stat.label} className="bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-6 flex justify-between items-center shadow-lg transition-all hover:scale-105 duration-300">
+ <div>
+ <p className="text-xs font-semibold text-muted-foreground tracking-wider font-mono">{stat.label}</p>
+ <p className="text-4xl font-black text-foreground mt-1 drop-shadow-md">{stat.value}</p>
+ <p className={`text-xs mt-2 font-medium flex gap-1 ${stat.changeType === "critical"
+ ? "text-destructive"
+ : stat.changeType === "success"
+ ? "text-success"
+ : "text-primary"
+ }`}>
+ {stat.changeType !== "neutral" && <TrendingUp className="w-3.5 h-3.5" />}
+ {stat.change}
+ </p>
+ </div>
+ <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${stat.changeType === "critical" ? "bg-destructive/20 text-destructive border border-destructive/20" :
+ stat.changeType === "success" ? "bg-success/20 text-success border border-success/20" :
+ "bg-primary/20 text-primary border border-primary/20"
+ }`}>
+ <stat.icon size={28} />
+ </div>
+ </div>
+ ))}
+ </div>
 
-      <div className="h-[400px] bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800" />
-    </div>
+ {/* Secondary Dashboard Sections */}
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
 
-    {/* Alerts */}
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <h3 className="font-semibold mb-3">SLA Risk Alerts</h3>
+ {/* Departments */}
+ <div className="bg-card/60 border border-border rounded-2xl p-6 shadow-xl">
+ <h3 className="font-bold text-foreground mb-6 tracking-wide text-sm flex justify-between items-center">
+ Department Workload
+ <SettingsIcon size={16} className="text-muted-foreground cursor-pointer hover:text-foreground transition" />
+ </h3>
 
-      {slaAlerts.map((alert) => (
-        <div key={alert.id} className="mb-4 border-b border-gray-800 pb-3">
-          <p className="text-sm font-medium">{alert.title}</p>
-          <p className="text-xs text-gray-400 mb-2">
-            {alert.severity} • {alert.time}
-          </p>
-          <button className="text-xs bg-blue-600 px-3 py-1 rounded">
-            Escalate
-          </button>
-        </div>
-      ))}
-    </div>
-  </div>
+ <div className="space-y-6">
+ {departments.length === 0 ? (
+ <p className="text-center text-muted-foreground py-10">No department data available</p>
+ ) : (
+ departments.map((dept) => (
+ <div key={dept.name} className="relative">
+ <div className="flex justify-between text-sm font-medium mb-2">
+ <span className="text-muted-foreground">{dept.name}</span>
+ <span className="text-foreground">{dept.load}%</span>
+ </div>
+ <div className="h-2 bg-muted rounded-full overflow-hidden border border-border">
+ <div
+ className={`${dept.color} h-full rounded-full transition-all duration-1000 ease-out`}
+ style={{ width: `${dept.load}%` }}
+ />
+ </div>
+ </div>
+ ))
+ )}
+ </div>
+ </div>
 
-  {/* Bottom */}
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+ {/* Logs */}
+ <div className="bg-card/60 border border-border rounded-2xl p-6 shadow-xl font-mono text-sm relative overflow-hidden">
 
-    {/* Departments */}
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-      <h3 className="font-semibold mb-4">Department Load</h3>
+ <div className="flex justify-between items-center mb-6">
+ <h3 className="font-bold text-foreground tracking-wide text-sm flex items-center gap-2">
+ <Activity size={16} className="text-primary" />
+ System Intelligence Logs
+ </h3>
+ <span className="flex h-3 w-3 relative">
+ <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+ <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
+ </span>
+ </div>
 
-      {departments.map((dept) => (
-        <div key={dept.name} className="mb-4">
-          <div className="flex justify-between text-sm">
-            <span>{dept.name}</span>
-            <span>{dept.load}%</span>
-          </div>
-          <div className="h-2 bg-gray-800 rounded">
-            <div className={`${dept.color} h-full rounded`} style={{ width: `${dept.load}%` }} />
-          </div>
-        </div>
-      ))}
-    </div>
+ <div className="space-y-4">
+ {aiLogs.length === 0 ? (
+ <p className="text-center text-muted-foreground py-10">No recent activity detected</p>
+ ) : (
+ aiLogs.map((log, i) => (
+ <div key={i} className="py-2 border-b border-border hover:bg-muted/50 transition px-2 rounded">
+ <span className="text-muted-foreground">[{log.time}]</span>{" "}
+ <span className={`font-semibold ${tagColors[log.tag] || "text-muted-foreground"}`}>
+ {log.tag}:
+ </span>{" "}
+ <span className="text-muted-foreground">{log.msg}</span>
+ </div>
+ ))
+ )}
+ </div>
+ </div>
 
-    {/* Logs */}
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 font-mono text-xs">
-      <h3 className="font-semibold mb-3">AI Engine Logs</h3>
-
-      {aiLogs.map((log, i) => (
-        <div key={i}>
-          [{log.time}]{" "}
-          <span className={tagColors[log.tag] || "text-gray-400"}>
-            {log.tag}:
-          </span>{" "}
-          {log.msg}
-        </div>
-      ))}
-    </div>
-  </div>
-</div>
-</AdminLayout>
-
-);
+ </div>
+ </div>
+ </AdminLayout>
+ );
 }
+

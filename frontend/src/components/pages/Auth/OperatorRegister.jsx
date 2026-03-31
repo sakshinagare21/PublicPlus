@@ -1,205 +1,224 @@
 import { useState, useEffect } from "react";
-import { User, Briefcase } from "lucide-react";
+import { User, Briefcase, Mail, Lock, Phone, ShieldCheck, Activity, ArrowRight } from "lucide-react";
 import LandingNavbar from "../../layout/LandingNavbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../../firebase";
 
 const OperatorRegister = () => {
-  const [departments, setDepartments] = useState([]);
+ const navigate = useNavigate();
+ const [departments, setDepartments] = useState([]);
+ const [form, setForm] = useState({
+ fullName: "",
+ employeeId: "",
+ email: "",
+ contact: "",
+ department: "",
+ password: "",
+ });
 
-  const [form, setForm] = useState({
-    fullName: "",
-    employeeId: "",
-    email: "",
-    contact: "",
-    department: "",
-    password: "",
-  });
+ useEffect(() => {
+ const fetchDepartments = async () => {
+ try {
+ const res = await fetch("http://127.0.0.1:5000/api/departments/list");
+ const data = await res.json();
+ setDepartments(data);
+ } catch (err) {
+ console.log(err);
+ }
+ };
+ fetchDepartments();
+ }, []);
 
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/departments/list");
+ const handleChange = (e) => {
+ setForm({ ...form, [e.target.name]: e.target.value });
+ };
 
-        const data = await res.json();
+ const handleSubmit = async (e) => {
+ e.preventDefault();
+ if (!form.department) {
+ toast.error("Please select department");
+ return;
+ }
+ let firebaseUser = null;
+ try {
+ const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+ firebaseUser = userCredential.user;
+ const token = await firebaseUser.getIdToken(true);
 
-        setDepartments(data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
+ const res = await fetch("http://127.0.0.1:5000/api/operator/register", {
+ method: "POST",
+ headers: {
+ "Content-Type": "application/json",
+ Authorization: `Bearer ${token}`,
+ },
+ body: JSON.stringify({
+ fullName: form.fullName,
+ email: form.email,
+ phoneNumber: form.contact,
+ departmentId: form.department,
+ }),
+ });
 
-    fetchDepartments();
-  }, []);
+ const data = await res.json();
+ if (!res.ok) throw new Error(data.message);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+ toast.success("Registration request submitted for approval");
+ setTimeout(() => navigate("/operator-login"), 2000);
+ } catch (err) {
+ if (firebaseUser) await firebaseUser.delete().catch(() => {});
+ toast.error(err.message);
+ }
+ };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ return (
+ <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-500 font-sans selection:bg-primary/30 relative overflow-hidden">
+ {/* Background Glows */}
+ <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-primary/5 rounded-full blur-[160px] -translate-x-1/2 -translate-y-1/2 transition-colors duration-700"></div>
+ <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[180px] translate-x-1/3 translate-y-1/3 transition-colors duration-700"></div>
 
-    if (!form.department) {
-      toast.error("Please select department");
-      return;
-    }
+ <LandingNavbar />
 
-    let firebaseUser = null;
+ <div className="flex-1 flex items-center justify-center p-12 lg:p-24 relative z-10 transition-colors">
 
-    try {
-      /* create firebase account */
+ <div className="w-full max-w-6xl bg-card border border-border rounded-[3.5rem] p-16 lg:p-24 shadow-[0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-500 relative group overflow-hidden">
+ <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[100px] translate-x-1/2 -translate-y-1/2 transition-colors"></div>
+ 
+ <div className="text-center mb-16 relative z-10">
+ <div className="mx-auto mb-10 w-28 h-28 rounded-[2.5rem] bg-primary/5 border border-primary/20 flex items-center justify-center shadow-2xl shadow-primary/10 transition-all hover:scale-110 duration-500 group/icon cursor-pointer">
+ <Activity className="w-14 h-14 text-primary shadow-glow group-hover/icon:animate-pulse transition-all duration-500" />
+ </div>
+ <h2 className="text-5xl font-black text-foreground mb-4 tracking-tighter transition-colors">Operator <span className="text-primary italic">Initialization</span></h2>
+ <p className="text-[10px] font-black text-muted-foreground tracking-[0.3em] opacity-40 transition-colors italic">Register as certified tactical field service personnel</p>
+ </div>
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        form.email,
-        form.password,
-      );
+ <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
+ <div className="grid md:grid-cols-2 gap-x-12 gap-y-10">
+ <div className="space-y-4">
+ <label className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-1 ml-2 opacity-50 transition-colors">FULL LEGAL IDENTITY</label>
+ <div className="relative group/field">
+ <User className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within/field:text-primary transition-colors opacity-40" />
+ <input
+ name="fullName"
+ placeholder="OPERATOR_NAME"
+ value={form.fullName}
+ onChange={handleChange}
+ required
+ className="w-full bg-muted/30 border border-border rounded-2xl pl-16 pr-6 py-5 text-[11px] font-black tracking-widest text-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/20 shadow-inner focus:bg-background"
+ />
+ </div>
+ </div>
 
-      firebaseUser = userCredential.user;
+ <div className="space-y-4">
+ <label className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-1 ml-2 opacity-50 transition-colors">OFFICIAL SERVICE ID</label>
+ <div className="relative group/field">
+ <Briefcase className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within/field:text-primary transition-colors opacity-40" />
+ <input
+ name="employeeId"
+ placeholder="EMP-ID-TACTICAL"
+ value={form.employeeId}
+ onChange={handleChange}
+ required
+ className="w-full bg-muted/30 border border-border rounded-2xl pl-16 pr-6 py-5 text-[11px] font-black tracking-widest text-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/20 shadow-inner focus:bg-background"
+ />
+ </div>
+ </div>
 
-      const token = await firebaseUser.getIdToken(true);
+ <div className="space-y-4">
+ <label className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-1 ml-2 opacity-50 transition-colors">SECURE PERSONNEL MAIL</label>
+ <div className="relative group/field">
+ <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within/field:text-primary transition-colors opacity-40" />
+ <input
+ type="email"
+ name="email"
+ placeholder="OPERATOR@MUNICIPAL.SYNC"
+ value={form.email}
+ onChange={handleChange}
+ required
+ className="w-full bg-muted/30 border border-border rounded-2xl pl-16 pr-6 py-5 text-[11px] font-black tracking-widest text-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/20 shadow-inner focus:bg-background"
+ />
+ </div>
+ </div>
 
-      /* call backend */
+ <div className="space-y-4">
+ <label className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-1 ml-2 opacity-50 transition-colors">LOGISTICS PASSKEY</label>
+ <div className="relative group/field">
+ <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within/field:text-primary transition-colors opacity-40" />
+ <input
+ type="password"
+ name="password"
+ placeholder="••••••••"
+ value={form.password}
+ onChange={handleChange}
+ required
+ className="w-full bg-muted/30 border border-border rounded-2xl pl-16 pr-6 py-5 text-[11px] font-black tracking-widest text-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-inner focus:bg-background"
+ />
+ </div>
+ </div>
 
-      const res = await fetch("http://localhost:5000/api/operator/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          fullName: form.fullName,
-          email: form.email,
-          phoneNumber: form.contact,
-          departmentId: form.department,
-        }),
-      });
+ <div className="space-y-4">
+ <label className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-1 ml-2 opacity-50 transition-colors">TACTICAL CONTACT TERMINAL</label>
+ <div className="relative group/field">
+ <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 group-focus-within/field:text-primary transition-colors opacity-40" />
+ <input
+ name="contact"
+ placeholder="+91-OPERATIONAL-LINK"
+ value={form.contact}
+ onChange={handleChange}
+ required
+ className="w-full bg-muted/30 border border-border rounded-2xl pl-16 pr-6 py-5 text-[11px] font-black tracking-widest text-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/20 shadow-inner focus:bg-background"
+ />
+ </div>
+ </div>
 
-      const data = await res.json();
+ <div className="space-y-4">
+ <label className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-1 ml-2 opacity-50 transition-colors">ASSIGNED LOGISTICAL NODE</label>
+ <div className="relative">
+ <select
+ name="department"
+ value={form.department}
+ onChange={handleChange}
+ required
+ className="w-full bg-muted/30 border border-border rounded-2xl px-6 py-5 text-[11px] font-black tracking-widest text-muted-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-inner focus:bg-background cursor-pointer appearance-none"
+ >
+ <option value="">CHOOSE NODE</option>
+ {departments.map((dept) => (
+ <option key={dept._id} value={dept._id} className="bg-background">
+ {dept.departmentName.toUpperCase()}
+ </option>
+ ))}
+ </select>
+ <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+ <ArrowRight size={16} className="rotate-90" />
+ </div>
+ </div>
+ </div>
+ </div>
 
-      if (!res.ok) {
-        throw new Error(data.message);
-      }
+ <button
+ type="submit"
+ className="w-full bg-primary text-primary-foreground py-8 rounded-[2rem] font-black text-[11px] tracking-[0.4em] transition-all shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 shadow-glow shadow-primary/30 mt-6 flex items-center justify-center gap-4"
+ >
+ INITIALIZE TACTICAL REGISTRATION
+ <ArrowRight size={24} className="animate-pulse" />
+ </button>
 
-      toast.success("Operator request sent to department");
-
-      /* reset form */
-
-      setForm({
-        fullName: "",
-        employeeId: "",
-        email: "",
-        contact: "",
-        department: "",
-        password: "",
-      });
-    } catch (err) {
-      if (firebaseUser) {
-        await firebaseUser.delete();
-      }
-
-      toast.error(err.message);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <LandingNavbar />
-
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        <p className="text-sm text-gray-500 mb-3">
-          Dashboard &gt; Operator Registration
-        </p>
-
-        <h2 className="text-3xl font-bold mb-2">Operator Registration</h2>
-
-        <div className="bg-white rounded-xl shadow-md p-8">
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Full Name"
-                value={form.fullName}
-                onChange={handleChange}
-                className="border rounded-lg px-4 py-2"
-              />
-
-              <input
-                type="text"
-                name="employeeId"
-                placeholder="Employee ID"
-                value={form.employeeId}
-                onChange={handleChange}
-                className="border rounded-lg px-4 py-2"
-              />
-
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={handleChange}
-                className="border rounded-lg px-4 py-2"
-              />
-
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
-                className="border rounded-lg px-4 py-2"
-              />
-
-              <input
-                type="text"
-                name="contact"
-                placeholder="Contact Number"
-                value={form.contact}
-                onChange={handleChange}
-                className="border rounded-lg px-4 py-2"
-              />
-
-              <select
-                name="department"
-                value={form.department}
-                onChange={handleChange}
-                className="border rounded-lg px-4 py-2"
-              >
-                <option value="">Select Department</option>
-
-                {departments.map((dept) => (
-                  <option key={dept._id} value={dept._id}>
-                    {dept.departmentName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg mt-6"
-            >
-              Register Operator
-            </button>
-
-            <p className="text-center text-sm text-gray-500 mt-6">
-              Already have an account?{" "}
-              <Link
-                to="/operator-login"
-                className="text-blue-600 hover:underline"
-              >
-                Return to Login
-              </Link>
-            </p>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+ <div className="mt-12 pt-12 border-t border-border flex flex-col items-center gap-8 transition-colors">
+ <span className="flex items-center gap-4 text-[10px] font-black tracking-[0.3em] text-muted-foreground opacity-30 shadow-glow italic">
+ <ShieldCheck size={20} className="text-primary" />
+ BIOMETRIC & CREDENTIAL ENCRYPTION ACTIVE
+ </span>
+ <p className="text-[10px] font-black tracking-widest text-muted-foreground opacity-40 transition-colors">
+ Already a registered officer? <Link to="/operator-login" className="text-primary hover:text-foreground transition-all underline underline-offset-4 decoration-border">Return Gateway</Link>
+ </p>
+ </div>
+ </form>
+ </div>
+ </div>
+ </div>
+ );
 };
 
 export default OperatorRegister;
+

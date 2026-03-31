@@ -9,6 +9,7 @@ export const sendNotification = async ({
   userId = null,
   departmentId = null,
   operatorId = null,
+  issueId = null,
   createdBy,
   createdByModel
 }) => {
@@ -22,6 +23,7 @@ export const sendNotification = async ({
       userId,
       departmentId,
       operatorId,
+      issueId,
       createdBy,
       createdByModel
     });

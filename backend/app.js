@@ -10,13 +10,15 @@ import morgan from "morgan";
 
 import userRoutes from "./routes/user.route.js";
 import issueRoutes from "./routes/issue.route.js";
-import taskRoutes from "./routes/task.route.js";
 import departmentRoutes from "./routes/department.route.js";
 import adminRoutes from "./routes/admin.route.js";
 import operatorRoutes from "./routes/operator.route.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import SLARoute from "./routes/sla.route.js"
 import issueTypeRoutes from "./routes/issueType.routes.js";
+import zoneRoutes from "./routes/zone.route.js";
+import analyticsRoutes from "./routes/analytics.route.js";
+import contactRoutes from "./routes/contact.route.js";
 
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
 
@@ -52,9 +54,6 @@ app.use("/api/users", userRoutes);
 // ISSUE
 app.use("/api/issues", issueRoutes);
 
-// TASK
-app.use("/api/tasks", taskRoutes);
-
 // DEPARTMENT
 app.use("/api/departments", departmentRoutes);
 
@@ -66,9 +65,12 @@ app.use("/api/operator", operatorRoutes);
 
 app.use("/api/notification", notificationRoutes);
 
-app.use("/api/sla",SLARoute);
+app.use("/api/sla", SLARoute);
 
 app.use("/api/issue-types", issueTypeRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/zones", zoneRoutes);
+app.use("/api/contact", contactRoutes);
 // =============================
 // ERROR HANDLING
 // =============================

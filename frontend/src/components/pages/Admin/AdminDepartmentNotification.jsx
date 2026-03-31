@@ -1,309 +1,289 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
 import AdminLayout from "../../layout/AdminLayout";
-const socket = io("http://localhost:5000");
+import { Bell, Trash2, CheckCircle, AlertTriangle, Building2, User } from "lucide-react";
+
+const socket = io("http://127.0.0.1:5000");
 
 const AdminDepartmentNotification = () => {
-  const [notifications, setNotifications] = useState([]);
-  const [departments, setDepartments] = useState([]);
+ const [notifications, setNotifications] = useState([]);
+ const [departments, setDepartments] = useState([]);
+ const [filterType, setFilterType] = useState("all");
+ const [filterCategory, setFilterCategory] = useState("all");
 
-  const token = localStorage.getItem("token");
+ const token = localStorage.getItem("token");
 
-  /* ================= FETCH PENDING DEPARTMENTS ================= */
+ const fetchDepartments = async () => {
+ try {
+ const res = await axios.get("http://localhost:5000/api/admin/department-requests", {
+ headers: { Authorization: `Bearer ${token}` },
+ });
+ setDepartments(res.data);
+ } catch (error) {
+ console.error("Dept Fetch Error:", error);
+ }
+ };
 
-  const fetchDepartments = async () => {
-    try {
-      const res = await fetch(
-        "http://localhost:5000/api/admin/department-requests",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+ const fetchNotifications = async () => {
+ try {
+ const res = await axios.get("http://localhost:5000/api/notification/admin", {
+ headers: { Authorization: `Bearer ${token}` },
+ });
+ console.log("Admin Notifications Received:", res.data);
+ setNotifications(res.data);
+ } catch (error) {
+ console.error("Notifications Fetch Error:", error.response?.data || error.message);
+ }
+ };
 
-      const data = await res.json();
+ const deleteNotification = async (id) => {
+ try {
+ await fetch(`http://localhost:5000/api/notification/${id}`, {
+ method: "DELETE",
+ headers: { Authorization: `Bearer ${token}` },
+ });
+ toast.success("Notification deleted");
+ fetchNotifications();
+ } catch (error) {
+ toast.error("Delete failed");
+ }
+ };
 
-      setDepartments(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+ const approveDepartment = async (id) => {
+ try {
+ const res = await fetch(`http://localhost:5000/api/admin/approve-department/${id}`, {
+ method: "PUT",
+ headers: { Authorization: `Bearer ${token}` },
+ });
+ const data = await res.json();
+ toast.success(data.message);
+ fetchDepartments();
+ } catch (error) {
+ toast.error("Approval failed");
+ }
+ };
 
-  /* ================= FETCH NOTIFICATIONS ================= */
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/notification/admin", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+ const rejectDepartment = async (id) => {
+ try {
+ const res = await fetch(`http://localhost:5000/api/admin/reject-department/${id}`, {
+ method: "PUT",
+ headers: { Authorization: `Bearer ${token}` },
+ });
+ const data = await res.json();
+ toast.error(data.message);
+ fetchDepartments();
+ } catch (error) {
+ toast.error("Reject failed");
+ }
+ };
 
-      const data = await res.json();
-      setNotifications(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+ const markAllAsRead = async () => {
+ try {
+ await fetch("http://localhost:5000/api/notification/admin/read-all", {
+ method: "PUT",
+ headers: { Authorization: `Bearer ${token}` },
+ });
+ toast.success("All notifications marked as read");
+ fetchNotifications();
+ } catch (error) {
+ toast.error("Failed to mark all as read");
+ }
+ };
 
-  /*================delete notification=================*/
-  const deleteNotification = async (id) => {
-    try {
-      await fetch(`http://localhost:5000/api/notification/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+ useEffect(() => {
+ fetchDepartments();
+ fetchNotifications();
 
-      toast.success("Notification deleted");
-      fetchNotifications();
-    } catch (error) {
-      toast.error("Delete failed");
-    }
-  };
-  /* ================= APPROVE ================= */
+ socket.on("new-department-request", (data) => {
+ toast("New Department Request: " + data.departmentName);
+ fetchDepartments();
+ fetchNotifications();
+ });
 
-  const approveDepartment = async (id) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/admin/approve-department/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+ return () => {
+ socket.off("new-department-request");
+ };
+ }, []);
 
-      const data = await res.json();
+ const categories = [...new Set(notifications.map(n => n.taskType).filter(Boolean))];
 
-      toast.success(data.message);
+ const filteredNotifications = notifications.filter((n) => {
+ const matchesType = filterType === "all" || 
+ (filterType === "department" && n.type.includes("department")) ||
+ (filterType === "issue" && (n.type.includes("issue") || n.type.includes("verification"))) ||
+ (filterType === "task" && n.type.includes("task"));
+ 
+ const matchesCategory = filterCategory === "all" || n.taskType === filterCategory;
 
-      fetchDepartments();
-    } catch (error) {
-      toast.error("Approval failed");
-    }
-  };
+ return matchesType && matchesCategory;
+ });
 
-  /* ================= REJECT ================= */
+ return (
+ <AdminLayout>
+ <div className="max-w-6xl mx-auto space-y-10">
+ {/* Department Approval Section */}
+ <div className="bg-card border border-border rounded-2xl overflow-hidden">
+ <div className="p-6 border-b border-border bg-muted/20">
+ <h2 className="text-xl font-bold flex items-center gap-2">
+ <Building2 className="text-blue-500" />
+ Department Approval Requests
+ </h2>
+ </div>
+ <div className="p-6">
+ {departments.length === 0 ? (
+ <p className="text-muted-foreground italic text-center py-8">No pending requests</p>
+ ) : (
+ <div className="space-y-4">
+ {departments.map((dept) => (
+ <div key={dept._id} className="p-4 rounded-xl border border-border bg-card/50 flex justify-between items-center hover:shadow-md transition">
+ <div>
+ <p className="font-semibold text-lg">{dept.departmentName}</p>
+ <div className="flex gap-4 text-sm text-muted-foreground mt-1">
+ <span><strong className="text-foreground">Code:</strong> {dept.departmentCode}</span>
+ <span><strong className="text-foreground">Email:</strong> {dept.email}</span>
+ </div>
+ </div>
+ <div className="flex gap-2">
+ <button onClick={() => approveDepartment(dept._id)} className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+ Approve
+ </button>
+ <button onClick={() => rejectDepartment(dept._id)} className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+ Reject
+ </button>
+ </div>
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ </div>
 
-  const rejectDepartment = async (id) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/admin/reject-department/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+ {/* Global Notifications Section */}
+ <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-2xl">
+ <div className="p-6 border-b border-border bg-muted/20 flex justify-between items-center">
+ <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+ <Bell className="text-blue-500" />
+ System Alerts & Notifications
+ </h2>
+ <div className="flex items-center gap-4">
+ <select 
+ value={filterType}
+ onChange={(e) => setFilterType(e.target.value)}
+ className="bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 ring-primary/20 transition-all font-medium"
+ >
+ <option value="task">Escalated Tasks</option>
+ </select>
 
-      const data = await res.json();
+ <select 
+ value={filterCategory}
+ onChange={(e) => setFilterCategory(e.target.value)}
+ className="bg-background border border-border rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-2 ring-primary/20 transition-all font-medium"
+ >
+ <option value="all">Every Sector</option>
+ {categories.map(cat => (
+ <option key={cat} value={cat}>{cat}</option>
+ ))}
+ </select>
+ <button
+ onClick={markAllAsRead}
+ className="text-sm font-semibold text-blue-500 hover:text-blue-600 transition"
+ >
+ Mark All Read
+ </button>
+ </div>
+ </div>
 
-      toast.error(data.message);
-
-      fetchDepartments();
-    } catch (error) {
-      toast.error("Reject failed");
-    }
-  };
-
-  /*===================MARK NOTIFICATION AS READ====================*/
-  const markAllAsRead = async () => {
-    try {
-      await fetch("http://localhost:5000/api/notification/admin/read-all", {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      toast.success("All notifications marked as read");
-
-      fetchNotifications(); // refresh table
-    } catch (error) {
-      toast.error("Failed to mark all as read");
-    }
-  };
-  /* ================= SOCKET EVENTS ================= */
-
-  useEffect(() => {
-    fetchDepartments();
-    fetchNotifications();
-
-    socket.on("new-department-request", (data) => {
-      toast("New Department Request: " + data.departmentName);
-      fetchDepartments();
-      fetchNotifications();
-    });
-
-    socket.on("department-approved", (data) => {
-      toast.success(data.departmentName + " approved");
-      fetchNotifications();
-    });
-
-    socket.on("department-rejected", (data) => {
-      toast.error(data.departmentName + " rejected");
-      fetchNotifications();
-    });
-
-    return () => {
-      socket.off("new-department-request");
-      socket.off("department-approved");
-      socket.off("department-rejected");
-    };
-  }, []);
-
-  return (
-    <>
-      <AdminLayout>
-        <div className="p-8">
-          <h2 className="text-2xl font-bold mb-6">
-            Department Approval Requests
-          </h2>
-
-          {departments.length === 0 ? (
-            <p>No pending requests</p>
-          ) : (
-            <div className="space-y-4">
-              {departments.map((dept) => (
-                <div
-                  key={dept._id}
-                  className="border p-4 rounded-lg flex justify-between items-center"
-                >
-                  <div>
-                    <p className="font-semibold">{dept.departmentName}</p>
-
-                    <p className="text-sm text-gray-500">
-                      Code: {dept.departmentCode}
-                    </p>
-
-                    <p className="text-sm text-gray-500">Email: {dept.email}</p>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => approveDepartment(dept._id)}
-                      className="bg-green-600 text-white px-4 py-2 rounded"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      onClick={() => rejectDepartment(dept._id)}
-                      className="bg-red-600 text-white px-4 py-2 rounded"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="p-8 mt-10 bg-gray-900 rounded-2xl shadow-xl text-white">
-          {/* HEADER */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Notifications</h2>
-
-            <button
-              onClick={markAllAsRead}
-              className="bg-blue-600 hover:bg-blue-700 transition text-white px-4 py-2 rounded-lg shadow"
-            >
-              Mark All as Read
-            </button>
-          </div>
-
-          {/* EMPTY */}
-          {notifications.length === 0 ? (
-            <div className="text-center text-gray-400 py-10">
-              No notifications 🚫
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border-collapse">
-                {/* HEADER */}
-                <thead>
-                  <tr className="bg-gray-800 text-gray-300 uppercase text-xs">
-                    <th className="p-3">#</th>
-                    <th className="p-3">Title</th>
-                    <th className="p-3">Message</th>
-                    <th className="p-3">Type</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Date</th>
-                    <th className="p-3 text-center">Action</th>
-                  </tr>
-                </thead>
-
-                {/* BODY */}
-                <tbody>
-                  {notifications.map((n) => (
-                    <tr
-                      key={n.id}
-                      className={`border-b border-gray-700 hover:bg-gray-800 transition ${
-                        n.status === "Unread" ? "bg-gray-800" : ""
-                      }`}
-                    >
-                      <td className="p-3 text-gray-300">{n.srNo}</td>
-
-                      <td className="p-3 font-semibold text-white">
-                        {n.title}
-                      </td>
-
-                      <td className="p-3 text-gray-400">{n.message}</td>
-
-                      {/* TYPE */}
-                      <td className="p-3">
-                        <span
-                          className={`px-3 py-1 text-xs rounded-full font-medium ${
-                            n.type === "department_approved"
-                              ? "bg-green-600 text-white"
-                              : "bg-red-600 text-white"
-                          }`}
-                        >
-                          {n.type === "department_approved"
-                            ? "Approved"
-                            : "Rejected"}
-                        </span>
-                      </td>
-
-                      {/* STATUS */}
-                      <td className="p-3">
-                        <span
-                          className={`px-3 py-1 text-xs rounded-full font-medium ${
-                            n.status === "Unread"
-                              ? "bg-yellow-500 text-black"
-                              : "bg-green-500 text-black"
-                          }`}
-                        >
-                          {n.status}
-                        </span>
-                      </td>
-
-                      <td className="p-3 text-gray-400">{n.date}</td>
-
-                      {/* ACTION */}
-                      <td className="p-3 text-center">
-                        <button
-                          onClick={() => deleteNotification(n.id)}
-                          className="bg-red-600 hover:bg-red-700 transition text-white px-3 py-1 rounded-lg text-xs shadow"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </AdminLayout>
-    </>
-  );
+ <div className="p-6 overflow-x-auto">
+ {notifications.length === 0 ? (
+ <div className="text-center text-muted-foreground py-20 bg-card/30 rounded-xl">
+ <Bell size={48} className="mx-auto mb-4 opacity-10" />
+ <p>No system notifications</p>
+ </div>
+ ) : (
+ <table className="w-full text-left border-collapse min-w-[800px]">
+ <thead>
+ <tr className="border-b border-border text-xs text-muted-foreground font-bold bg-muted/20">
+ <th className="p-4 rounded-tl-xl w-16">#</th>
+ <th className="p-4">Alert Details</th>
+ <th className="p-4">Context (Dept/Operator)</th>
+ <th className="p-4">Type</th>
+ <th className="p-4">Timestamp</th>
+ <th className="p-4 rounded-tr-xl text-center">Action</th>
+ </tr>
+ </thead>
+ <tbody>
+ {filteredNotifications.map((n) => (
+ <tr key={n.id} className={`border-b border-border hover:bg-muted/10 transition-colors ${n.status === "Unread" ? "bg-blue-500/5" : ""} ${n.type === "task_escalated" ? "bg-red-500/5 animate-pulse-slow" : ""}`}>
+ <td className="p-4 text-muted-foreground">{n.srNo}</td>
+ <td className="p-4 space-y-1">
+ <div className="flex items-center gap-2">
+ {n.status === "Unread" && <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0" />}
+ <span className={`font-bold ${n.type === "task_escalated" ? "text-red-500" : "text-foreground"}`}>{n.title}</span>
+ {n.type === "task_escalated" && (
+ <div className="px-2 py-0.5 bg-red-500 text-white rounded-md text-[8px] font-black tracking-widest flex items-center gap-1 shadow-sm">
+ <AlertTriangle size={8} /> Urgent
+ </div>
+ )}
+ </div>
+ <p className={`text-sm italic leading-relaxed ${n.type === "task_escalated" ? "text-red-400 font-medium" : "text-muted-foreground"}`}>{n.message}</p>
+ {n.issue && n.issue !== "N/A" && (
+ <div className="text-[10px] font-mono bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full inline-block mt-1 tracking-tighter">
+ Ref: {n.issue}
+ </div>
+ )}
+ </td>
+ <td className="p-4 text-sm whitespace-nowrap">
+ <div className="flex flex-col gap-1">
+ <div className="flex items-center gap-2 text-foreground">
+ <Building2 size={14} className="text-blue-500" />
+ {n.department}
+ </div>
+ {n.operator && n.operator !== "N/A" && (
+ <div className="flex items-center gap-2 text-muted-foreground">
+ <User size={14} />
+ {n.operator}
+ </div>
+ )}
+ </div>
+ </td>
+ <td className="p-4">
+ <span className={`px-3 py-1 text-[10px] font-bold rounded-full tracking-wider ${
+ n.type === "task_escalated" ? "bg-red-600 text-white" :
+ n.type.includes("rejected") || n.type.includes("failed") || n.type.includes("reopened") ? "bg-red-600/10 text-red-500" :
+ n.type.includes("approved") || n.type.includes("resolved") ? "bg-green-600/10 text-green-500" :
+ "bg-blue-600/10 text-blue-500"
+ }`}>
+ {n.type.replace(/_/g, " ")}
+ </span>
+ <div className="mt-1 text-[9px] font-bold text-muted-foreground opacity-60">
+ {n.taskType}
+ </div>
+ </td>
+ <td className="p-4 text-xs text-muted-foreground font-medium">
+ {n.date}
+ </td>
+ <td className="p-4 text-center">
+ <button
+ onClick={() => deleteNotification(n.id)}
+ className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition"
+ title="Delete Alert"
+ >
+ <Trash2 size={16} />
+ </button>
+ </td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ )}
+ </div>
+ </div>
+ </div>
+ </AdminLayout>
+ );
 };
 
 export default AdminDepartmentNotification;
+

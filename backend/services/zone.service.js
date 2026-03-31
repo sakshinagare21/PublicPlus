@@ -1,47 +1,31 @@
-export const detectZone = (lat, lng) => {
-  lat = Number(lat);
-  lng = Number(lng);
+import Zone from "../models/zone.model.js";
 
-  /* ================= SHIVAJINAGAR ================= */
-  if (lat >= 18.52 && lat <= 18.55 && lng >= 73.84 && lng <= 73.87) {
-    return "Shivajinagar Zone";
+/**
+ * Dynamically detects the municipal zone from database boundaries
+ * @param {Number} lat 
+ * @param {Number} lng 
+ * @returns {Promise<String>} Zone Name
+ */
+export const detectZone = async (lat, lng) => {
+  try {
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+
+    // Find zone where coordinates fall within boundaries
+    const zone = await Zone.findOne({
+      "boundaries.minLat": { $lte: latNum },
+      "boundaries.maxLat": { $gte: latNum },
+      "boundaries.minLng": { $lte: lngNum },
+      "boundaries.maxLng": { $gte: lngNum }
+    });
+
+    if (zone) {
+      return zone.areaName;
+    }
+
+    return "General Pune Zone";
+  } catch (error) {
+    console.error("Zone Detection Error:", error);
+    return "General Pune Zone";
   }
-
-  /* ================= KOTHRUD ================= */
-  if (lat >= 18.49 && lat < 18.52 && lng >= 73.80 && lng < 73.84) {
-    return "Kothrud Zone";
-  }
-
-  /* ================= HADAPSAR ================= */
-  if (lat >= 18.47 && lat <= 18.50 && lng >= 73.92 && lng <= 73.97) {
-    return "Hadapsar Zone";
-  }
-
-  /* ================= BANER ================= */
-  if (lat >= 18.55 && lat <= 18.58 && lng >= 73.77 && lng <= 73.80) {
-    return "Baner Zone";
-  }
-
-  /* ================= WAKAD ================= */
-  if (lat >= 18.58 && lat <= 18.62 && lng >= 73.75 && lng <= 73.79) {
-    return "Wakad Zone";
-  }
-
-  /* ================= VIMAN NAGAR ================= */
-  if (lat >= 18.56 && lat <= 18.58 && lng >= 73.90 && lng <= 73.93) {
-    return "Viman Nagar Zone";
-  }
-
-  /* ================= SINHAGAD ROAD ================= */
-  if (lat >= 18.48 && lat <= 18.52 && lng >= 73.82 && lng <= 73.86) {
-    return "Sinhagad Road Zone";
-  }
-
-  /* ================= CAMP ================= */
-  if (lat >= 18.50 && lat <= 18.52 && lng >= 73.87 && lng <= 73.89) {
-    return "Camp Zone";
-  }
-
-  /* ================= DEFAULT ================= */
-  return "General Pune Zone";
 };

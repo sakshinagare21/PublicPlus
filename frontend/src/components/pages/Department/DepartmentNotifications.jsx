@@ -1,173 +1,198 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
+import { Bell, User, CheckCircle, AlertTriangle, Clock, Info } from "lucide-react";
 import DepartmentLayout from "../../layout/DepartmentLayout";
-import {
-  AlertTriangle,
-  BellRing,
-  MessageSquare,
-  CheckCircle,
-} from "lucide-react";
 
 const DepartmentNotifications = () => {
-  const [activeTab, setActiveTab] = useState("All");
+ const [notifications, setNotifications] = useState([]);
+ const [loading, setLoading] = useState(true);
 
-  const alerts = [
-    {
-      type: "SLA",
-      title: "Pothole Repair Overdue",
-      message:
-        "SLA timer exceeded by 2 hours for Ticket #PH-982. Immediate intervention required.",
-      time: "2 mins ago",
-    },
-    {
-      type: "Escalation",
-      title: "High Priority: Water Main Break",
-      message:
-        "Issue #WT-441 escalated to Critical by Field Supervisor.",
-      time: "15 mins ago",
-    },
-    {
-      type: "Feedback",
-      title: "Positive Feedback: Street Lighting",
-      message:
-        "Citizen submitted compliment for quick resolution on Oak Street.",
-      time: "1 hour ago",
-    },
-    {
-      type: "Escalation",
-      title: "Unresolved Noise Complaint",
-      message:
-        "Ticket escalated due to 3 consecutive reports within 24 hrs.",
-      time: "3 hours ago",
-    },
-  ];
+ const fetchNotifications = async () => {
+ try {
+ const res = await axios.get("http://127.0.0.1:5000/api/notification/department", {
+ headers: {
+ Authorization: `Bearer ${localStorage.getItem("token")}`,
+ },
+ });
+ setNotifications(res.data);
+ } catch (err) {
+ console.error("Fetch notifications error:", err);
+ toast.error("Failed to load notifications");
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  const filteredAlerts =
-    activeTab === "All"
-      ? alerts
-      : alerts.filter((a) =>
-          a.type.toLowerCase().includes(activeTab.toLowerCase())
-        );
+ const markAllRead = async () => {
+ try {
+ await axios.put("http://127.0.0.1:5000/api/notification/department/read-all", {}, {
+ headers: {
+ Authorization: `Bearer ${localStorage.getItem("token")}`,
+ },
+ });
+ toast.success("All marked as read");
+ fetchNotifications();
+ } catch (err) {
+ toast.error("Action failed");
+ }
+ };
 
-  const getStyle = (type) => {
-    switch (type) {
-      case "SLA":
-        return "border-red-500 bg-red-500/5";
-      case "Escalation":
-        return "border-orange-500 bg-orange-500/5";
-      case "Feedback":
-        return "border-blue-500 bg-blue-500/5";
-      default:
-        return "border-gray-700";
-    }
-  };
+ useEffect(() => {
+ fetchNotifications();
+ }, []);
 
-  const getIcon = (type) => {
-    switch (type) {
-      case "SLA":
-        return <BellRing size={18} className="text-red-400" />;
-      case "Escalation":
-        return <AlertTriangle size={18} className="text-orange-400" />;
-      case "Feedback":
-        return <MessageSquare size={18} className="text-blue-400" />;
-      default:
-        return null;
-    }
-  };
+ const getTypeStyle = (type) => {
+ switch (type) {
+ case "issue_created": return "border-blue-500 bg-blue-500/5 text-blue-400";
+ case "issue_resolved": return "border-green-500 bg-green-500/5 text-green-400";
+ case "issue_reopened": return "border-red-500 bg-red-500/5 text-red-400";
+ case "task_escalated": return "border-orange-500 bg-orange-500/5 text-orange-400 font-bold";
+ default: return "border-gray-500 bg-gray-500/5 text-gray-400";
+ }
+ };
 
-  return (
-    <DepartmentLayout>
-      <div className="space-y-8">
+ return (
+ <DepartmentLayout>
+ <div className="max-w-5xl mx-auto">
+ <div className="flex justify-between items-center mb-8">
+ <div>
+ <h1 className="text-3xl font-bold flex items-center gap-3">
+ <Bell className="text-blue-500" />
+ Department Alerts
+ </h1>
+ <p className="text-muted-foreground mt-1">Real-time updates on operator tasks and issue status</p>
+ </div>
+ <button
+ onClick={markAllRead}
+ className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-blue-500/20"
+ >
+ Mark All as Read
+ </button>
+ </div>
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">
-              Alerts & Notifications
-            </h1>
-            <p className="text-gray-400 text-sm">
-              Manage and respond to real-time municipal service triggers
-            </p>
-          </div>
+ {loading ? (
+ <div className="flex justify-center py-20 italic text-muted-foreground">
+ Loading notifications...
+ </div>
+ ) : notifications.length === 0 ? (
+ <div className="bg-card border border-border rounded-2xl p-20 text-center shadow-sm">
+ <Info size={48} className="mx-auto mb-4 opacity-10" />
+ <p className="text-muted-foreground font-medium">Clear record! No new notifications.</p>
+ </div>
+ ) : (
+ <div className="space-y-4">
+ {notifications.map((n) => (
+ <div
+ key={n.id}
+ className={`group relative overflow-hidden p-6 rounded-2xl border transition-all duration-300 ${
+ n.status === "Unread" 
+ ? "bg-card border-blue-500/30 shadow-xl shadow-blue-500/5" 
+ : "bg-card/40 border-border opacity-80"
+ }`}
+ >
+ <div className="flex justify-between items-start gap-6">
+ <div className="flex-1">
+ <div className="flex items-center gap-3 mb-2">
+ <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider border ${getTypeStyle(n.type)}`}>
+ {n.title}
+ </span>
+ <span className="text-xs text-muted-foreground flex items-center gap-1">
+ <Clock size={12} />
+ {n.date}
+ </span>
+ </div>
 
-          <button className="bg-[#1e293b] hover:bg-[#273549] px-4 py-2 rounded-lg text-sm">
-            Mark all as read
-          </button>
-        </div>
+ <p className="text-foreground leading-relaxed font-medium mb-3">
+ {n.message}
+ </p>
 
-        {/* TABS */}
-        <div className="flex gap-6 border-b border-gray-800 pb-2 text-sm">
-          {["All", "SLA", "Escalation", "Feedback"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`${
-                activeTab === tab
-                  ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                  : "text-gray-400"
-              }`}
-            >
-              {tab === "All"
-                ? "All Alerts"
-                : tab === "SLA"
-                ? "SLA Warnings"
-                : tab === "Escalation"
-                ? "Escalations"
-                : "Citizen Feedback"}
-            </button>
-          ))}
-        </div>
+ {/* 🔥 ESCALATION PROOF PREVIEW */}
+ {n.type === "task_escalated" && n.escalation && (
+ <div className="mb-4 p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 space-y-3">
+ <p className="text-xs text-orange-400 font-bold tracking-widest">Escalation Detail</p>
+ <p className="text-sm text-gray-300 italic">"{n.escalation.reason}"</p>
+ {n.escalation.proof && (
+ <div className="w-full max-w-[200px] rounded-lg overflow-hidden border border-border bg-black">
+ <img 
+ src={`http://localhost:5000${n.escalation.proof}`} 
+ alt="Proof" 
+ className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition"
+ />
+ </div>
+ )}
+ </div>
+ )}
 
-        {/* ALERT LIST */}
-        <div className="space-y-4">
+ <div className="flex flex-wrap gap-4 text-sm">
+ <div className="flex items-center gap-2 text-muted-foreground">
+ <User size={14} className="text-blue-500" />
+ <span className="font-semibold text-foreground">Operator:</span> {n.operator}
+ </div>
+ <div className="flex items-center gap-2 text-muted-foreground">
+ <AlertTriangle size={14} className="text-orange-500" />
+ <span className="font-semibold text-foreground">Issue:</span> {n.issue}
+ </div>
+ </div>
+ </div>
 
-          {filteredAlerts.map((alert, index) => (
-            <div
-              key={index}
-              className={`border-l-4 rounded-xl p-6 bg-[#111c2e] border border-gray-800 flex justify-between items-start ${getStyle(
-                alert.type
-              )}`}
-            >
-              <div className="flex gap-4">
-
-                <div className="mt-1">
-                  {getIcon(alert.type)}
-                </div>
-
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">
-                    {alert.type.toUpperCase()} • {alert.time}
-                  </p>
-
-                  <h3 className="font-semibold">
-                    {alert.title}
-                  </h3>
-
-                  <p className="text-gray-400 text-sm mt-1">
-                    {alert.message}
-                  </p>
-                </div>
-
-              </div>
-
-              <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
-                Action
-              </button>
-
-            </div>
-          ))}
-
-        </div>
-
-        {/* View Older */}
-        <div className="text-center pt-6">
-          <button className="text-blue-400 hover:underline text-sm">
-            View older notifications
-          </button>
-        </div>
-
-      </div>
-    </DepartmentLayout>
-  );
+ <div className="shrink-0 flex flex-col gap-2">
+ {n.type === "task_escalated" && n.issueStatus === "escalated" && (
+ <div className="flex gap-2 mb-2">
+ <button
+ onClick={async () => {
+ try {
+ await axios.put(`http://127.0.0.1:5000/api/issues/${n.issueId}/status`, 
+ { status: "closed", remark: "Escalation approved from notification center." },
+ { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+ );
+ toast.success("Task Closed (Approved)");
+ fetchNotifications();
+ } catch (err) { toast.error("Action Failed"); }
+ }}
+ className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition shadow-lg shadow-emerald-500/10"
+ >
+ Approve
+ </button>
+ <button
+ onClick={async () => {
+ try {
+ await axios.put(`http://127.0.0.1:5000/api/issues/${n.issueId}/status`, 
+ { status: "in_progress", remark: "Escalation rejected from notification center." },
+ { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+ );
+ toast.success("Task Reopened (Rejected)");
+ fetchNotifications();
+ } catch (err) { toast.error("Action Failed"); }
+ }}
+ className="bg-white hover:bg-gray-100 text-black px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest border border-border shadow-sm transition"
+ >
+ Reject
+ </button>
+ </div>
+ )}
+ <Link
+ to="/department/issue"
+ className="p-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition flex justify-center"
+ title="View Logistics Board"
+ >
+ <Info size={20} />
+ </Link>
+ </div>
+ </div>
+ 
+ {n.status === "Unread" && (
+ <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
+ )}
+ </div>
+ ))}
+ </div>
+ )}
+ </div>
+ </DepartmentLayout>
+ );
 };
 
 export default DepartmentNotifications;
+

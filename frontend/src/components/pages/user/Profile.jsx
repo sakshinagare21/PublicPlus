@@ -1,255 +1,212 @@
+import { useState, useEffect } from "react";
 import DashboardLayout from "../../layout/DashboardLayout";
+import axios from "axios";
 import {
-  Edit,
-  Share2,
-  MapPin,
-  CheckCircle2,
-  Users,
-  Lock,
-  Shield,
-  Star,
-  Megaphone,
+ Edit,
+ Share2,
+ MapPin,
+ CheckCircle2,
+ Users,
+ Lock,
+ Shield,
+ Star,
+ Megaphone,
+ Loader2,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const achievements = [
-  { icon: Megaphone, label: "Top Reporter", sub: "30+ Verified Reports", unlocked: true },
-  { icon: CheckCircle2, label: "Fact Checker", sub: "100 Verifications", unlocked: true },
-  { icon: Users, label: "Pillar", sub: "Active for 1 Year", unlocked: true },
-  { icon: Lock, label: "Urban Hero", sub: "10 Major Resolutions", unlocked: false },
+ { icon: Megaphone, label: "Top Reporter", sub: "30+ Verified Reports", unlocked: true },
+ { icon: CheckCircle2, label: "Fact Checker", sub: "100 Verifications", unlocked: true },
+ { icon: Users, label: "Pillar", sub: "Active for 1 Year", unlocked: true },
+ { icon: Lock, label: "Urban Hero", sub: "10 Major Resolutions", unlocked: false },
 ];
 
-const recentActivity = [
-  { icon: CheckCircle2, color: "text-success", title: "Pothole Resolved", desc: "Your report #CF-4209 was marked as fixed by City Maintenance.", time: "2 HOURS AGO" },
-  { icon: Edit, color: "text-primary", title: "Verification Earned", desc: '5 other citizens verified your report on "Broken Streetlight".', time: "YESTERDAY" },
-  { icon: Star, color: "text-warning", title: "Score Increase", desc: "Trust Score increased by +1.2 due to consistent accuracy.", time: "3 DAYS AGO" },
-];
+const Profile = () => {
+ const [userData, setUserData] = useState(null);
+ const [stats, setStats] = useState({ totalReports: 0, resolved: 0, trustScore: 0 });
+ const [loading, setLoading] = useState(true);
+ const token = localStorage.getItem("token");
 
-const Profile = () => (
-  <DashboardLayout>
-    <div className="grid gap-6 lg:grid-cols-5">
+ useEffect(() => {
+ const loadProfile = async () => {
+ try {
+ setLoading(true);
+ // 1. Get user from localStorage
+ const storedUser = JSON.parse(localStorage.getItem("user"));
+ if (storedUser) {
+ // Depending on response structure, might need storedUser.user
+ setUserData(storedUser.user || storedUser);
+ }
 
-      {/* Main */}
-      <div className="lg:col-span-3 space-y-6">
+ // 2. Fetch Live Stats
+ const res = await axios.get("http://127.0.0.1:5000/api/analytics/citizen", {
+ headers: { Authorization: `Bearer ${token}` }
+ });
+ 
+ if (res.data) {
+ setStats({
+ totalReports: res.data.stats.totalResolved || 0, // Simplified for now
+ resolved: res.data.stats.totalResolved || 0,
+ trustScore: parseInt(res.data.stats.impactScore?.split("/")[0]) || 0
+ });
+ }
+ } catch (err) {
+ console.error("Profile Load Error:", err);
+ } finally {
+ setLoading(false);
+ }
+ };
 
-        {/* Profile Card */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <div className="flex items-start gap-6 flex-wrap">
+ loadProfile();
+ }, [token]);
 
-            <div className="relative">
-              <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-bold text-primary">
-                AJ
-              </div>
-              <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-success flex items-center justify-center">
-                <CheckCircle2 className="h-4 w-4 text-success-foreground" />
-              </div>
-            </div>
+ if (loading) {
+ return (
+ <DashboardLayout>
+ <div className="h-[70vh] flex flex-col items-center justify-center gap-4 text-muted-foreground">
+ <Loader2 className="w-10 h-10 animate-spin text-primary" />
+ <p className="text-sm font-black tracking-[0.2em] opacity-60">Synchronizing Identity Node...</p>
+ </div>
+ </DashboardLayout>
+ );
+ }
 
-            <div className="flex-1">
+ const user = userData || {};
+ const initials = user.fullName?.split(" ").map(n => n[0]).join("").toUpperCase() || "CU";
 
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="font-display text-2xl font-bold text-foreground">
-                  Alex Johnson
-                </h1>
+ return (
+ <DashboardLayout>
+ <div className="grid gap-8 lg:grid-cols-5 animate-in fade-in duration-700">
 
-                <button className="flex items-center gap-2 border border-border px-3 py-1 rounded-md text-sm hover:bg-secondary transition">
-                  <Edit className="h-3 w-3" />
-                  Edit Profile
-                </button>
+ {/* Main Content */}
+ <div className="lg:col-span-3 space-y-8">
 
-                <button className="border border-border px-2 py-1 rounded-md hover:bg-secondary transition">
-                  <Share2 className="h-3 w-3" />
-                </button>
-              </div>
+ {/* Profile Card */}
+ <div className="rounded-[2.5rem] border border-border bg-card p-10 shadow-2xl transition-all hover:border-primary/30 relative overflow-hidden group">
+ <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-[100px] transition-colors"></div>
+ 
+ <div className="relative z-10 flex items-start gap-8 flex-wrap">
 
-              <p className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                <MapPin className="h-3 w-3" />
-                Seattle, WA · Verified Citizen since 2022
-              </p>
+ <div className="relative">
+ <div className="h-32 w-32 rounded-[2.5rem] bg-primary/10 border border-primary/20 flex items-center justify-center text-4xl font-black text-primary shadow-inner transform transition-all group-hover:scale-105 group-hover:rotate-3 shadow-glow">
+ {initials}
+ </div>
+ <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-2xl bg-success text-success-foreground border-4 border-card flex items-center justify-center shadow-lg shadow-success/20">
+ <CheckCircle2 size={20} className="font-black" />
+ </div>
+ </div>
 
-              <div className="mt-4 flex gap-8">
-                {[
-                  { val: "45", label: "TOTAL REPORTS" },
-                  { val: "98%", label: "VERIF. RATE" },
-                  { val: "12", label: "RESOLVED" },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <p className="font-display text-2xl font-bold text-foreground">
-                      {s.val}
-                    </p>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
+ <div className="flex-1 space-y-6">
+ <div className="flex items-center gap-4 flex-wrap">
+ <h1 className="text-4xl font-black text-foreground tracking-tighter">
+ {user.fullName || "Citizen User"}
+ </h1>
 
-            </div>
-          </div>
-        </div>
+ <div className="flex gap-2">
+ <button className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-xl text-xs font-black tracking-widest text-muted-foreground hover:text-foreground hover:border-primary transition-all active:scale-95 shadow-sm">
+ <Edit size={14} />
+ Edit Profile
+ </button>
+ <button className="bg-background border border-border p-2 rounded-xl hover:text-primary hover:border-primary transition-all active:scale-95 shadow-sm">
+ <Share2 size={16} />
+ </button>
+ </div>
+ </div>
 
-        {/* Achievements */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg font-bold text-foreground">
-              Civic Achievements
-            </h2>
-            <a href="#" className="text-sm font-semibold text-primary hover:underline">
-              View All
-            </a>
-          </div>
+ <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground opacity-80">
+ <MapPin size={16} className="text-primary" />
+ <span>Verified Citizen since {new Date(user.createdAt).getFullYear() || 2024} · {user.email}</span>
+ </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {achievements.map((a) => (
-              <div
-                key={a.label}
-                className={`rounded-xl border border-border bg-card p-4 text-center ${
-                  !a.unlocked ? "opacity-40" : ""
-                }`}
-              >
-                <div
-                  className={`mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full ${
-                    a.unlocked ? "bg-accent" : "bg-secondary"
-                  }`}
-                >
-                  <a.icon className="h-6 w-6 text-accent-foreground" />
-                </div>
+ <div className="pt-6 border-t border-border flex gap-12">
+ {[
+ { val: stats.totalReports, label: "TOTAL REPORTS" },
+ { val: "98%", label: "VERIF. RATE" },
+ { val: stats.resolved, label: "RESOLVED" },
+ ].map((s) => (
+ <div key={s.label} className="space-y-1 text-center">
+ <p className="text-3xl font-black text-foreground tracking-tighter">
+ {s.val}
+ </p>
+ <p className="text-[10px] font-black tracking-[0.2em] text-muted-foreground opacity-50">
+ {s.label}
+ </p>
+ </div>
+ ))}
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-                <p className="text-sm font-semibold text-foreground">
-                  {a.label}
-                </p>
+ {/* Sidebar */}
+ <div className="lg:col-span-2 space-y-8">
 
-                <p className="text-[10px] text-muted-foreground">
-                  {a.sub}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
+ {/* Trust Score */}
+ <div className="rounded-[2.5rem] border border-border bg-card p-10 text-center shadow-2xl relative overflow-hidden transition-colors">
+ <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl transition-colors"></div>
+ <h3 className="text-xs font-black text-muted-foreground tracking-[0.2em] mb-8 transition-colors">
+ Citizen Trust Score
+ </h3>
 
-        {/* Impact Analytics */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display text-lg font-bold text-foreground mb-4">
-            Urban Impact Analytics
-          </h2>
+ <div className="relative mx-auto h-48 w-48 group">
+ <svg className="h-full w-full -rotate-90 filter drop-shadow-2xl" viewBox="0 0 120 120">
+ <circle cx="60" cy="60" r="50" fill="none" className="stroke-muted" strokeWidth="12" />
+ <circle 
+ cx="60" cy="60" r="50" fill="none" className="stroke-primary shadow-glow transition-all duration-1000" 
+ strokeWidth="12" strokeDasharray="314" strokeDashoffset={314 - (314 * (stats.trustScore/1000))} strokeLinecap="round" 
+ />
+ </svg>
 
-          {[
-            { label: "Verification Accuracy", value: "98.4%", pct: 98, color: "bg-success" },
-            { label: "Community Trust Level", value: "High", pct: 85, color: "bg-primary" },
-            { label: "Response Rate", value: "85%", pct: 70, color: "bg-warning" },
-          ].map((bar) => (
-            <div key={bar.label} className="mb-4 last:mb-0">
+ <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1">
+ <span className="text-5xl font-black text-foreground tracking-tighter transition-all group-hover:scale-110">
+ {stats.trustScore}
+ </span>
+ <span className="text-[10px] font-black text-primary tracking-widest shadow-glow">
+ {stats.trustScore > 800 ? "EXCELLENT" : "STABLE"}
+ </span>
+ </div>
+ </div>
 
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-muted-foreground">{bar.label}</span>
-                <span className="font-semibold text-foreground">{bar.value}</span>
-              </div>
+ <p className="mt-8 text-[11px] font-bold text-muted-foreground tracking-widest opacity-70">
+ Identity Sector: {user.identificationNumber || "METRO-ID-492"}
+ </p>
+ </div>
 
-              <div className="h-2 w-full rounded-full bg-secondary">
-                <div
-                  className={`h-full rounded-full ${bar.color}`}
-                  style={{ width: `${bar.pct}%` }}
-                />
-              </div>
+ {/* Security Status */}
+ <div className="rounded-[2.5rem] border border-border bg-card p-10 shadow-2xl group transition-all">
+ <div className="flex items-center gap-3 mb-6">
+ <Shield size={20} className="text-primary shadow-glow" />
+ <h3 className="text-[10px] font-black tracking-[0.2em] text-primary">
+ Security Node
+ </h3>
+ </div>
+ <div className="space-y-4">
+ <div className="flex justify-between items-center bg-muted/20 p-4 rounded-2xl border border-border transition-colors">
+ <div className="space-y-1">
+ <p className="text-[9px] font-black text-muted-foreground tracking-widest">Two-Factor Auth</p>
+ <p className="text-xs font-black text-success">ENABLED</p>
+ </div>
+ <Lock size={16} className="text-muted-foreground opacity-30" />
+ </div>
+ <div className="flex justify-between items-center bg-muted/20 p-4 rounded-2xl border border-border transition-colors">
+ <div className="space-y-1">
+ <p className="text-[9px] font-black text-muted-foreground tracking-widest">Last Access</p>
+ <p className="text-xs font-black text-foreground">Today, {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+ </div>
+ <Activity size={16} className="text-muted-foreground opacity-30" />
+ </div>
+ </div>
+ </div>
 
-            </div>
-          ))}
-        </div>
+ </div>
 
-      </div>
+ </div>
+ </DashboardLayout>
+ );
+};
 
-      {/* Sidebar */}
-      <div className="lg:col-span-2 space-y-6">
-
-        {/* Trust Score */}
-        <div className="rounded-xl border border-border bg-card p-6 text-center">
-          <h3 className="font-display text-lg font-bold text-foreground mb-4">
-            Citizen Trust Score
-          </h3>
-
-          <div className="relative mx-auto h-40 w-40">
-            <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--secondary))" strokeWidth="10" />
-              <circle cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--primary))" strokeWidth="10" strokeDasharray="314" strokeDashoffset="25" strokeLinecap="round" />
-            </svg>
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-4xl font-bold text-foreground">
-                92
-              </span>
-              <span className="text-xs font-bold text-primary">
-                EXCELLENT
-              </span>
-            </div>
-          </div>
-
-          <p className="mt-4 text-sm text-muted-foreground">
-            You are in the top 5% of citizens.
-          </p>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="font-display text-lg font-bold text-foreground mb-4">
-            Recent Activity
-          </h3>
-
-          <div className="space-y-4">
-            {recentActivity.map((a, i) => (
-              <div key={i} className="flex gap-3">
-
-                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary ${a.color}`}>
-                  <a.icon className="h-4 w-4" />
-                </div>
-
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {a.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {a.desc}
-                  </p>
-                  <p className="text-[10px] font-bold text-primary mt-1">
-                    {a.time}
-                  </p>
-                </div>
-
-              </div>
-            ))}
-          </div>
-
-          <button className="w-full mt-4 border border-border py-2 rounded-lg hover:bg-secondary transition">
-            View Full History
-          </button>
-        </div>
-
-        {/* Privacy */}
-        <div className="rounded-xl border border-border bg-card p-6">
-
-          <div className="flex items-center gap-2 mb-3">
-            <Shield className="h-5 w-5 text-primary" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
-              Privacy Settings
-            </h3>
-          </div>
-
-          <p className="text-sm text-muted-foreground">
-            Your profile is currently{" "}
-            <span className="font-bold text-foreground">
-              Publicly Visible
-            </span>{" "}
-            to local authorities and verified citizens.
-          </p>
-
-          <button className="w-full mt-4 border border-border py-2 rounded-lg hover:bg-secondary transition">
-            Manage Privacy
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-  </DashboardLayout>
-);
-
+import { Activity } from "lucide-react";
 export default Profile;
+

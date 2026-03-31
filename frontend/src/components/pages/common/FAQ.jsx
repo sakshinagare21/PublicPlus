@@ -4,192 +4,143 @@ import Footer from "../../layout/Footer";
 import LandingNavbar from "../../layout/LandingNavbar";
 
 const AccordionItem = ({ question, answer }) => {
-  const [open, setOpen] = useState(false);
+ const [open, setOpen] = useState(false);
 
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between p-4 text-left font-medium text-gray-800"
-      >
-        {question}
-        <ChevronDown
-          className={`h-5 w-5 transition ${open ? "rotate-180" : ""}`}
-        />
-      </button>
+ return (
+ <div className="rounded-xl border border-border bg-card transition-colors">
+ <button
+ onClick={() => setOpen(!open)}
+ className="flex w-full items-center justify-between p-4 text-left font-medium text-foreground hover:bg-accent/50 transition-colors"
+ >
+ {question}
+ <ChevronDown
+ className={`h-5 w-5 transition-transform ${open ? "rotate-180" : ""}`}
+ />
+ </button>
 
-      {open && (
-        <div className="px-4 pb-4 text-sm text-gray-600">
-          {answer}
-        </div>
-      )}
-    </div>
-  );
+ {open && (
+ <div className="px-4 pb-4 text-sm text-muted-foreground border-t border-border pt-4">
+ {answer}
+ </div>
+ )}
+ </div>
+ );
 };
 
 const FAQ = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-        <LandingNavbar/>
-      {/* HERO SEARCH */}
-      <div className="border-b bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-12 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
-            How can we help you today?
-          </h1>
+ return (
+ <div className="min-h-screen bg-background text-foreground">
+ <LandingNavbar />
+ {/* HERO SEARCH */}
+ <div className="border-b border-border bg-card/50 backdrop-blur-sm">
+ <div className="mx-auto max-w-6xl px-6 py-12 text-center">
+ <h1 className="text-3xl font-bold text-foreground">
+ How can we help you today?
+ </h1>
 
-          <div className="relative mx-auto mt-6 max-w-2xl">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <input
-              placeholder="Search for questions, keywords, or topics..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-100 py-3 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+ <p className="mt-4 text-sm text-muted-foreground">
+ Popular:{" "}
+ <span className="text-primary hover:underline cursor-pointer">Reporting faults</span>{" "}
+ <span className="text-primary hover:underline cursor-pointer">Data privacy</span>{" "}
+ <span className="text-primary hover:underline cursor-pointer">API Access</span>
+ </p>
+ </div>
+ </div>
 
-          <p className="mt-4 text-sm text-gray-500">
-            Popular:{" "}
-            <span className="text-blue-600">Reporting faults</span>{" "}
-            <span className="text-blue-600">Data privacy</span>{" "}
-            <span className="text-blue-600">API Access</span>
-          </p>
-        </div>
-      </div>
+ {/* MAIN LAYOUT */}
+ <div className="mx-auto flex max-w-6xl gap-8 px-6 py-10">
 
-      {/* MAIN LAYOUT */}
-      <div className="mx-auto flex max-w-6xl gap-8 px-6 py-10">
+ {/* FAQ CONTENT */}
+ <main className="flex-1 space-y-10">
 
-        {/* SIDEBAR */}
-        <aside className="hidden w-64 space-y-3 md:block">
+ {/* FOR CITIZENS */}
+ <section>
+ <h2 className="mb-4 text-xl font-bold text-foreground">
+ For Citizens
+ </h2>
 
-          {[
-            { icon: User, label: "For Citizens", active: true },
-            { icon: Building2, label: "For Government" },
-            { icon: Shield, label: "Technical & Privacy" },
-            { icon: CreditCard, label: "Plans & Billing" },
-          ].map((item) => (
-            <button
-              key={item.label}
-              className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium ${
-                item.active
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </button>
-          ))}
+ <div className="space-y-4">
+ <AccordionItem
+ question="How do I report a new infrastructure fault?"
+ answer="You can report a fault by clicking the 'New Report' button on your dashboard. Upload a photo, add a description, and confirm the location."
+ />
 
-          {/* HELP CARD */}
-          <div className="mt-6 rounded-xl border bg-white p-5">
-            <h3 className="font-semibold text-gray-900">
-              Still need help?
-            </h3>
-            <p className="mt-2 text-sm text-gray-500">
-              Can’t find what you’re looking for? Our support team is here
-              for you.
-            </p>
+ <AccordionItem
+ question="Can I track the status of my report?"
+ answer="Yes. All submitted reports are visible in your dashboard with real-time status updates."
+ />
 
-            <button className="mt-4 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700">
-              Contact Support
-            </button>
+ <AccordionItem
+ question="Is my data shared with anyone?"
+ answer="Your data is securely encrypted and only shared with authorized municipal departments."
+ />
+ </div>
+ </section>
 
-            <button className="mt-2 w-full rounded-lg border py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
-              View Support Center
-            </button>
-          </div>
-        </aside>
+ {/* FOR GOVERNMENT */}
+ <section>
+ <h2 className="mb-4 text-xl font-bold text-foreground">
+ For Government
+ </h2>
 
-        {/* FAQ CONTENT */}
-        <main className="flex-1 space-y-10">
+ <div className="space-y-4">
+ <AccordionItem
+ question="How is the priority of faults determined?"
+ answer="Our AI analyzes severity, safety impact, and location density to assign priority."
+ />
 
-          {/* FOR CITIZENS */}
-          <section>
-            <h2 className="mb-4 text-xl font-bold text-gray-900">
-              For Citizens
-            </h2>
+ <AccordionItem
+ question="Can we integrate our existing ticketing system?"
+ answer="Yes. We provide API access for seamless integration."
+ />
+ </div>
+ </section>
 
-            <div className="space-y-4">
-              <AccordionItem
-                question="How do I report a new infrastructure fault?"
-                answer="You can report a fault by clicking the 'New Report' button on your dashboard. Upload a photo, add a description, and confirm the location."
-              />
+ {/* TECHNICAL */}
+ <section>
+ <h2 className="mb-4 text-xl font-bold text-foreground">
+ Technical & Privacy
+ </h2>
 
-              <AccordionItem
-                question="Can I track the status of my report?"
-                answer="Yes. All submitted reports are visible in your dashboard with real-time status updates."
-              />
+ <div className="space-y-4">
+ <AccordionItem
+ question="How accurate is the AI image recognition?"
+ answer="Our AI achieves over 90% accuracy in infrastructure classification."
+ />
 
-              <AccordionItem
-                question="Is my data shared with anyone?"
-                answer="Your data is securely encrypted and only shared with authorized municipal departments."
-              />
-            </div>
-          </section>
+ <AccordionItem
+ question="What encryption standards do you use?"
+ answer="We use industry-standard AES-256 encryption."
+ />
+ </div>
+ </section>
 
-          {/* FOR GOVERNMENT */}
-          <section>
-            <h2 className="mb-4 text-xl font-bold text-gray-900">
-              For Government
-            </h2>
+ {/* HELPFUL BOX */}
+ <div className="rounded-xl border border-border bg-card p-6 text-center">
+ <h3 className="font-semibold text-foreground">
+ Was this page helpful?
+ </h3>
 
-            <div className="space-y-4">
-              <AccordionItem
-                question="How is the priority of faults determined?"
-                answer="Our AI analyzes severity, safety impact, and location density to assign priority."
-              />
+ <div className="mt-4 flex justify-center gap-4">
+ <button className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 hover:bg-accent transition-colors text-foreground">
+ <ThumbsUp className="h-4 w-4 text-success" />
+ Yes
+ </button>
 
-              <AccordionItem
-                question="Can we integrate our existing ticketing system?"
-                answer="Yes. We provide API access for seamless integration."
-              />
-            </div>
-          </section>
+ <button className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 hover:bg-accent transition-colors text-foreground">
+ <ThumbsDown className="h-4 w-4 text-destructive" />
+ No
+ </button>
+ </div>
+ </div>
+ </main>
+ </div>
 
-          {/* TECHNICAL */}
-          <section>
-            <h2 className="mb-4 text-xl font-bold text-gray-900">
-              Technical & Privacy
-            </h2>
-
-            <div className="space-y-4">
-              <AccordionItem
-                question="How accurate is the AI image recognition?"
-                answer="Our AI achieves over 90% accuracy in infrastructure classification."
-              />
-
-              <AccordionItem
-                question="What encryption standards do you use?"
-                answer="We use industry-standard AES-256 encryption."
-              />
-            </div>
-          </section>
-
-          {/* HELPFUL BOX */}
-          <div className="rounded-xl border bg-white p-6 text-center">
-            <h3 className="font-semibold text-gray-800">
-              Was this page helpful?
-            </h3>
-
-            <div className="mt-4 flex justify-center gap-4">
-              <button className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100">
-                <ThumbsUp className="h-4 w-4 text-green-600" />
-                Yes
-              </button>
-
-              <button className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100">
-                <ThumbsDown className="h-4 w-4 text-red-600" />
-                No
-              </button>
-            </div>
-          </div>
-        </main>
-      </div>
-
-      {/* FOOTER */}
-        <Footer/>
-    </div>
-  );
+ {/* FOOTER */}
+ <Footer />
+ </div>
+ );
 };
 
 export default FAQ;
+

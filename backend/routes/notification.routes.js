@@ -1,5 +1,5 @@
 import express from "express";
-import { firebaseAuth, verifyAdmin ,verifyDepartment} from "../middleware/firebase.middleware.js";
+import { firebaseAuth, verifyAdmin, verifyDepartment, verifyOperator, attachUser } from "../middleware/firebase.middleware.js";
 
 import {
   getAdminNotifications,
@@ -7,7 +7,10 @@ import {
   getUnreadNotifications,
   deleteNotification,
   markAllAsRead,
-  getDepartmentNotifications
+  getDepartmentNotifications,
+  getUserNotifications,
+  markUserNotificationRead,
+  getOperatorNotifications
 } from "../controller/notification.controller.js";
 
 const router = express.Router();
@@ -41,7 +44,7 @@ router.put("/admin/read-all", firebaseAuth, verifyAdmin, markAllAsRead);
 
 router.put("/department/read-all", firebaseAuth, verifyDepartment, markAllAsRead);
 
-router.put("/user/read-all", firebaseAuth, markAllAsRead);
+router.put("/operator/read-all", firebaseAuth, verifyOperator, markAllAsRead);
 
 /* ================= DELETE NOTIFICATION ================= */
 router.delete(
@@ -58,4 +61,18 @@ router.get(
   verifyDepartment,
   getDepartmentNotifications
 );
+
+/* ================= OPERATOR NOTIFICATIONS ================= */
+router.get(
+  "/operator",
+  firebaseAuth,
+  verifyOperator,
+  getOperatorNotifications
+);
+
+/* ================= USER NOTIFICATIONS ================= */
+router.get("/user", firebaseAuth, attachUser, getUserNotifications);
+router.put("/user/read/:id", firebaseAuth, attachUser, markUserNotificationRead);
+router.put("/user/read-all", firebaseAuth, attachUser, markAllAsRead);
+
 export default router;

@@ -1,219 +1,361 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import DepartmentLayout from "../../layout/DepartmentLayout";
 import {
-  FileText,
-  BarChart3,
-  AlertTriangle,
-  Download,
-  Trash2,
+ FileText,
+ Download,
+ Trash2,
+ Calendar,
+ Users,
+ TrendingUp,
+ Award,
+ Loader2,
+ FileSpreadsheet,
+ Zap,
+ Clock,
+ Activity,
+ MoreHorizontal,
+ ChevronRight,
+ BarChart3
 } from "lucide-react";
+import {
+ BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area
+} from "recharts";
+import toast from "react-hot-toast";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import Papa from "papaparse";
 
 const DepartmentReports = () => {
-  const [activeTab, setActiveTab] = useState("Weekly");
-  const [format, setFormat] = useState("PDF");
+ const [data, setData] = useState(null);
+ const [loading, setLoading] = useState(true);
+ const [exportLoading, setExportLoading] = useState(false);
 
-  const reports = [
-    {
-      name: "Weekly_Service_Audit_Q3_W24",
-      type: "Weekly Audit",
-      date: "Oct 24, 2023 - 09:15 AM",
-      status: "READY",
-    },
-    {
-      name: "Performance_Review_September_2023",
-      type: "Monthly Metrics",
-      date: "Oct 01, 2023 - 02:30 PM",
-      status: "READY",
-    },
-    {
-      name: "Issue_Audit_Critical_Infrastructure",
-      type: "Issue Audit",
-      date: "Sep 28, 2023 - 11:05 AM",
-      status: "ARCHIVED",
-    },
-  ];
+ const fetchData = async () => {
+ try {
+ setLoading(true);
+ const token = localStorage.getItem("token");
+ const res = await axios.get("http://localhost:5000/api/departments/detailed-reports", {
+ headers: { Authorization: `Bearer ${token}` }
+ });
+ setData(res.data);
+ } catch (err) {
+ console.error("Fetch Reports Error:", err);
+ toast.error("Failed to load report data");
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  return (
-    <DepartmentLayout>
-      <div className="space-y-8">
+ useEffect(() => {
+ fetchData();
+ }, []);
 
-        {/* PAGE TITLE */}
-        <div>
-          <h1 className="text-3xl font-bold">
-            Reports & Archive
-          </h1>
-          <p className="text-gray-400 text-sm">
-            Configure and generate municipal service reports or access historical data.
-          </p>
-        </div>
+ const logReportToBackend = async (name, type, format) => {
+ try {
+ const token = localStorage.getItem("token");
+ const res = await axios.post("http://localhost:5000/api/departments/log-report",
+ { name, type, format, stats: data.summary },
+ { headers: { Authorization: `Bearer ${token}` } }
+ );
+ setData(prev => ({ ...prev, reports: res.data.reports }));
+ } catch (err) {
+ console.error("Failed to log report", err);
+ }
+ };
 
-        {/* GENERATE REPORT CARD */}
-        <div className="bg-[#111c2e] border border-gray-800 rounded-xl p-6 space-y-6">
+ const downloadCSV = async () => {
+ if (!data) return;
+ setExportLoading(true);
+ try {
+ const reportName = `Muni_Audit_${new Date().toISOString().split('T')[0]}`;
+ const monthlyCsv = Papa.unparse(data.monthlyStats.map(m => ({ Month: m.month, "Issues Reported": m.count })));
+ const operatorCsv = Papa.unparse(data.operatorStats.map(op => ({
+ Operator: op.fullName,
+ Email: op.email,
+ "Issues Reported": op.reported,
+ "Issues Solved": op.solved,
+ "Success Rate": op.reported > 0 ? ((op.solved / op.reported) * 100).toFixed(2) + "%" : "0%"
+ })));
 
-          <h3 className="font-semibold text-lg">
-            Generate New Report
-          </h3>
+ const blob = new Blob([`SUMMARY STATS\nGenerated:,${new Date().toLocaleString()}\nToday:,${data.summary.today}\nThis Week:,${data.summary.week}\nThis Month:,${data.summary.month}\n\nMONTHLY REPORTS\n${monthlyCsv}\n\nOPERATOR PERFORMANCE\n${operatorCsv}`], { type: "text/csv;charset=utf-8;" });
+ const link = document.createElement("a");
+ const url = URL.createObjectURL(blob);
+ link.setAttribute("href", url);
+ link.setAttribute("download", `${reportName}.csv`);
+ link.style.visibility = "hidden";
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
 
-          {/* Tabs */}
-          <div className="flex gap-6 border-b border-gray-800 pb-2 text-sm">
-            {["Weekly", "Monthly", "Performance", "Audit"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`${
-                  activeTab === tab
-                    ? "text-blue-400 border-b-2 border-blue-400 pb-1"
-                    : "text-gray-400"
-                }`}
-              >
-                {tab} Report
-              </button>
-            ))}
-          </div>
+ await logReportToBackend(reportName, "Operational Data", "CSV");
+ toast.success("CSV Export Successful");
+ } catch (err) {
+ toast.error("CSV Export failed");
+ } finally {
+ setExportLoading(false);
+ }
+ };
 
-          {/* Date Range + Output */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+ const downloadPDF = async () => {
+ if (!data) return;
+ setExportLoading(true);
+ try {
+ const reportName = `Dept_Performance_${new Date().getTime()}`;
+ const doc = jsPDF();
+ const timestamp = new Date().toLocaleString();
 
-            {/* Date Range */}
-            <div className="space-y-2">
-              <label className="text-xs text-gray-400">
-                SELECT DATE RANGE
-              </label>
+ doc.setFontSize(22);
+ doc.setTextColor(40);
+ doc.text("SERVICE PERFORMANCE AUDIT", 14, 20);
+ doc.setFontSize(10);
+ doc.setTextColor(100);
+ doc.text(`Generated: ${timestamp}`, 14, 28);
+ 
+ doc.autoTable({
+ startY: 40,
+ head: [['Metric', 'Value']],
+ body: [
+ ["New Issues Today", data.summary.today],
+ ["Resolved Total", data.summary.totalResolved],
+ ["SLA Compliance", `${data.summary.slaCompliance}%`]
+ ]
+ });
 
-              <div className="flex gap-3">
-                <input
-                  type="date"
-                  className="bg-[#0f172a] border border-gray-700 rounded-lg p-2 w-full"
-                />
-                <input
-                  type="date"
-                  className="bg-[#0f172a] border border-gray-700 rounded-lg p-2 w-full"
-                />
-              </div>
-            </div>
+ doc.save(`${reportName}.pdf`);
+ await logReportToBackend(reportName, "Efficacy Audit", "PDF");
+ toast.success("PDF Audit Generated");
+ } catch (err) {
+ toast.error("PDF Export failed");
+ } finally {
+ setExportLoading(false);
+ }
+ };
 
-            {/* Output Formats */}
-            <div className="space-y-2">
-              <label className="text-xs text-gray-400">
-                OUTPUT FORMATS
-              </label>
+ const getMonthName = (m) => new Date(2024, m - 1).toLocaleString('default', { month: 'short' });
 
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setFormat("PDF")}
-                  className={`px-4 py-2 rounded-lg border ${
-                    format === "PDF"
-                      ? "bg-blue-600 border-blue-600"
-                      : "border-gray-700"
-                  }`}
-                >
-                  PDF
-                </button>
+ if (loading) {
+ return (
+ <DepartmentLayout>
+ <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
+ <Loader2 className="animate-spin text-primary h-10 w-10" />
+ <p className="text-sm text-muted-foreground animate-pulse">Aggregating Field Data...</p>
+ </div>
+ </DepartmentLayout>
+ );
+ }
 
-                <button
-                  onClick={() => setFormat("CSV")}
-                  className={`px-4 py-2 rounded-lg border ${
-                    format === "CSV"
-                      ? "bg-blue-600 border-blue-600"
-                      : "border-gray-700"
-                  }`}
-                >
-                  CSV
-                </button>
-              </div>
-            </div>
+ return (
+ <DepartmentLayout>
+ <div className="max-w-[1400px] mx-auto space-y-10 animate-in fade-in duration-700">
 
-            {/* Generate Button */}
-            <div className="flex justify-end">
-              <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg">
-                Generate & Export Report
-              </button>
-            </div>
+ {/* HEADER */}
+ <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b pb-6">
+ <div>
+ <h1 className="text-3xl font-semibold text-foreground">
+ Performance Intelligence
+ </h1>
+ <p className="text-sm text-muted-foreground mt-1">
+ Archival auditing and organizational efficacy reviews
+ </p>
+ </div>
 
-          </div>
+ <div className="flex items-center gap-3">
+ <button
+ onClick={downloadCSV}
+ disabled={exportLoading}
+ className="flex items-center gap-2 bg-muted px-4 py-2 rounded-lg border text-xs font-bold text-muted-foreground hover:bg-background hover:text-foreground transition-all"
+ >
+ <FileSpreadsheet size={16} className="text-emerald-500" />
+ Download CSV
+ </button>
+ <button
+ onClick={downloadPDF}
+ disabled={exportLoading}
+ className="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-all shadow-sm"
+ >
+ {exportLoading ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
+ Official PDF Audit
+ </button>
+ </div>
+ </div>
 
-          <p className="text-gray-500 text-sm">
-            Generating complex reports may take up to 2 minutes.
-          </p>
+ {/* KPIS */}
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+ {[
+ { label: "Today's Pulse", value: data.summary.today, icon: Zap, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+ { label: "Weekly Cycle", value: data.summary.week, icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
+ { label: "Monthly Load", value: data.summary.month, icon: Calendar, color: "text-primary", bg: "bg-primary/10" }
+ ].map((kpi, i) => (
+ <div key={i} className="bg-card border rounded-2xl p-8 flex items-center gap-6 shadow-sm hover:shadow-md transition">
+ <div className={`h-14 w-14 rounded-2xl ${kpi.bg} ${kpi.color} flex items-center justify-center`}>
+ <kpi.icon size={24} />
+ </div>
+ <div>
+ <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-2">{kpi.label}</p>
+ <h3 className="text-4xl font-bold tracking-tighter leading-none">{kpi.value}</h3>
+ </div>
+ </div>
+ ))}
+ </div>
 
-        </div>
+ {/* CHARTS */}
+ <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+ <div className="lg:col-span-8 bg-card border rounded-2xl p-8 shadow-sm">
+ <div className="flex items-center justify-between mb-10">
+ <div>
+ <h3 className="text-lg font-semibold">Monthly Trajectory</h3>
+ <p className="text-xs text-muted-foreground font-medium">Seasonal issue distribution audit</p>
+ </div>
+ <BarChart3 size={20} className="text-muted-foreground opacity-30" />
+ </div>
+ <div className="h-[350px] w-full">
+ <ResponsiveContainer width="100%" height="100%">
+ <AreaChart data={data.monthlyStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+ <defs>
+ <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+ <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+ </linearGradient>
+ </defs>
+ <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+ <XAxis dataKey="month" tickFormatter={getMonthName} fontSize={11} fontWeight="500" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+ <YAxis fontSize={11} fontWeight="500" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+ <Tooltip contentStyle={{ borderRadius: '0.75rem', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', fontSize: '12px' }} labelFormatter={getMonthName} />
+ <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorCount)" strokeWidth={3} />
+ </AreaChart>
+ </ResponsiveContainer>
+ </div>
+ </div>
 
-        {/* HISTORICAL ARCHIVE */}
-        <div className="space-y-4">
+ <div className="lg:col-span-4 bg-card border rounded-2xl p-8 shadow-sm flex flex-col justify-between">
+ <div className="mb-10">
+ <h3 className="text-lg font-semibold">Weekly Analysis</h3>
+ <p className="text-xs text-muted-foreground font-medium">Standard 7-day field pulse</p>
+ </div>
+ <div className="flex-1 min-h-[300px]">
+ <ResponsiveContainer width="100%" height="100%">
+ <LineChart data={data.weeklyStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+ <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+ <XAxis dataKey="week" fontSize={11} fontWeight="500" axisLine={false} tickLine={false} tickFormatter={(w) => `W${w}`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+ <YAxis fontSize={11} fontWeight="500" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+ <Tooltip contentStyle={{ borderRadius: '0.75rem', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
+ <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4, fill: "hsl(var(--primary))" }} />
+ </LineChart>
+ </ResponsiveContainer>
+ </div>
+ </div>
+ </div>
 
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold">
-              Historical Archive
-            </h3>
+ {/* PERSONNEL AUDIT */}
+ <div className="bg-card border rounded-2xl shadow-sm overflow-hidden">
+ <div className="p-8 border-b bg-muted/20">
+ <h3 className="text-lg font-semibold">Personnel Efficacy Audit</h3>
+ <p className="text-xs text-muted-foreground font-medium">Individual performance and load distribution review</p>
+ </div>
+ <div className="overflow-x-auto">
+ <table className="w-full text-left">
+ <thead>
+ <tr className="bg-muted/10 border-b">
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider">Operator Asset</th>
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider text-center">Load Factor</th>
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider text-center">Resolution</th>
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider">Effectiveness</th>
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider text-right">Actions</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y">
+ {data.operatorStats.map((op, i) => {
+ const efficacy = op.reported > 0 ? (op.solved / op.reported) * 100 : 0;
+ return (
+ <tr key={i} className="hover:bg-muted/5 transition-colors group">
+ <td className="p-6">
+ <div className="flex items-center gap-4">
+ <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center font-bold text-primary">{op.fullName[0]}</div>
+ <div>
+ <p className="font-semibold text-sm">{op.fullName}</p>
+ <p className="text-[10px] text-muted-foreground leading-none">{op.email}</p>
+ </div>
+ </div>
+ </td>
+ <td className="p-6 text-center font-bold text-xl">{op.reported}</td>
+ <td className="p-6 text-center font-bold text-xl text-emerald-500">{op.solved}</td>
+ <td className="p-6">
+ <div className="space-y-2">
+ <div className="flex justify-between text-[10px] font-bold text-muted-foreground ">
+ <span>Rating</span>
+ <span>{efficacy.toFixed(1)}%</span>
+ </div>
+ <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
+ <div className={`h-full transition-all duration-1000 ${efficacy > 75 ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${efficacy}%` }} />
+ </div>
+ </div>
+ </td>
+ <td className="p-6 text-right">
+ <button className="p-2.5 hover:bg-muted rounded-lg text-muted-foreground transition-all opacity-0 group-hover:opacity-100">
+ <MoreHorizontal size={18} />
+ </button>
+ </td>
+ </tr>
+ );
+ })}
+ </tbody>
+ </table>
+ </div>
+ </div>
 
-            <div className="flex gap-3">
-              <button className="border border-gray-700 px-4 py-2 rounded-lg text-sm">
-                Filter
-              </button>
-              <button className="border border-gray-700 px-4 py-2 rounded-lg text-sm">
-                Sort
-              </button>
-            </div>
-          </div>
+ {/* ARCHIVE LOGS */}
+ <div className="bg-card border rounded-2xl shadow-sm overflow-hidden">
+ <div className="p-8 border-b bg-muted/20 flex justify-between items-center">
+ <div>
+ <h3 className="text-lg font-semibold text-foreground">Archival Intelligence</h3>
+ <p className="text-xs text-muted-foreground font-medium">History of generated audits and exports</p>
+ </div>
+ <Calendar size={18} className="text-muted-foreground opacity-30" />
+ </div>
+ <div className="overflow-x-auto">
+ <table className="w-full text-left">
+ <thead>
+ <tr className="bg-muted/10 border-b">
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider">Report Alias</th>
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider">Volume Snap</th>
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider">Generation Date</th>
+ <th className="p-6 text-xs font-semibold text-muted-foreground tracking-wider text-right">Format</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y">
+ {data.reports?.slice(0, 5).map((report, index) => (
+ <tr key={index} className="hover:bg-muted/5 transition-colors group">
+ <td className="p-6">
+ <div className="flex items-center gap-3 text-sm font-semibold">
+ <FileText size={16} className="text-primary" />
+ {report.name}
+ </div>
+ </td>
+ <td className="p-6">
+ <div className="flex gap-4">
+ <div className="flex items-center gap-1.5"><Zap size={10} className="text-emerald-500"/> <span className="text-xs font-bold">{report.stats?.today || 0}</span></div>
+ <div className="flex items-center gap-1.5"><Clock size={10} className="text-blue-500"/> <span className="text-xs font-bold">{report.stats?.week || 0}</span></div>
+ <div className="flex items-center gap-1.5"><Calendar size={10} className="text-primary"/> <span className="text-xs font-bold">{report.stats?.month || 0}</span></div>
+ </div>
+ </td>
+ <td className="p-6 text-xs font-medium text-muted-foreground">
+ {new Date(report.generatedAt).toLocaleDateString()}
+ </td>
+ <td className="p-6 text-right">
+ <span className="bg-muted px-3 py-1 rounded-md text-[10px] font-black ">{report.format}</span>
+ </td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ </div>
 
-          {/* Table */}
-          <div className="bg-[#111c2e] border border-gray-800 rounded-xl overflow-hidden">
-
-            <table className="w-full text-sm">
-
-              <thead className="text-gray-400 border-b border-gray-800">
-                <tr>
-                  <th className="text-left p-4">Report Name</th>
-                  <th className="text-left">Type</th>
-                  <th className="text-left">Generated Date</th>
-                  <th className="text-left">Status</th>
-                  <th className="text-left">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {reports.map((report, index) => (
-                  <tr
-                    key={index}
-                    className="border-b border-gray-800 hover:bg-[#162235]"
-                  >
-                    <td className="p-4">{report.name}</td>
-                    <td>{report.type}</td>
-                    <td>{report.date}</td>
-                    <td>
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          report.status === "READY"
-                            ? "bg-green-600/20 text-green-400"
-                            : "bg-gray-600/20 text-gray-400"
-                        }`}
-                      >
-                        {report.status}
-                      </span>
-                    </td>
-                    <td className="flex gap-4 items-center">
-                      <Download
-                        size={16}
-                        className="cursor-pointer hover:text-blue-400"
-                      />
-                      <Trash2
-                        size={16}
-                        className="cursor-pointer hover:text-red-400"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-
-            </table>
-
-          </div>
-
-        </div>
-
-      </div>
-    </DepartmentLayout>
-  );
+ </div>
+ </DepartmentLayout>
+ );
 };
 
 export default DepartmentReports;
+

@@ -4,213 +4,221 @@ import DepartmentLayout from "../../layout/DepartmentLayout";
 import toast from "react-hot-toast";
 
 const IssueTypeForm = () => {
-  const [selectedTypes, setSelectedTypes] = useState([]);
-  const [takenTypes, setTakenTypes] = useState([]);
-  const [issueTypes, setIssueTypes] = useState([]);
-  const [loading, setLoading] = useState(false);
+ const [selectedTypes, setSelectedTypes] = useState([]);
+ const [takenTypes, setTakenTypes] = useState([]);
+ const [issueTypes, setIssueTypes] = useState([]);
+ const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
+ const token = localStorage.getItem("token");
 
-  /* ================= FETCH ISSUE TYPES (FROM ADMIN) ================= */
-  const fetchIssueTypes = async () => {
-    try {
-      const res = await axios.get(
-  "http://localhost:5000/api/issue-types",
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+ /* ================= FETCH ISSUE TYPES (FROM ADMIN) ================= */
+ const fetchIssueTypes = async () => {
+ try {
+ const res = await axios.get(
+ "http://127.0.0.1:5000/api/issue-types",
+ {
+ headers: {
+ Authorization: `Bearer ${token}`,
+ },
+ }
+ );
 
-      setIssueTypes(res.data.types); // {_id, name, label}
+ setIssueTypes(res.data.types);
 
-    } catch (err) {
-      console.log("Error fetching issue types");
-    }
-  };
+ } catch (err) {
+ console.log("Error fetching issue types");
+ }
+ };
 
-  /* ================= FETCH TAKEN TYPES ================= */
-  const fetchTaken = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/departments/taken-types",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+ /* ================= FETCH TAKEN TYPES ================= */
+ const fetchTaken = async () => {
+ try {
+ const res = await axios.get(
+ "http://127.0.0.1:5000/api/departments/taken-types",
+ {
+ headers: { Authorization: `Bearer ${token}` },
+ }
+ );
 
-      // only store IDs
-      setTakenTypes(res.data.taken.map((t) => t._id));
+ // only store IDs
+ setTakenTypes(res.data.taken.map((t) => t._id));
 
-    } catch (err) {
-      console.log("Error fetching taken types");
-    }
-  };
+ } catch (err) {
+ console.log("Error fetching taken types");
+ }
+ };
 
-  /* ================= FETCH CURRENT DEPARTMENT ================= */
-  const fetchMyDepartment = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/departments/me",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+ /* ================= FETCH CURRENT DEPARTMENT ================= */
+ const fetchMyDepartment = async () => {
+ try {
+ const res = await axios.get(
+ "http://127.0.0.1:5000/api/departments/me",
+ {
+ headers: { Authorization: `Bearer ${token}` },
+ }
+ );
 
-      const ids =
-        res.data.issueTypes?.map((t) => t._id) || [];
+ const ids =
+ res.data.issueTypes?.map((t) => t._id) || [];
 
-      setSelectedTypes(ids);
+ setSelectedTypes(ids);
 
-    } catch (err) {
-      console.log("Error fetching department data");
-    }
-  };
+ } catch (err) {
+ console.log("Error fetching department data");
+ }
+ };
 
-  /* ================= INITIAL LOAD ================= */
-  useEffect(() => {
-    fetchIssueTypes();   // 🔥 from admin DB
-    fetchTaken();
-    fetchMyDepartment();
-  }, []);
+ /* ================= INITIAL LOAD ================= */
+ useEffect(() => {
+ fetchIssueTypes(); // 🔥 from admin DB
+ fetchTaken();
+ fetchMyDepartment();
+ }, []);
 
-  /* ================= HANDLE CHANGE ================= */
-  const handleChange = (id) => {
-    setSelectedTypes((prev) =>
-      prev.includes(id)
-        ? prev.filter((t) => t !== id)
-        : [...prev, id]
-    );
-  };
+ /* ================= HANDLE CHANGE ================= */
+ const handleChange = (id) => {
+ setSelectedTypes((prev) =>
+ prev.includes(id)
+ ? prev.filter((t) => t !== id)
+ : [...prev, id]
+ );
+ };
 
-  /* ================= RESET ================= */
-  const handleReset = () => {
-    setSelectedTypes([]);
-  };
+ /* ================= RESET ================= */
+ const handleReset = () => {
+ setSelectedTypes([]);
+ };
 
-  /* ================= SUBMIT ================= */
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
+ /* ================= SUBMIT ================= */
+ const handleSubmit = async () => {
+ try {
+ setLoading(true);
 
-      const res = await axios.put(
-        "http://localhost:5000/api/departments/issue-types",
-        { issueTypes: selectedTypes },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+ const res = await axios.put(
+ "http://127.0.0.1:5000/api/departments/issue-types",
+ { issueTypes: selectedTypes },
+ {
+ headers: { Authorization: `Bearer ${token}` },
+ }
+ );
 
-      const updatedIds = res.data.department.issueTypes.map(
-        (id) => id.toString()
-      );
+ const updatedIds = res.data.department.issueTypes.map(
+ (id) => id.toString()
+ );
 
-      setSelectedTypes(updatedIds);
+ setSelectedTypes(updatedIds);
 
-      await fetchTaken();
+ await fetchTaken();
 
-      toast.success("Issue types updated successfully");
+ toast.success("Operational scope updated successfully");
 
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Error saving");
-    } finally {
-      setLoading(false);
-    }
-  };
+ } catch (err) {
+ toast.error(err.response?.data?.message || "Transmission failed");
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  return (
-    <DepartmentLayout>
-      <div className="max-w-4xl mx-auto">
+ return (
+ <DepartmentLayout>
+ <div className="max-w-4xl mx-auto space-y-8">
 
-        {/* HEADER */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-white">
-            Issue Type Configuration
-          </h2>
-          <p className="text-gray-400 text-sm">
-            Select the issue types your department will handle.
-          </p>
-        </div>
+ {/* HEADER */}
+ <div className="text-center">
+ <h2 className="text-2xl font-semibold text-foreground">
+ Department Issue Scope
+ </h2>
+ <p className="text-sm text-muted-foreground mt-1">
+ Select the issue types your department will handle
+ </p>
+ </div>
 
-        {/* CARD */}
-        <div className="bg-[#0b1624] border border-gray-800 rounded-2xl p-6 shadow-lg">
+ {/* MAIN CARD */}
+ <div className="bg-card border rounded-xl p-8 shadow-sm">
 
-          {/* GRID */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+ {/* SUBTITLE */}
+ <h3 className="text-sm font-medium text-muted-foreground mb-6">
+ Available Issue Types
+ </h3>
 
-            {issueTypes.map((type) => {
-              const isTaken = takenTypes.includes(type._id);
-              const isSelected = selectedTypes.includes(type._id);
+ {/* GRID */}
+ <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+ {issueTypes.map((type) => {
+ const isTaken = takenTypes.includes(type._id);
+ const isSelected = selectedTypes.includes(type._id);
 
-              return (
-                <div
-                  key={type._id}
-                  className={`p-4 rounded-xl border cursor-pointer transition 
-                  ${isTaken
-                    ? "bg-gray-800 border-gray-700 opacity-50 cursor-not-allowed"
-                    : "bg-[#0f172a] border-gray-700 hover:border-blue-500"}
-                  ${isSelected ? "border-blue-500 bg-blue-500/10" : ""}
-                  `}
-                  onClick={() => !isTaken && handleChange(type._id)}
-                >
-                  <div className="flex items-center justify-between">
+ return (
+ <div
+ key={type._id}
+ onClick={() => !isTaken && handleChange(type._id)}
+ className={`
+ p-4 rounded-lg border transition-all cursor-pointer
+ ${isTaken
+ ? "bg-muted opacity-50 cursor-not-allowed"
+ : "hover:border-primary hover:shadow-sm"}
+ ${isSelected ? "border-primary bg-primary/5" : ""}
+ `}
+ >
+ <div className="flex justify-between items-center">
+ <h4 className="text-sm font-medium text-foreground">
+ {type.label}
+ </h4>
 
-                    <span className="capitalize text-sm font-medium">
-                      {type.label}
-                    </span>
+ {!isTaken && (
+ <div
+ className={`w-4 h-4 rounded border flex items-center justify-center
+ ${isSelected ? "bg-primary border-primary" : "border-gray-400"}`}
+ >
+ {isSelected && (
+ <div className="w-2 h-2 bg-white rounded-sm"></div>
+ )}
+ </div>
+ )}
+ </div>
 
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      disabled={isTaken}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        handleChange(type._id);
-                      }}
-                      className="accent-blue-500"
-                    />
-                  </div>
+ {isTaken && (
+ <p className="text-xs text-red-500 mt-2">
+ Already assigned
+ </p>
+ )}
+ </div>
+ );
+ })}
+ </div>
 
-                  {isTaken && (
-                    <p className="text-xs text-red-400 mt-2">
-                      Already assigned
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+ {/* ACTION BUTTONS */}
+ <div className="flex justify-end gap-4 mt-8 pt-6 border-t">
+ <button
+ onClick={handleReset}
+ className="px-4 py-2 text-sm font-medium text-muted-foreground border border-border rounded-md hover:bg-muted hover:text-foreground transition"
+ >
+ Reset
+ </button>
 
-          {/* ACTION BUTTONS */}
-          <div className="flex justify-end gap-4 mt-8">
+ <button
+ onClick={handleSubmit}
+ disabled={loading || selectedTypes.length === 0}
+ className={`
+ px-6 py-2 rounded-md text-sm font-medium transition
+ ${loading
+ ? "bg-muted text-muted-foreground cursor-not-allowed"
+ : "bg-primary text-white hover:bg-primary/90"}
+ `}
+ >
+ {loading ? "Saving..." : "Save Changes"}
+ </button>
+ </div>
+ </div>
 
-            <button
-              onClick={handleReset}
-              className="px-5 py-2 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition"
-            >
-              Cancel
-            </button>
+ {/* FOOTER NOTE */}
+ <div className="p-4 bg-muted rounded-lg border text-sm text-muted-foreground">
+ Note: Issue types already assigned to other departments cannot be selected.
+ </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={loading || selectedTypes.length === 0}
-              className={`px-6 py-2 rounded-lg font-medium transition
-                ${
-                  loading
-                    ? "bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }
-              `}
-            >
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-
-          </div>
-        </div>
-      </div>
-    </DepartmentLayout>
-  );
+ </div>
+ </DepartmentLayout>
+ );
 };
 
 export default IssueTypeForm;
+

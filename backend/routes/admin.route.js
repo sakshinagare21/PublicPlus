@@ -9,6 +9,7 @@ import {
   getAllUsers,
   getAllAccounts,
   getAdminDashboard,
+  getAdminProfile,
 } from "../controller/admin.controller.js";
 import { getAllDepartments } from "../controller/admin.controller.js";
 const router = express.Router();
@@ -46,4 +47,5 @@ router.get("/operators", firebaseAuth, verifyAdmin, getAllOperators);
 router.get("/zones", firebaseAuth, verifyAdmin, getAllZones);
 router.get("/users",firebaseAuth, verifyAdmin, getAllUsers);
 router.get("/accounts", firebaseAuth, verifyAdmin, getAllAccounts);
+router.get("/profile", firebaseAuth, verifyAdmin, getAdminProfile);
 export default router;

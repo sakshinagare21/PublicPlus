@@ -1,47 +1,39 @@
-export const detectZone = (lat, lng) => {
-  lat = Number(lat);
-  lng = Number(lng);
+/**
+ * Detects the zone from a list of zones with boundaries
+ * @param {Number} lat 
+ * @param {Number} lng 
+ * @param {Array} zones 
+ * @returns {String} Zone Name
+ */
+export const detectZone = (lat, lng, zones = []) => {
+  if (!zones || zones.length === 0) return "General Pune Sector";
 
-  /* ================= SHIVAJINAGAR ================= */
-  if (lat >= 18.52 && lat <= 18.55 && lng >= 73.84 && lng <= 73.87) {
-    return "Shivajinagar Zone";
-  }
+  const latNum = Number(lat);
+  const lngNum = Number(lng);
 
-  /* ================= KOTHRUD ================= */
-  if (lat >= 18.49 && lat < 18.52 && lng >= 73.80 && lng < 73.84) {
-    return "Kothrud Zone";
-  }
+  if (isNaN(latNum) || isNaN(lngNum) || lat === "" || lng === "") return "Analyzing Telemetry...";
 
-  /* ================= HADAPSAR ================= */
-  if (lat >= 18.47 && lat <= 18.50 && lng >= 73.92 && lng <= 73.97) {
-    return "Hadapsar Zone";
-  }
+  const matchedZone = zones.find(z => {
+    // 1. Check explicit boundaries if defined
+    const { minLat, maxLat, minLng, maxLng } = z.boundaries || {};
+    if (minLat !== undefined && maxLat !== undefined) {
+      return (
+        latNum >= minLat &&
+        latNum <= maxLat &&
+        lngNum >= minLng &&
+        lngNum <= maxLng
+      );
+    }
 
-  /* ================= BANER ================= */
-  if (lat >= 18.55 && lat <= 18.58 && lng >= 73.77 && lng <= 73.80) {
-    return "Baner Zone";
-  }
+    // 2. Fallback: Radial match (approx 2.5km) using center coordinates
+    if (z.coordinates && z.coordinates.lat !== undefined) {
+      const dLat = Math.abs(latNum - z.coordinates.lat);
+      const dLng = Math.abs(lngNum - z.coordinates.lng);
+      return (dLat < 0.025 && dLng < 0.025);
+    }
 
-  /* ================= WAKAD ================= */
-  if (lat >= 18.58 && lat <= 18.62 && lng >= 73.75 && lng <= 73.79) {
-    return "Wakad Zone";
-  }
+    return false;
+  });
 
-  /* ================= VIMAN NAGAR ================= */
-  if (lat >= 18.56 && lat <= 18.58 && lng >= 73.90 && lng <= 73.93) {
-    return "Viman Nagar Zone";
-  }
-
-  /* ================= SINHAGAD ROAD ================= */
-  if (lat >= 18.48 && lat <= 18.52 && lng >= 73.82 && lng <= 73.86) {
-    return "Sinhagad Road Zone";
-  }
-
-  /* ================= CAMP ================= */
-  if (lat >= 18.50 && lat <= 18.52 && lng >= 73.87 && lng <= 73.89) {
-    return "Camp Zone";
-  }
-
-  /* ================= DEFAULT ================= */
-  return "General Pune Zone";
+  return matchedZone ? matchedZone.areaName : "Outside Boundaries";
 };

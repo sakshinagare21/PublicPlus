@@ -1,8 +1,8 @@
 import express from "express";
-import { firebaseAuth, verifyOperator,verifyAdmin } from "../middleware/firebase.middleware.js";
+import { firebaseAuth, verifyOperator, verifyAdmin } from "../middleware/firebase.middleware.js";
 import { attachUser } from "../middleware/firebase.middleware.js";
 import { verifyDepartment } from "../middleware/firebase.middleware.js";
-import { uploadIssueImages } from "../middleware/upload.js";
+import { uploadIssueImages, uploadProofImage } from "../middleware/upload.js";
 import {
   createIssue,
   getMyIssues,
@@ -13,7 +13,18 @@ import {
   getOperatorIssues,
   getOperatorStats,
   getAllIssuesAdmin,
-  getAdminStats
+  getAdminStats,
+  uploadProof,
+  getTimer,
+  verifyIssue,
+  reopenIssue,
+  getCitizenStats,
+  getAllPublicIssues,
+  upvoteIssue,
+  downvoteIssue,
+  escalateIssue,
+  getNearbyIssues,
+  updateIssueStatus
 } from "../controller/issue.controller.js";
 
 const router = express.Router();
@@ -28,6 +39,11 @@ router.post(
 );
 
 router.get("/my", firebaseAuth, attachUser, getMyIssues);
+router.get("/stats", firebaseAuth, attachUser, getCitizenStats);
+router.get("/all", firebaseAuth, attachUser, getAllPublicIssues);
+router.get("/nearby", firebaseAuth, attachUser, getNearbyIssues);
+router.post("/:id/upvote", firebaseAuth, attachUser, upvoteIssue);
+router.post("/:id/downvote", firebaseAuth, attachUser, downvoteIssue);
 
 router.delete("/:issueId", firebaseAuth, attachUser, deleteIssue);
 
@@ -48,10 +64,17 @@ router.get(
   getDepartmentStats
 );
 
+router.put(
+  "/:issueId/status",
+  firebaseAuth, // Changed from departmentAuth if you use unified firebaseAuth
+  verifyDepartment,
+  updateIssueStatus
+);
+
 
 /*================Operator================*/
-router.get("/operator/issue", firebaseAuth,verifyOperator, getOperatorIssues); // Operators can view department issues too
-router.get("/operator/stats", firebaseAuth,verifyOperator, getOperatorStats); // Get department statistics for operators
+router.get("/operator/issue", firebaseAuth, verifyOperator, getOperatorIssues); // Operators can view department issues too
+router.get("/operator/stats", firebaseAuth, verifyOperator, getOperatorStats); // Get department statistics for operators
 
 /*===========admin===========*/
 router.get("/admin/all", firebaseAuth, verifyAdmin, getAllIssuesAdmin);
@@ -59,4 +82,12 @@ router.get("/admin/stats", firebaseAuth, verifyAdmin, getAdminStats);
 /* ================= COMMON ================= */
 /* KEEP THIS ALWAYS LAST */
 router.get("/:issueId", firebaseAuth, getIssueById);
+
+/* ================= ADVANCED WORKFLOW ================= */
+router.post("/:id/upload-proof", firebaseAuth, verifyOperator, uploadProofImage.single("proof"), uploadProof);
+router.get("/:id/timer", firebaseAuth, getTimer);
+router.post("/:id/verify", firebaseAuth, attachUser, uploadProofImage.single("verificationImage"), verifyIssue);
+router.post("/:id/reopen", firebaseAuth, attachUser, uploadProofImage.single("proof"), reopenIssue);
+router.post("/:id/escalate", firebaseAuth, verifyOperator, uploadProofImage.single("proof"), escalateIssue);
+
 export default router;

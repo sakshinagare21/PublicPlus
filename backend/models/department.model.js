@@ -2,175 +2,191 @@ import mongoose from "mongoose";
 
 const departmentSchema = new mongoose.Schema(
 {
-  /* ================= BASIC INFO ================= */
+ /* ================= BASIC INFO ================= */
 
-  departmentName: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+ departmentName: {
+ type: String,
+ required: true,
+ unique: true,
+ },
 
-  departmentCode: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+ departmentCode: {
+ type: String,
+ required: true,
+ unique: true,
+ },
 
-  description: String,
+ description: String,
 
-  contactPhone: {
-    type: String,
-    required: true
-  },
+ contactPhone: {
+ type: String,
+ required: true
+ },
 
-  officeAddress: {
-    type: String,
-    required: true
-  },
+ officeAddress: {
+ type: String,
+ required: true
+ },
 
-  city: {
-    type: String,
-    required: true
-  },
+ city: {
+ type: String,
+ required: true
+ },
 
-  /* ================= FIREBASE AUTH ================= */
+ /* ================= FIREBASE AUTH ================= */
 
-  firebaseUID: {
-    type: String,
-    required: true,
-    unique: true
-  },
+ firebaseUID: {
+ type: String,
+ required: true,
+ unique: true
+ },
 
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
+ email: {
+ type: String,
+ required: true,
+ unique: true
+ },
 
-  /* ================= ROLE ================= */
+ /* ================= ROLE ================= */
 
-  role: {
-    type: String,
-    enum: ["department_admin"],
-    default: "department_admin"
-  },
+ role: {
+ type: String,
+ enum: ["department_admin"],
+ default: "department_admin"
+ },
 
-  /* ================= ACCOUNT STATUS ================= */
+ /* ================= ACCOUNT STATUS ================= */
 
-  accountStatus: {
-    type: String,
-    enum: ["active", "suspended"],
-    default: "active"
-  },
+ accountStatus: {
+ type: String,
+ enum: ["active", "suspended"],
+ default: "active"
+ },
 
-  /* ================= ADMIN APPROVAL ================= */
+ /* ================= ADMIN APPROVAL ================= */
 
-  approvalStatus: {
-    type: String,
-    enum: ["pending", "approved", "rejected"],
-    default: "pending"
-  },
+ approvalStatus: {
+ type: String,
+ enum: ["pending", "approved", "rejected"],
+ default: "pending"
+ },
 
-  approvalInfo: {
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin"
-    },
-    approvedAt: Date
-  },
+ approvalInfo: {
+ approvedBy: {
+ type: mongoose.Schema.Types.ObjectId,
+ ref: "Admin"
+ },
+ approvedAt: Date
+ },
 
-  lastLogin: Date,
+ lastLogin: Date,
 
-  /* ================= ZONES ================= */
+ /* ================= ZONES ================= */
 
-  assignedZones: [
-    {
-      zoneName: String,
-      zoneCode: String
-    }
-  ],
+ assignedZones: [
+ {
+ zoneName: String,
+ zoneCode: String
+ }
+ ],
 
-  /* ================= OPERATORS ================= */
+ /* ================= OPERATORS ================= */
 
-  operators: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Operator"
-    }
-  ],
+ operators: [
+ {
+ type: mongoose.Schema.Types.ObjectId,
+ ref: "Operator"
+ }
+ ],
 
-  pendingOperators: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Operator"
-    }
-  ],
+ pendingOperators: [
+ {
+ type: mongoose.Schema.Types.ObjectId,
+ ref: "Operator"
+ }
+ ],
 
-  /* ================= PERFORMANCE ================= */
+ /* ================= PERFORMANCE ================= */
 
-  performanceMetrics: {
-    totalIssuesHandled: {
-      type: Number,
-      default: 0
-    },
+ performanceMetrics: {
+ totalIssuesHandled: {
+ type: Number,
+ default: 0
+ },
 
-    completedIssues: {
-      type: Number,
-      default: 0
-    },
+ completedIssues: {
+ type: Number,
+ default: 0
+ },
 
-    averageResolutionTime: Number,
-    slaComplianceRate: Number,
-    reopenRate: Number
-  },
+ averageResolutionTime: Number,
+ slaComplianceRate: Number,
+ reopenRate: Number
+ },
 
-  /* ================= SLA ================= */
+ /* ================= SLA ================= */
 
-  slaSettings: {
-    responseTimeHours: Number,
-    resolutionTimeHours: Number,
-    escalationEnabled: Boolean
-  },
+ slaSettings: {
+ responseTimeHours: Number,
+ resolutionTimeHours: Number,
+ escalationEnabled: Boolean
+ },
 
-  /* ================= DASHBOARD ================= */
+ /* ================= DASHBOARD ================= */
 
-  dashboardPreferences: {
-    defaultView: String,
-    theme: String,
-    showHeatmap: {
-      type: Boolean,
-      default: true
-    }
-  },
+ dashboardPreferences: {
+ defaultView: String,
+ theme: String,
+ showHeatmap: {
+ type: Boolean,
+ default: true
+ }
+ },
 
-  /* ================= NOTIFICATIONS ================= */
+ /* ================= NOTIFICATIONS ================= */
 
-  notificationSettings: {
-    slaAlerts: Boolean,
-    citizenFeedbackAlerts: Boolean,
-    escalationAlerts: Boolean
-  },
-  /*=======issue types=================*/
+ notificationSettings: {
+ slaAlerts: Boolean,
+ citizenFeedbackAlerts: Boolean,
+ escalationAlerts: Boolean
+ },
+ /*=======issue types=================*/
  issueTypes: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "IssueType"
-  }
+ {
+ type: mongoose.Schema.Types.ObjectId,
+ ref: "IssueType"
+ }
 ],
 
-  /* ================= ACTIVITY ================= */
+ /* ================= ACTIVITY ================= */
 
-  activityLogs: [
-    {
-      action: String,
-      targetModel: String,
-      targetId: mongoose.Schema.Types.ObjectId,
-      timestamp: Date
-    }
-  ]
+ activityLogs: [
+ {
+ action: String,
+ targetModel: String,
+ targetId: mongoose.Schema.Types.ObjectId,
+ timestamp: Date
+ }
+ ],
+
+ /* ================= REPORTS ================= */
+ reports: [
+ {
+ name: String,
+ type: String,
+ format: String,
+ status: { type: String, default: "READY" },
+ generatedAt: { type: Date, default: Date.now },
+ stats: {
+ today: Number,
+ week: Number,
+ month: Number
+ }
+ }
+ ]
 },
 {
-  timestamps: true
+ timestamps: true
 }
 );
 
