@@ -1,18 +1,16 @@
-import { exec } from "child_process";
-import path from "path";
+import axios from "axios";
 import fs from "fs";
-import { promisify } from "util";
-
-const execPromise = promisify(exec);
-
-// 🔥 CONFIGURATION
-const PYTHON_PATH = "python"; // or "python3" depending on system
-const DETECTOR_SCRIPT = "c:\\Users\\Admin\\Desktop\\AI Image Detection\\detect.py";
-const MODEL_DIR = "c:\\Users\\Admin\\Desktop\\AI Image Detection";
+import FormData from "form-data";
+import path from "path";
 
 /**
- * Middleware to check uploaded images for AI generation
+ * 🚀 PRODUCTION READY AI CHECK MIDDLEWARE
+ * Connects to the Flask AI service via HTTP instead of local CLI.
  */
+
+// Configuration - Use Environment Variables for Render
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5001/detect";
+
 export const aiImageCheck = async (req, res, next) => {
     try {
         const files = req.files || (req.file ? [req.file] : []);
@@ -21,51 +19,54 @@ export const aiImageCheck = async (req, res, next) => {
             return next();
         }
 
-        const filePaths = files.map(file => path.resolve(file.path));
-        const quotedPaths = filePaths.map(p => `"${p}"`).join(" ");
+        console.log(`[AI-Detector] Routing ${files.length} assets to AI microservice...`);
 
-        console.log(`[AI-Detector] Executing batch verification on ${files.length} assets...`);
+        // Check each file against the AI service
+        for (const file of files) {
+            const filePath = path.resolve(file.path);
+            
+            // Prepare multipart form data
+            const form = new FormData();
+            form.append('file', fs.createReadStream(filePath));
 
-        // Run the Python script ONCE for all images
-        const command = `cd /d "${MODEL_DIR}" && ${PYTHON_PATH} detect.py ${quotedPaths}`;
-        const { stdout, stderr } = await execPromise(command);
+            try {
+                const response = await axios.post(AI_SERVICE_URL, form, {
+                    headers: {
+                        ...form.getHeaders(),
+                    },
+                    timeout: 30000, // 30s timeout for ML inference
+                });
 
-        if (stderr && !stdout) {
-            console.error("[AI-Detector] Batch Error:", stderr);
-        }
+                const { is_ai, confidence, detected_as } = response.data;
 
-        const lines = stdout?.split("\n") || [];
-        let aiDetected = false;
+                if (is_ai) {
+                    console.warn(`[AI-Detector] THREAT DETECTED: ${file.filename} (${(confidence * 100).toFixed(1)}%)`);
+                    
+                    // Cleanup locally saved file before rejecting
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
 
-        for (const line of lines) {
-            if (line.includes("|AI|")) {
-                aiDetected = true;
-                const parts = line.split("|");
-                const filePath = parts[1];
-                
-                console.warn(`[AI-Detector] THREAT DETECTED: ${filePath}`);
-                
-                // Delete offending file
-                if (filePath && fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
+                    return res.status(400).json({
+                        success: false,
+                        message: "AI generated images are not allowed. Evidence must be authentic from the tactical field.",
+                        code: "AI_GENERATED_CONTENT"
+                    });
                 }
+
+                console.log(`[AI-Detector] Asset verified: ${file.filename} (REAL: ${( (1 - confidence) * 100).toFixed(1)}%)`);
+
+            } catch (apiError) {
+                console.error(`[AI-Detector] Service Communication Failure for ${file.filename}:`, apiError.message);
+                // Fail-safe: If AI service is down, allowed but logged. 
+                // In a high-security environment, you might want to return 503 instead.
             }
         }
 
-        if (aiDetected) {
-            return res.status(400).json({
-                success: false,
-                message: "AI generated images are not allowed. Evidence must be authentic from the tactical field.",
-                code: "AI_GENERATED_CONTENT"
-            });
-        }
-
-        console.log("[AI-Detector] Batch verified as REAL.");
         next();
 
     } catch (error) {
         console.error("[AI-Detector] Execution Failure:", error);
-        // Fallback: Proceed if AI service fails (to avoid blocking legitimate workflows)
         next(); 
     }
 };

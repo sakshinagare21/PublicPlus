@@ -53,8 +53,8 @@ const Dashboard = () => {
     ];
 
     const quickActions = [
-        { icon: Megaphone, title: "Report Issue", desc: "Log standard civic faults like potholes or lights.", to: "/report-issue", primary: true },
-        { icon: Asterisk, title: "Emergency Report", desc: "Urgent hazards requiring local dispatch.", to: "/report-issue", primary: true },
+        { icon: Megaphone, title: "Report Issue", desc: "Log standard civic faults like potholes or lights.", to: "/post-report", primary: true },
+        { icon: Asterisk, title: "Emergency Report", desc: "Urgent hazards requiring local dispatch.", to: "/post-report", primary: true },
         { icon: Search, title: "Global Feed", desc: "Explore and upvote issues across the community.", to: "/community-issues", primary: false },
     ];
 
@@ -107,8 +107,8 @@ const Dashboard = () => {
                                 key={i}
                                 to={action.to}
                                 className={`group relative overflow-hidden rounded-3xl p-8 transition-all transform hover:-translate-y-2 shadow-sm ${action.primary
-                                        ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:bg-primary/95"
-                                        : "bg-card border border-border text-foreground hover:border-primary shadow-lg hover:shadow-primary/5"
+                                    ? "bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:bg-primary/95"
+                                    : "bg-card border border-border text-foreground hover:border-primary shadow-lg hover:shadow-primary/5"
                                     }`}
                             >
                                 <action.icon className={`h-8 w-8 mb-6 transition-colors transition-transform group-hover:scale-110 ${action.primary ? "text-primary-foreground/80" : "text-primary"}`} />
@@ -172,31 +172,6 @@ const Dashboard = () => {
                             ) : (
                                 <div className="p-20 text-center text-muted-foreground font-black tracking-widest text-[10px] italic transition-colors opacity-30">Null sector detected in community stream.</div>
                             )}
-                        </div>
-                    </div>
-
-                    {/* Quick Stats Helper */}
-                    <div className="lg:col-span-4 space-y-6 transition-colors font-display">
-                        <div className="rounded-[2.5rem] border border-border bg-card p-10 relative overflow-hidden shadow-2xl transition-colors group">
-                            <div className="absolute -top-10 -right-10 w-48 h-48 bg-primary/5 rounded-full blur-3xl transition-colors"></div>
-                            <h2 className="text-lg font-black text-foreground tracking-tight mb-4 transition-colors">Live Hotspots</h2>
-                            <p className="text-muted-foreground text-xs font-medium mb-10 leading-relaxed transition-colors opacity-60">Most active zones reporting infrastructure failures in Metropolis.</p>
-
-                            <div className="space-y-6">
-                                {["Central Sector", "Northern Industrial", "Metro West"].map((zone, i) => (
-                                    <div key={i} className="flex items-center justify-between p-5 bg-background border border-border rounded-2xl transition-all hover:border-primary/30 group/item shadow-inner relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover/item:opacity-100 transition-opacity"></div>
-                                        <span className="text-xs font-black text-foreground transition-colors group-hover/item:text-primary tracking-widest relative z-10">{zone}</span>
-                                        <div className="h-8 w-14 rounded-[1rem] bg-muted border border-border flex items-center justify-center transition-all group-hover/item:bg-primary/20 group-hover/item:scale-110 shadow-sm relative z-10">
-                                            <span className="text-[10px] font-black text-primary transition-colors">{12 - i * 3}%</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <Link to="/report-issue" className="mt-10 w-full bg-background border border-border py-6 rounded-2xl font-black text-[10px] tracking-[0.2em] text-muted-foreground hover:text-foreground hover:border-primary hover:shadow-xl transition-all flex items-center justify-center gap-3 shadow-sm shadow-primary/5 group-hover:translate-y-[-2px]">
-                                Initiate mission <ArrowRight size={16} className="text-primary transition-transform group-hover:translate-x-1" />
-                            </Link>
                         </div>
                     </div>
 

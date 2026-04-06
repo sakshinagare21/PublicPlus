@@ -94,7 +94,7 @@ const DepartmentLogin = () => {
                                     Department <span className="text-primary italic">Login</span>
                                 </h2>
                                 <p className="text-sm text-muted-foreground font-medium opacity-60">
-                                    Authorized personnel only
+                                    Authorized Department only
                                 </p>
                             </div>
 
@@ -174,25 +174,13 @@ const DepartmentLogin = () => {
                                         "Login"
                                     )}
                                 </button>
-
-                                <div className="relative py-4 transition-colors">
-                                    <div className="absolute inset-0 flex items-center transition-colors"><div className="w-full border-t border-border mt-6"></div></div>
-                                    <div className="relative flex justify-center text-[9px] font-black tracking-[0.4em] opacity-20"><span className="bg-card px-4 mt-6">Other Options</span></div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 mt-8">
+                                <div className="grid grid-cols-1 gap-4 mt-8">
                                     <Link to="/department-register" className="text-center py-4 bg-muted/30 border border-border rounded-2xl text-xs font-bold text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95">
                                         Register
                                     </Link>
-                                    <Link to="/" className="text-center py-4 bg-muted/30 border border-border rounded-2xl text-[10px] font-black tracking-widest text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95">
-                                        SUPPORT LINK
-                                    </Link>
                                 </div>
 
-                                <div className="pt-12 border-t border-border transition-colors mt-8">
-                                    <p className="text-center text-[10px] font-black tracking-[0.4em] text-muted-foreground mb-8 opacity-20 transition-colors">
-                                        Switch Logical Stream
-                                    </p>
+                                <div className="pt-12 border-t border-border transition-colors mt-3">
                                     <div className="grid grid-cols-3 gap-4">
                                         <Link to="/login-citizen" className="text-center py-4 bg-muted/30 border border-border rounded-2xl text-[10px] font-black tracking-widest text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95">
                                             CITIZEN

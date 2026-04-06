@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import {
   Eye,
   EyeOff,
-  LayoutDashboard,
   Truck,
-  ShieldCheck,
   Mail,
   Lock,
   Loader2,
+  ChevronRight,
+  UserCheck,
+  Building2,
+  ShieldAlert,
 } from "lucide-react";
 import LandingNavbar from "../../layout/LandingNavbar";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,12 +19,33 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../../../firebase";
-
 import { useAuth } from "../../../context/AuthContext";
 
 const OperatorLogin = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    remember: false,
+  });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/operator/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
   const handleForgotPassword = async () => {
     if (!form.email) {
@@ -37,29 +60,6 @@ const OperatorLogin = () => {
     }
   };
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/operator/dashboard");
-    }
-  }, [isAuthenticated, navigate]);
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    remember: false,
-  });
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({
-      ...form,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const [loading, setLoading] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -67,7 +67,7 @@ const OperatorLogin = () => {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         form.email,
-        form.password,
+        form.password
       );
       const user = userCredential.user;
       const token = await user.getIdToken();
@@ -81,10 +81,8 @@ const OperatorLogin = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      // Standardize storage using AuthContext
       login("operator", data.operator || { email: form.email }, token);
-
-      toast.success("Login successful");
+      toast.success("Terminal Access Granted");
       navigate("/operator/dashboard");
     } catch (err) {
       toast.error(err.message);
@@ -94,58 +92,56 @@ const OperatorLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-500 font-sans selection:bg-primary/30 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px] translate-x-1/2 -translate-y-1/2"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2"></div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden font-sans transition-colors duration-500 selection:bg-primary/30">
+      {/* Background Glows (Matching Project Theme) */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px] translate-x-1/2 -translate-y-1/2 transition-colors duration-700" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2 transition-colors duration-700" />
 
       <LandingNavbar />
 
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-10 relative z-10">
-        <div className="w-full max-w-2xl bg-card border border-border rounded-[3.5rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[0_0_100px_rgba(0,0,0,0.5)] relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[60px]"></div>
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-10 relative z-10 transition-colors">
+        <div className="w-full max-w-2xl bg-card border border-border rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-700 animate-in fade-in zoom-in-95 group">
 
-          {/* MAIN CONTENT */}
-          <div className="p-6 lg:p-8">
-            {/* HEADER */}
-            <div className="flex flex-col items-center mb-5 text-center">
-              <h1 className="text-4xl font-black text-foreground tracking-tighter mb-1">
-                Operator <span className="text-primary">Login</span>
+          <div className="p-10 sm:p-16 relative">
+            {/* Header Content */}
+            <div className="flex flex-col items-center mb-10">
+              <h1 className="text-5xl font-bold tracking-tight text-foreground mb-3 text-center leading-tight">
+                Operator <span className="text-primary  shadow-glow">Login</span>
               </h1>
             </div>
 
-            {/* FORM */}
-            <form onSubmit={handleSubmit} className="space-y-3">
-              {/* EMAIL */}
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-muted-foreground ml-2">
-                  Operator Official Email Address
+            {/* Login Form */}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Input Group: Email */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-muted-foreground ml-2 transition-colors">
+                  Email
                 </label>
-
                 <div className="relative group/field">
-                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 opacity-40" />
-
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground/50 transition-colors group-focus-within/field:text-primary">
+                    <Mail className="w-5 h-5" />
+                  </div>
                   <input
                     type="email"
                     name="email"
-                    placeholder="operator@command.logistics"
+                    placeholder="operator@logistics-hq.net"
                     value={form.email}
                     onChange={handleChange}
                     required
-                    className="w-full bg-muted/30 border border-border rounded-2xl pl-14 pr-4 py-2 text-sm font-medium text-foreground outline-none focus:ring-4 focus:ring-primary/10 shadow-inner"
+                    className="w-full bg-muted/30 border border-border rounded-2xl pl-16 pr-6 py-5 text-sm font-medium text-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/30 shadow-inner focus:bg-background"
                   />
                 </div>
               </div>
 
-              {/* PASSWORD */}
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-muted-foreground ml-2">
+              {/* Input Group: Password */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-muted-foreground ml-2 transition-colors">
                   Password
                 </label>
-
                 <div className="relative group/field">
-                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 opacity-40" />
-
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground/50 transition-colors group-focus-within/field:text-primary">
+                    <Lock className="w-5 h-5" />
+                  </div>
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
@@ -153,86 +149,93 @@ const OperatorLogin = () => {
                     value={form.password}
                     onChange={handleChange}
                     required
-                    className="w-full bg-muted/30 border border-border rounded-2xl pl-14 pr-14 py-2 text-sm font-medium text-foreground outline-none focus:ring-4 focus:ring-primary/10 shadow-inner"
+                    className="w-full bg-muted/30 border border-border rounded-2xl pl-16 pr-16 py-5 text-sm font-medium text-foreground outline-none focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/30 shadow-inner focus:bg-background"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black tracking-widest text-muted-foreground hover:text-primary transition-all bg-background/50 border border-border px-3 py-1.5 rounded-lg opacity-40 hover:opacity-100"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+                <div className="flex justify-end pr-2">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-[10px] font-black tracking-widest text-primary hover:text-foreground transition-all  opacity-60 hover:opacity-100 uppercase"
+                  >
+                    Forgot Password?
+                  </button>
                 </div>
               </div>
 
-              {/* OPTIONS */}
-              <div className="flex items-center justify-between px-2 text-[10px] font-black tracking-widest">
-                <label className="flex items-center gap-2 text-muted-foreground cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="remember"
-                    checked={form.remember}
-                    onChange={handleChange}
-                    className="w-4 h-4 rounded border-border bg-muted/50 checked:bg-primary"
-                  />
-                  <span className="opacity-60">Accept term and conditions</span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-primary hover:text-foreground underline underline-offset-4 decoration-border"
-                >
-                  Forgot Password
-                </button>
-              </div>
-
-              {/* BUTTON */}
+              {/* Action Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-primary text-primary-foreground py-3 rounded-2xl font-black text-[11px] tracking-[0.3em] shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-50"
+                className="w-full bg-primary text-primary-foreground py-6 rounded-2xl font-bold text-sm transition-all shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 shadow-glow shadow-primary/20 mt-4 flex items-center justify-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed group/btn"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Logging in...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>VERIFYING OPERATOR...</span>
                   </>
                 ) : (
-                  "LOGIN"
+                  <>
+                    <span> Login</span>
+                    <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                  </>
                 )}
               </button>
             </form>
 
-            {/* FOOTER */}
-            <div className="mt-5 pt-5 border-t border-border text-center space-y-3">
-              <div>
-                <p className="text-[9px] font-black tracking-[0.2em] text-muted-foreground opacity-50">
-                  NEW OPERATOR?{" "}
-                  <Link
-                    to="/operator-register"
-                    className="text-amber-500 italic"
-                  >
-                    Register
-                  </Link>
-                </p>
+            {/* Tactical Footer */}
+            <div className="mt-12 pt-10 border-t border-border space-y-8">
+              <div className="flex flex-col gap-4 text-center">
+                <span className="text-[10px] font-black tracking-[0.4em] text-muted-foreground/50 uppercase">
+                  Operator Registration
+                </span>
+                <Link
+                  to="/operator-register"
+                  className="group flex items-center justify-center gap-3 py-4 bg-primary/5 border border-primary/20 rounded-2xl text-[10px] font-black tracking-[0.2em] text-primary hover:bg-primary/10 transition-all uppercase"
+                >
+                  Register Here
+                  <Truck className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                </Link>
               </div>
 
-              <div className="space-y-2">
-                <p className="text-[9px] font-black tracking-[0.4em] text-muted-foreground">
-                  Switch ROLE
-                </p>
+              {/* Role Matrix */}
+              <div className="space-y-5">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.3em] transition-colors">
+                    <span className="bg-card px-4 text-muted-foreground/40">Switch Role</span>
+                  </div>
+                </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-3 font-black text-[9px] tracking-widest">
                   <Link
                     to="/login-citizen"
-                    className="text-center py-2 bg-muted/30 border border-border rounded-xl text-[10px] font-black text-muted-foreground hover:text-primary"
+                    className="flex flex-col items-center gap-2 py-4 bg-muted/20 border border-border rounded-xl text-muted-foreground hover:text-primary hover:bg-muted/40 transition-all group/role"
                   >
+                    <UserCheck className="w-4 h-4 group-hover/role:text-primary transition-colors" />
                     CITIZEN
                   </Link>
                   <Link
                     to="/department-login"
-                    className="text-center py-2 bg-muted/30 border border-border rounded-xl text-[10px] font-black text-muted-foreground hover:text-emerald-500"
+                    className="flex flex-col items-center gap-2 py-4 bg-muted/20 border border-border rounded-xl text-muted-foreground hover:text-emerald-500 hover:bg-muted/40 transition-all group/role"
                   >
+                    <Building2 className="w-4 h-4 group-hover/role:text-emerald-500 transition-colors" />
                     DEPT
                   </Link>
                   <Link
                     to="/admin-login"
-                    className="text-center py-2 bg-muted/30 border border-border rounded-xl text-[10px] font-black text-muted-foreground hover:text-purple-500"
+                    className="flex flex-col items-center gap-2 py-4 bg-muted/20 border border-border rounded-xl text-muted-foreground hover:text-purple-500 hover:bg-muted/40 transition-all group/role"
                   >
+                    <ShieldAlert className="w-4 h-4 group-hover/role:text-purple-500 transition-colors" />
                     ADMIN
                   </Link>
                 </div>
