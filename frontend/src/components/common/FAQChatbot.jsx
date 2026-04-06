@@ -128,9 +128,19 @@ const FAQChatbot = ({ role = "user" }) => {
  </div>
 
  {/* Footer */}
- <div className="p-4 border-t border-border bg-background flex items-center gap-2">
- <div className="flex-1 bg-muted/50 rounded-xl px-4 py-2 text-xs text-muted-foreground italic flex items-center gap-2">
+ <div className="p-4 border-t border-border bg-background flex flex-col gap-3">
+ <a 
+ href="/help" 
+ className="flex items-center justify-between p-2 rounded-xl bg-primary/5 border border-primary/10 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/10 transition-all group"
+ >
+ <span className="flex items-center gap-2 underline">
  <HelpCircle className="w-3 h-3" />
+ Visit Help Center
+ </span>
+ <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+ </a>
+ <div className="flex items-center gap-2">
+ <div className="flex-1 bg-muted/50 rounded-xl px-4 py-2 text-[10px] text-muted-foreground italic flex items-center gap-2">
  Automated responses only.
  </div>
  <button 
@@ -141,10 +151,10 @@ const FAQChatbot = ({ role = "user" }) => {
  </button>
  </div>
  </div>
+ </div>
  )}
  </div>
  );
 };
 
 export default FAQChatbot;
-

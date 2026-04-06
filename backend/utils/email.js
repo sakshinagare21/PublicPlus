@@ -396,3 +396,27 @@ export const sendIssueClosedEmail = async (userEmail, issueTitle, operatorName, 
     html
   });
 };
+
+export const sendOTPEmail = async (email, otp) => {
+  const details = [
+    { label: "Protocol", value: "SIGNUP VERIFICATION" },
+    { label: "Validation Code", value: `<span style="font-size: 24px; color: #1e293b; letter-spacing: 5px;">${otp}</span>` },
+    { label: "Valid For", value: "10 MINUTES" }
+  ];
+
+  const html = generateEmailTemplate(
+    "Security Matrix: Verification",
+    "One-Time Password Generated",
+    details,
+    "Complete Registration",
+    null,
+    "#3b82f6"
+  );
+
+  await transporter.sendMail({
+    from: process.env.EMAIL,
+    to: email,
+    subject: `[OTP] Your Verification Code: ${otp}`,
+    html
+  });
+};

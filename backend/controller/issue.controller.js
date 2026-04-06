@@ -46,10 +46,13 @@ export const createIssue = async (req, res) => {
  }
 
  /* ================= IMAGE ================= */
- let imageData = {};
- if (req.file) {
- imageData = await validateImage(req.file);
+ console.log("Evidence Batch Log - Files found:", req.files?.length || 0);
+ let imageDataList = [];
+ if (req.files && req.files.length > 0) {
+ imageDataList = await Promise.all(req.files.map(async (f) => await validateImage(f)));
  }
+ // Remove any validation failures
+ imageDataList = imageDataList.filter(item => item && item.url);
 
  /* ================= ZONE ================= */
  const zone = await detectZone(parsedLat, parsedLng);
@@ -99,7 +102,7 @@ export const createIssue = async (req, res) => {
  text: descriptionText || "",
  source: "web_speech",
  },
- image: imageData,
+ images: imageDataList,
  location: {
  type: "Point",
  coordinates: [parsedLng, parsedLat],
@@ -752,8 +755,8 @@ export const uploadProof = async (req, res) => {
  }
 
  let proofUrl = "";
- if (req.file) {
- proofUrl = `/uploads/${req.file.filename}`;
+ if (req.files && req.files.length > 0) {
+ proofUrl = `/uploads/proofs/${req.file.filename}`;
  } else if (req.body.proofUrl) {
  proofUrl = req.body.proofUrl;
  } else {
@@ -775,7 +778,6 @@ export const uploadProof = async (req, res) => {
  } else {
  issue.status = "pending_verification";
  }
- await issue.save();
 
  // 🔥 TRACK HISTORY
  if (!issue.statusHistory) issue.statusHistory = [];
@@ -784,6 +786,7 @@ export const uploadProof = async (req, res) => {
  remark: req.body.isInvalid ? "Marked as invalid by operator with proof." : "Work completed. Proof uploaded for verification.",
  updatedAt: new Date()
  });
+
  await issue.save();
 
  // Send email/notification to citizen
@@ -892,7 +895,7 @@ export const verifyIssue = async (req, res) => {
  if (issue.resolution.proof) issue.resolution.proof.verified = true;
 
  // Store citizen's verification image if uploaded
- if (req.file) {
+ if (req.files && req.files.length > 0) {
  issue.resolution.citizenVerificationImage = `/uploads/${req.file.filename}`;
  }
 
@@ -976,7 +979,7 @@ export const reopenIssue = async (req, res) => {
 
  // Save citizen's rejection proof
  let citizenProofUrl = "";
- if (req.file) {
+ if (req.files && req.files.length > 0) {
  citizenProofUrl = `/uploads/${req.file.filename}`;
  if (!issue.resolution) issue.resolution = {};
  issue.resolution.rejectionProof = citizenProofUrl;
@@ -1067,7 +1070,7 @@ export const escalateIssue = async (req, res) => {
  }
 
  let proofUrl = "";
- if (req.file) {
+ if (req.files && req.files.length > 0) {
  proofUrl = `/uploads/proofs/${req.file.filename}`;
  }
 

@@ -24,8 +24,10 @@ import {
 import { Link } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { GoogleMap, useJsApiLoader, DirectionsService, DirectionsRenderer, Marker } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, Marker, Polyline } from "@react-google-maps/api";
 import { detectZone } from "../../../api/zone";
+
+const BASE_URL = "http://localhost:5000";
 
 const mapContainerStyle = {
     width: "100%",
@@ -62,9 +64,10 @@ const TaskDetailSingle = () => {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        libraries: ["routes", "geometry"],
     });
 
-    const [directions, setDirections] = useState(null);
+    const [routePath, setRoutePath] = useState(null);
     const [operatorLocation, setOperatorLocation] = useState(null);
     const [routeInfo, setRouteInfo] = useState({ distance: "", duration: "" });
     const [map, setMap] = useState(null);
@@ -80,7 +83,7 @@ const TaskDetailSingle = () => {
         try {
             setLoading(true);
             const res = await axios.get(
-                `http://localhost:5000/api/issues/${id}`,
+                `${BASE_URL}/api/issues/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -104,9 +107,11 @@ const TaskDetailSingle = () => {
                 assignedDate: issue.createdAt ? new Date(issue.createdAt).toLocaleDateString() : "N/A",
                 rejectionProof: issue.resolution?.rejectionProof || null,
                 zone: issue.zone || "N/A",
+                images: issue.images || [],
             };
 
             setTask(formatted);
+            console.log("Telemetry Data Synchronized:", formatted);
         } catch (err) {
             console.error("Fetch Error:", err);
             toast.error("Telemetry link failed");
@@ -122,7 +127,7 @@ const TaskDetailSingle = () => {
     /* ================= FETCH ZONES ================= */
     const fetchZones = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/zones", {
+            const res = await axios.get(`${BASE_URL}/api/zones`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             });
             setZonesData(res.data);
@@ -173,16 +178,58 @@ const TaskDetailSingle = () => {
         }
     }, []);
 
-    const directionsCallback = useCallback((result, status) => {
-        if (status === "OK" && result) {
-            setDirections(result);
-            const route = result.routes[0].legs[0];
-            setRouteInfo({
-                distance: route.distance.text,
-                duration: route.duration.text,
-            });
+    // Modern Routes API Logic
+    useEffect(() => {
+        if (isLoaded && operatorLocation && task?.lat && task?.lng) {
+            const fetchRoute = async () => {
+                try {
+                    // Initialize the Routes library
+                    const { Route } = await window.google.maps.importLibrary("routes");
+
+                    const originLatLng = new window.google.maps.LatLng(Number(operatorLocation.lat), Number(operatorLocation.lng));
+                    const destinationLatLng = new window.google.maps.LatLng(Number(task.lat), Number(task.lng));
+
+                    const request = {
+                        origin: { location: originLatLng },
+                        destination: { location: destinationLatLng },
+                        travelMode: "DRIVING",
+                        routingPreference: "TRAFFIC_AWARE",
+                        // Using wildcard for fields to return all metadata including polyline
+                        fields: ["*"]
+                    };
+
+                    const { routes } = await Route.computeRoutes(request);
+
+                    if (routes && routes.length > 0) {
+                        const route = routes[0];
+
+                        // Set distance and duration with defensive parsing
+                        const distKm = route.distanceMeters ? (route.distanceMeters / 1000).toFixed(1) : "0.0";
+                        const durRaw = route.duration || route.localizedValues?.duration?.text || "0s";
+                        const durMin = typeof durRaw === "string"
+                            ? Math.round(parseInt(durRaw.replace("s", "")) / 60)
+                            : (typeof durRaw === "number" ? Math.round(durRaw / 60) : 0);
+
+                        setRouteInfo({
+                            distance: `${distKm} km`,
+                            duration: `${durMin} min`
+                        });
+
+                        // Decode the encoded polyline
+                        if (route.polyline?.encodedPolyline) {
+                            const decodedPath = window.google.maps.geometry.encoding.decodePath(
+                                route.polyline.encodedPolyline
+                            );
+                            setRoutePath(decodedPath);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Routes API Error:", error);
+                }
+            };
+            fetchRoute();
         }
-    }, []);
+    }, [isLoaded, operatorLocation, task]);
 
     const startExternalNavigation = () => {
         if (!task?.lat || !task?.lng) return;
@@ -251,6 +298,13 @@ const TaskDetailSingle = () => {
             return;
         }
 
+        const validExtensions = ['jpg', 'jpeg', 'png'];
+        const extension = proofFile.name.split('.').pop().toLowerCase();
+        if (!validExtensions.includes(extension)) {
+            toast.error("Invalid file type. Only JPG, JPEG, and PNG are allowed.");
+            return;
+        }
+
         const isMatched = detectedZone?.trim().toLowerCase() === task?.zone?.trim().toLowerCase();
         if (!isMatched) {
             toast.error(`Sector mismatch: Deployment in ${detectedZone || "Unknown"} denied.`);
@@ -264,7 +318,7 @@ const TaskDetailSingle = () => {
         formData.append("lng", proofLng);
 
         try {
-            await axios.post(`http://localhost:5000/api/issues/${id}/upload-proof`, formData, {
+            await axios.post(`${BASE_URL}/api/issues/${id}/upload-proof`, formData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                     "Content-Type": "multipart/form-data",
@@ -287,13 +341,22 @@ const TaskDetailSingle = () => {
             return;
         }
 
+        if (escalationFile) {
+            const validExtensions = ['jpg', 'jpeg', 'png'];
+            const extension = escalationFile.name.split('.').pop().toLowerCase();
+            if (!validExtensions.includes(extension)) {
+                toast.error("Invalid file type. Only JPG, JPEG, and PNG are allowed.");
+                return;
+            }
+        }
+
         setIsEscalating(true);
         const formData = new FormData();
         formData.append("reason", escalationReason);
         if (escalationFile) formData.append("proof", escalationFile);
 
         try {
-            await axios.post(`http://localhost:5000/api/issues/${id}/escalate`, formData, {
+            await axios.post(`${BASE_URL}/api/issues/${id}/escalate`, formData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                     "Content-Type": "multipart/form-data",
@@ -374,26 +437,26 @@ const TaskDetailSingle = () => {
                         <h2 className={`text-5xl font-bold tracking-tighter ${isExpired ? 'text-rose-500' : 'text-primary'}`}>{timeLeft}</h2>
                     </div>
 
-                    <div className="bg-card border rounded-2xl p-6 flex flex-col justify-center">
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-1 opacity-50">Department Control</p>
-                        <h3 className="text-xl font-bold text-foreground truncate">{task.department}</h3>
+                    <div className="bg-card border rounded-2xl p-7 flex flex-col justify-center min-h-[140px] shadow-sm">
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-2 opacity-60 uppercase">Department Control</p>
+                        <h3 className="text-xl font-bold text-foreground break-words leading-tight">{task.department}</h3>
                     </div>
 
-                    <div className="bg-card border rounded-2xl p-6 flex flex-col justify-center">
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-1 opacity-50">Mission Sector</p>
-                        <h3 className="text-xl font-bold text-emerald-500 truncate">{task.zone}</h3>
+                    <div className="bg-card border rounded-2xl p-7 flex flex-col justify-center min-h-[140px] shadow-sm">
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-2 opacity-60 uppercase">Mission Sector</p>
+                        <h3 className="text-xl font-bold text-emerald-500 break-words leading-tight">{task.zone}</h3>
                     </div>
 
-                    <div className="bg-card border rounded-2xl p-6 flex flex-col justify-center">
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-1 opacity-50">Operator Locale</p>
-                        <h3 className={`text-xl font-bold truncate ${currentSector === task.zone ? 'text-emerald-500' : 'text-foreground opacity-60'}`}>
+                    <div className="bg-card border rounded-2xl p-7 flex flex-col justify-center min-h-[140px] shadow-sm">
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-2 opacity-60 uppercase">Operator Locale</p>
+                        <h3 className={`text-xl font-bold break-words leading-tight ${currentSector === task.zone ? 'text-emerald-500' : 'text-foreground opacity-60'}`}>
                             {currentSector || "Locking Locale..."}
                         </h3>
                     </div>
 
-                    <div className="bg-card border rounded-2xl p-6 flex flex-col justify-center">
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-1 opacity-50">Assignment Log</p>
-                        <h3 className="text-xl font-bold text-foreground">{task.assignedDate}</h3>
+                    <div className="bg-card border rounded-2xl p-7 flex flex-col justify-center min-h-[140px] shadow-sm">
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-2 opacity-60 uppercase">Assignment Log</p>
+                        <h3 className="text-xl font-bold text-foreground break-words leading-tight">{task.assignedDate}</h3>
                     </div>
                 </div>
 
@@ -451,6 +514,28 @@ const TaskDetailSingle = () => {
                                     "{task.description}"
                                 </div>
                             </div>
+
+                            {task.images && task.images.length > 0 && (
+                                <div className="space-y-3 pt-4">
+                                    <h4 className="text-[10px] font-black text-primary tracking-widest flex items-center gap-2 uppercase">
+                                        <Camera size={14} className="text-primary" />
+                                        Issue Image
+                                    </h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        {task.images.map((img, i) => (
+                                            <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-border group relative transition-all hover:border-primary/50">
+                                                <img
+                                                    src={img.url ? (img.url.startsWith('http') ? img.url : `${BASE_URL}${img.url.startsWith('/') ? '' : '/'}${img.url}`) : '/placeholder-image.png'}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    alt={`Evidence ${i}`}
+                                                    onError={(e) => { e.target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found'; }}
+                                                />
+                                                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Tactical Map Section */}
@@ -491,23 +576,18 @@ const TaskDetailSingle = () => {
                                             ]
                                         }}
                                     >
-                                        {operatorLocation && task.lat && (
-                                            <DirectionsService
+                                        {routePath && (
+                                            <Polyline
+                                                path={routePath}
                                                 options={{
-                                                    origin: operatorLocation,
-                                                    destination: { lat: task.lat, lng: task.lng },
-                                                    travelMode: "DRIVING"
+                                                    strokeColor: "#3b82f6",
+                                                    strokeOpacity: 1,
+                                                    strokeWeight: 5,
                                                 }}
-                                                callback={directionsCallback}
                                             />
                                         )}
-                                        {directions && <DirectionsRenderer directions={directions} options={{ suppressMarkers: false }} />}
-                                        {!directions && (
-                                            <>
-                                                {operatorLocation && <Marker position={operatorLocation} label="YOU" />}
-                                                {task.lat && <Marker position={{ lat: task.lat, lng: task.lng }} label="TARGET" />}
-                                            </>
-                                        )}
+                                        {operatorLocation && <Marker position={operatorLocation} label="YOU" />}
+                                        {task.lat && <Marker position={{ lat: task.lat, lng: task.lng }} label="TARGET" />}
                                     </GoogleMap>
                                 ) : (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-muted-foreground">
@@ -537,7 +617,12 @@ const TaskDetailSingle = () => {
                                     <AlertTriangle size={20} /> Protocol Counter-Verification
                                 </h4>
                                 <div className="rounded-xl overflow-hidden border border-rose-500/20 shadow-xl">
-                                    <img src={`http://127.0.0.1:5000${task.rejectionProof}`} alt="Evidence" className="w-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                                    <img
+                                        src={task.rejectionProof.startsWith('http') ? task.rejectionProof : `${BASE_URL}${task.rejectionProof.startsWith('/') ? '' : '/'}${task.rejectionProof}`}
+                                        alt="Evidence"
+                                        className="w-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/400x400?text=Rejection+Proof+Not+Found'; }}
+                                    />
                                 </div>
                                 <p className="text-[10px] font-bold text-rose-500/80 tracking-widest text-center">Citizen has rejected previous resolution. Sector revisit required.</p>
                             </div>
@@ -634,7 +719,7 @@ const TaskDetailSingle = () => {
                                     </div>
 
                                     <div className="border-2 border-dashed rounded-2xl p-10 text-center hover:bg-muted/30 transition-all cursor-pointer relative group">
-                                        <input type="file" accept="image/*" onChange={e => setProofFile(e.target.files[0])} className="hidden" id="modal-proof" />
+                                        <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" onChange={e => setProofFile(e.target.files[0])} className="hidden" id="modal-proof" />
                                         <label htmlFor="modal-proof" className="cursor-pointer flex flex-col items-center gap-4">
                                             <Camera size={40} className={`transition-all ${proofFile ? 'text-primary' : 'text-muted-foreground opacity-30'}`} />
                                             <p className="text-[10px] font-bold tracking-widest truncate max-w-[300px]">
@@ -680,7 +765,7 @@ const TaskDetailSingle = () => {
                                     </div>
 
                                     <div className="border border-dashed rounded-xl p-6 text-center hover:bg-muted/30 transition-all cursor-pointer relative group">
-                                        <input type="file" accept="image/*" onChange={e => setEscalationFile(e.target.files[0])} className="hidden" id="esc-proof" />
+                                        <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" onChange={e => setEscalationFile(e.target.files[0])} className="hidden" id="esc-proof" />
                                         <label htmlFor="esc-proof" className="cursor-pointer flex flex-col items-center gap-2 font-bold text-muted-foreground/60 text-[10px] tracking-widest">
                                             {escalationFile ? escalationFile.name : "Optional Detail Capture"}
                                         </label>

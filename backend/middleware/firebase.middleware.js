@@ -2,26 +2,26 @@ import admin from "../config/firebase.js";
 import User from "../models/user.model.js";
 
 export const firebaseAuth = async (req, res, next) => {
- try {
- const header = req.headers.authorization;
+  try {
+    const header = req.headers.authorization;
 
- if (!header || !header.startsWith("Bearer ")) {
- return res.status(401).json({ message: "No token provided" });
- }
+    if (!header || !header.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
 
- const token = header.split(" ")[1];
+    const token = header.split(" ")[1];
 
- const decoded = await admin.auth().verifyIdToken(token);
+    const decoded = await admin.auth().verifyIdToken(token);
 
- // ✅ Only attach decoded user
- req.firebaseUser = decoded;
+    // ✅ Only attach decoded user
+    req.firebaseUser = decoded;
 
- next();
+    next();
 
- } catch (error) {
- console.error("Firebase Verify Error:", error);
- res.status(401).json({ message: error.message });
- }
+  } catch (error) {
+    console.error("Firebase Verify Error:", error);
+    res.status(401).json({ message: error.message });
+  }
 };
 
 
@@ -29,32 +29,32 @@ export const firebaseAuth = async (req, res, next) => {
 import Admin from "../models/superadmin.model.js";
 
 export const verifyAdmin = async (req, res, next) => {
- try {
- // Firebase already verified in firebaseAuth middleware
- if (!req.firebaseUser) {
- return res.status(401).json({ message: "Unauthorized" });
- }
+  try {
+    // Firebase already verified in firebaseAuth middleware
+    if (!req.firebaseUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
- const mongoAdmin = await Admin.findOne({
- firebaseUID: req.firebaseUser.uid,
- });
+    const mongoAdmin = await Admin.findOne({
+      firebaseUID: req.firebaseUser.uid,
+    });
 
- if (!mongoAdmin) {
- return res.status(403).json({ message: "Admin not found" });
- }
+    if (!mongoAdmin) {
+      return res.status(403).json({ message: "Admin not found" });
+    }
 
- if (mongoAdmin.accountStatus !== "active") {
- return res.status(403).json({ message: "Admin suspended" });
- }
+    if (mongoAdmin.accountStatus !== "active") {
+      return res.status(403).json({ message: "Admin suspended" });
+    }
 
- req.admin = mongoAdmin;
+    req.admin = mongoAdmin;
 
- next();
+    next();
 
- } catch (error) {
- console.error("Admin Verify Error:", error);
- res.status(500).json({ message: "Server error" });
- }
+  } catch (error) {
+    console.error("Admin Verify Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 
@@ -63,114 +63,114 @@ export const verifyAdmin = async (req, res, next) => {
 import Department from "../models/department.model.js";
 
 export const verifyDepartment = async (req, res, next) => {
- try {
+  try {
 
- const department = await Department.findOne({
- firebaseUID: req.firebaseUser.uid
- });
+    const department = await Department.findOne({
+      firebaseUID: req.firebaseUser.uid
+    });
 
- if (!department) {
- return res.status(404).json({
- message: "Department not found"
- });
- }
+    if (!department) {
+      return res.status(404).json({
+        message: "Department not found"
+      });
+    }
 
- if (department.accountStatus !== "active") {
- return res.status(403).json({
- message: "Department suspended"
- });
- }
+    if (department.accountStatus !== "active") {
+      return res.status(403).json({
+        message: "Department suspended"
+      });
+    }
 
- if (department.approvalStatus !== "approved") {
- return res.status(403).json({
- message: "Department not approved yet"
- });
- }
+    if (department.approvalStatus !== "approved") {
+      return res.status(403).json({
+        message: "Department not approved yet"
+      });
+    }
 
- req.department = department;
+    req.department = department;
 
- next();
+    next();
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 /*================== OPERATOR MODEL ================= */
 import Operator from "../models/operator.model.js";
 
 export const verifyOperator = async (req, res, next) => {
- try {
+  try {
 
- if (!req.firebaseUser) {
- return res.status(401).json({ message: "Unauthorized" });
- }
+    if (!req.firebaseUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
- const operator = await Operator.findOne({
- firebaseUID: req.firebaseUser.uid,
- });
+    const operator = await Operator.findOne({
+      firebaseUID: req.firebaseUser.uid,
+    });
 
- if (!operator) {
- return res.status(403).json({ message: "Operator not found" });
- }
+    if (!operator) {
+      return res.status(403).json({ message: "Operator not found" });
+    }
 
- if (operator.status !== "active") {
- return res.status(403).json({ message: "Operator suspended" });
- }
+    if (operator.status !== "active") {
+      return res.status(403).json({ message: "Operator suspended" });
+    }
 
- req.operator = operator;
- next();
+    req.operator = operator;
+    next();
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 
 /*==================Attaching User to Request==================*/
 
 export const attachUser = async (req, res, next) => {
- try {
+  try {
 
- // Make sure firebaseAuth ran before
- if (!req.firebaseUser) {
- return res.status(401).json({ message: "Unauthorized" });
- }
+    // Make sure firebaseAuth ran before
+    if (!req.firebaseUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
- // Find user in MongoDB using Firebase UID
- const user = await User.findOne({
- firebaseUID: req.firebaseUser.uid
- });
+    // Find user in MongoDB using Firebase UID
+    const user = await User.findOne({
+      firebaseUID: req.firebaseUser.uid
+    });
 
- if (!user) {
- return res.status(404).json({ message: "User not found" });
- }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
- if (user.status === "suspended") {
- return res.status(403).json({ message: "Account suspended" });
- }
+    if (user.status === "suspended") {
+      return res.status(403).json({ message: "Account suspended" });
+    }
 
- // Attach full MongoDB user document
- req.user = user;
+    // Attach full MongoDB user document
+    req.user = user;
 
- next();
+    next();
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-export const restrictCityAdmin = (req,res,next)=>{
+export const restrictCityAdmin = (req, res, next) => {
 
- if(req.admin.role === "city_admin"){
+  if (req.admin.role === "city_admin") {
 
- if(req.body.city && req.body.city !== req.admin.assignedCity){
- return res.status(403).json({
- message:"City admin can manage only their city"
- })
- }
+    if (req.body.city && req.body.city !== req.admin.assignedCity) {
+      return res.status(403).json({
+        message: "City admin can manage only their city"
+      })
+    }
 
- }
+  }
 
- next()
+  next()
 };

@@ -19,6 +19,7 @@ import issueTypeRoutes from "./routes/issueType.routes.js";
 import zoneRoutes from "./routes/zone.route.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 import contactRoutes from "./routes/contact.route.js";
+import otpRoutes from "./routes/otp.routes.js";
 
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
 
@@ -71,6 +72,7 @@ app.use("/api/issue-types", issueTypeRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/zones", zoneRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/otp", otpRoutes);
 // =============================
 // ERROR HANDLING
 // =============================

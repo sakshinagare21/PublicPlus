@@ -212,6 +212,18 @@ const issueSchema = new mongoose.Schema(
 
  afterImages: [String],
 
+ proof: {
+ url: String,
+ uploadedAt: {
+ type: Date,
+ default: Date.now,
+ },
+ verified: {
+ type: Boolean,
+ default: false,
+ },
+ },
+
  qualityScore: Number,
 
  escalation: {

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { User, Shield, Building2, UserCog, ArrowRight, Activity, Zap } from "lucide-react";
 import LandingNavbar from "../../layout/LandingNavbar";
+import Footer from "../../layout/Footer";
 
 const RegisterChoice = () => {
  const choices = [
@@ -48,9 +49,6 @@ const RegisterChoice = () => {
  <div className="max-w-7xl w-full relative z-10">
  {/* Header */}
  <div className="text-center mb-20 animate-in fade-in slide-in-from-bottom-5 duration-700">
- <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold tracking-widest mb-6">
- <Zap size={14} /> Node Selection
- </div>
  <h1 className="text-5xl md:text-6xl font-black text-foreground mb-6 tracking-tight">
  Identify Your <span className="text-primary">Role</span>
  </h1>
@@ -90,24 +88,14 @@ const RegisterChoice = () => {
  </button>
  </div>
 
- {/* Secondary Status indicator */}
- <div className="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground">
- <Activity size={12} /> Link Stable
- </div>
  </Link>
  ))}
  </div>
 
- <div className="mt-20 text-center space-y-4">
- <p className="text-xs font-bold text-muted-foreground/50 tracking-[0.3em] animate-pulse">
- Secured by Civic-OS Core
- </p>
- <p className="text-muted-foreground font-medium">
- Already initialized? <Link to="/login-citizen" className="text-primary font-bold hover:underline">Return to Login Portal</Link>
- </p>
  </div>
  </div>
- </div>
+ <Footer/>
+
  </div>
  );
 };

@@ -12,7 +12,7 @@ export const validateImage = async (file) => {
       .digest("hex");
 
     /* ================= DUPLICATE CHECK ================= */
-    const existing = await Issue.findOne({ "image.hash": hash });
+    const existing = await Issue.findOne({ "images.hash": hash });
 
     let fraudScore = 0;
     let isDuplicate = false;

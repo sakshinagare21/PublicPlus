@@ -13,8 +13,10 @@ import {
  Bell
 } from "lucide-react";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 const OperatorLayout = ({ children }) => {
+ const { logout } = useAuth();
  const navigate = useNavigate();
  const [operator, setOperator] = useState(null);
 
@@ -42,8 +44,8 @@ const OperatorLayout = ({ children }) => {
 
  /* ================= LOGOUT ================= */
  const handleLogout = () => {
- localStorage.removeItem("token");
- navigate("/operator-login");
+ logout();
+ window.location.href = "/operator-login";
  };
 
  return (

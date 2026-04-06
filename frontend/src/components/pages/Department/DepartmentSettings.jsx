@@ -1,8 +1,47 @@
 import { useState } from "react";
 import DepartmentLayout from "../../layout/DepartmentLayout";
+import { updatePassword } from "firebase/auth";
+import { auth } from "../../../firebase";
+import toast from "react-hot-toast";
 
 const DepartmentSettings = () => {
  const [activeTab, setActiveTab] = useState("General");
+ const [passwords, setPasswords] = useState({
+     new: "",
+     confirm: ""
+ });
+ const [loading, setLoading] = useState(false);
+
+ const handleChangePassword = async () => {
+     if (!passwords.new || passwords.new.length < 6) {
+         toast.error("Password must be at least 6 characters.");
+         return;
+     }
+     if (passwords.new !== passwords.confirm) {
+         toast.error("Passwords do not match.");
+         return;
+     }
+
+     setLoading(true);
+     try {
+         const user = auth.currentUser;
+         if (user) {
+             await updatePassword(user, passwords.new);
+             toast.success("Department security passkey updated.");
+             setPasswords({ new: "", confirm: "" });
+         } else {
+             toast.error("Session not found.");
+         }
+     } catch (error) {
+         if (error.code === 'auth/requires-recent-login') {
+             toast.error("Please re-login to perform this security action.");
+         } else {
+             toast.error(error.message);
+         }
+     } finally {
+         setLoading(false);
+     }
+ };
 
  return (
  <DepartmentLayout>
@@ -137,36 +176,38 @@ const DepartmentSettings = () => {
 
  {/* SECURITY */}
  {activeTab === "Security" && (
- <div className="space-y-4">
+ <div className="space-y-4 font-sans tracking-tight">
  <h3 className="font-semibold mb-4">
  Security Settings
  </h3>
 
  <input
  type="password"
- placeholder="Current Password"
- className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-3"
+ placeholder="New Secure Password"
+ value={passwords.new}
+ onChange={(e) => setPasswords({...passwords, new: e.target.value})}
+ className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-3 outline-none focus:border-blue-500 transition-all font-medium"
  />
 
  <input
  type="password"
- placeholder="New Password"
- className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-3"
+ placeholder="Confirm Secure Password"
+ value={passwords.confirm}
+ onChange={(e) => setPasswords({...passwords, confirm: e.target.value})}
+ className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-3 outline-none focus:border-blue-500 transition-all font-medium"
  />
 
- <input
- type="password"
- placeholder="Confirm Password"
- className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-3"
- />
-
- <label className="flex items-center gap-3">
- <input type="checkbox" />
- Enable Two-Factor Authentication
+ <label className="flex items-center gap-3 text-[10px] uppercase font-bold tracking-widest text-gray-500 py-2">
+ <input type="checkbox" className="w-5 h-5" />
+ Enable Advanced Multi-Factor Grid
  </label>
 
- <button className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg mt-4">
- Update Password
+ <button 
+   onClick={handleChangePassword}
+   disabled={loading}
+   className="bg-blue-600 hover:bg-blue-700 text-sm font-bold px-8 py-4 rounded-xl mt-4 transition-all active:scale-95 disabled:opacity-50"
+ >
+   {loading ? "Updating Security..." : "Commit Passkey Update"}
  </button>
  </div>
  )}

@@ -58,36 +58,76 @@ const DepartmentDashboard = () => {
  );
  }
 
- const kpis = [
- {
- title: "Today's Issues",
- value: data.summary.today,
- label: "New issues reported today",
- icon: <Zap size={18} className="text-emerald-500" />,
- delay: "delay-100"
- },
- {
- title: "Weekly Activity",
- value: data.summary.week,
- label: "Issues this week",
- icon: <Activity size={18} className="text-blue-500" />,
- delay: "delay-200"
- },
- {
- title: "SLA Compliance",
- value: `${data.summary.slaCompliance}%`,
- label: "Resolved within time",
- icon: <TrendingUp size={18} className="text-primary" />,
- delay: "delay-300"
- },
- {
- title: "Total Issues",
- value: data.summary.totalIssues,
- label: "All-time records",
- icon: <Calendar size={18} className="text-amber-500" />,
- delay: "delay-400"
- }
- ];
+  if (!data) {
+    return (
+      <DepartmentLayout>
+        <div className="flex flex-col items-center justify-center h-[70vh] px-6 text-center">
+          <div className="max-w-md w-full bg-card border border-destructive/20 rounded-[2.5rem] p-12 shadow-2xl animate-in zoom-in-95 duration-500 relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-destructive/50" />
+            <div className="absolute -right-8 -top-8 w-32 h-32 bg-destructive/5 rounded-full blur-3xl group-hover:bg-destructive/10 transition-colors" />
+            
+            <div className="mx-auto w-20 h-20 bg-destructive/10 rounded-3xl flex items-center justify-center mb-8 shadow-inner">
+              <AlertTriangle className="h-10 w-10 text-destructive animate-pulse" />
+            </div>
+
+            <h2 className="text-2xl font-black italic tracking-tighter mb-4">Tactical Link Failure</h2>
+            <p className="text-sm text-muted-foreground font-medium leading-relaxed mb-10 italic">
+              Your oversight authorization has expired or is invalid for this sector. Operational data cannot be synchronized until your credentials are refreshed.
+            </p>
+
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black tracking-tighter hover:opacity-90 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20"
+              >
+                RE-SYNC STREAM
+              </button>
+              <button 
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.href = "/department-login";
+                }}
+                className="w-full py-4 border border-border rounded-2xl font-bold text-xs tracking-widest text-muted-foreground hover:bg-muted/50 transition-all uppercase"
+              >
+                Clear Session & Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </DepartmentLayout>
+    );
+  }
+
+  const kpis = [
+    {
+      title: "Today's Issues",
+      value: data.summary?.today || 0,
+      label: "New issues reported today",
+      icon: <Zap size={18} className="text-emerald-500" />,
+      delay: "delay-100"
+    },
+    {
+      title: "Weekly Activity",
+      value: data.summary?.week || 0,
+      label: "Issues this week",
+      icon: <Activity size={18} className="text-blue-500" />,
+      delay: "delay-200"
+    },
+    {
+      title: "SLA Compliance",
+      value: `${data.summary?.slaCompliance || 0}%`,
+      label: "Resolved within time",
+      icon: <TrendingUp size={18} className="text-primary" />,
+      delay: "delay-300"
+    },
+    {
+      title: "Total Issues",
+      value: data.summary?.totalIssues || 0,
+      label: "All-time records",
+      icon: <Calendar size={18} className="text-amber-500" />,
+      delay: "delay-400"
+    }
+  ];
 
  return (
  <DepartmentLayout>

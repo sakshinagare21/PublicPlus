@@ -44,7 +44,7 @@ const Contact = () => {
  {/* Header */}
  <div className="text-center mb-16">
  <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
- Contact Our Intelligence Center
+ Contact Our Team
  </h1>
  <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
  Have questions about the PublicPlus ecosystem? Our mission control team is here to assist you with technical support and coordination.

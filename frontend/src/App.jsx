@@ -13,6 +13,7 @@ import UserNotifications from "./components/pages/user/UserNotifications";
 import CommunityIssues from "./components/pages/user/CommunityIssues";
 import NotFound from "./components/pages/common/NotFound";
 import FAQ from "./components/pages/common/FAQ";
+import Help from "./components/pages/common/Help";
 import Contact from "./components/pages/common/Contact";
 import About from "./components/pages/common/About";
 import RegisterChoice from "./components/pages/common/RegisterChoice";
@@ -64,82 +65,87 @@ import OperatorIssueHistory from "./components/pages/operator/OperatorIssueHisto
 
 
 import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 function App() {
- return (
- <ThemeProvider>
- <BrowserRouter>
- <Toaster position="top-right" />
- <Routes>
- <Route path="/" element={<Index />} />
- <Route path="/help" element={<FAQ/>}/>
- <Route path="/contact" element={<Contact/>}/>
- <Route path="/about" element={<About/>}/>
- <Route path="/impact" element={<Impact/>}/>
- <Route path="/decide-role" element={<RegisterChoice/>}/>
- {/* Admin */}
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster position="top-right" />
+          <Routes>
+            {/* PUBLIC ROUTES */}
+            <Route path="/" element={<Index />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/impact" element={<Impact />} />
+            <Route path="/decide-role" element={<RegisterChoice />} />
 
- <Route path="/admin-login" element={<AdminLogin/>}/>
- <Route path="/admin" element={<DashboardAdmin />} />
- <Route path="/admin-issues" element={<IssueIntelligence/>}/>
- <Route path="/admin-analytics" element={<AdminAnalytics/>}/>
- <Route path="/audit" element={<AuditLogs/>}/>
- <Route path="/departments" element={<Departments/>}/>
- <Route path="/tasks" element={<TaskOperations/>}/>
- <Route path="/users" element={<UserManagement/>}/>
- <Route path="/zones" element={<ZoneMapping/>}/>
- <Route path="/settings" element={<SettingsMain/>}/>
- <Route path="/admin/notifications" element={<AdminDepartmentNotification/>}/>
- <Route path="/admin/contact" element={<AdminContact/>}/>
- <Route path="/admin/profile" element={<AdminProfile/>}/>
+            {/* AUTH ROUTES (PUBLIC) */}
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/department-login" element={<DepartmentLogin />} />
+            <Route path="/department-register" element={<DepartmentRegister />} />
+            <Route path="/register-citizen" element={<CitizenRegister />} />
+            <Route path="/login-citizen" element={<CitizenLogin />} />
+            <Route path="/operator-login" element={<OperatorLogin />} />
+            <Route path="/operator-register" element={<OperatorRegister />} />
 
- {/* Department */}
- <Route path="/department-login" element={<DepartmentLogin/>}/>
- <Route path="/department-register" element={<DepartmentRegister/>}/>
- 
- <Route path="/department/dashboard" element={<DepartmentDashboard/>}/>
- <Route path="/department/issues" element={<DepartmentIssue/>}/>
- <Route path="/department/team" element={<TeamManagement/>}/>
- <Route path="/department/zones" element={<Zones/>}/>
- <Route path="/department/performance" element={<DepartmentPerformance/>}/>
- <Route path="/department/reports" element={<DepartmentReports/>}/>
- <Route path="/department/notifications" element={<DepartmentNotifications/>}/>
- <Route path="/department/settings" element={<DepartmentSettings/>}/>
- <Route path="/department/profile" element={<DepartmentProfile/>}/>
- <Route path="/department/operator-requests" element={<OperatorRequests/>}/>
- {/* //working */}
- <Route path="/department/settings/issue-types" element={<IssueTypeForm/>}/>
- <Route path="/department/settings/zones" element={<ZoneConfiguration/>}/>
- <Route path="/department/operator/:operatorId" element={<OperatorDetails/>}/>
- {/* ====User===== */}
- <Route path='/register-citizen' element={<CitizenRegister/>}/>
- <Route path="/login-citizen" element={<CitizenLogin/>}/>
- <Route path='/dashboard' element={<Dashboard/>}/>
- <Route path="/community-issues" element={<CommunityIssues/>}/>
- <Route path="/reports" element={<Reports/>}/>
- <Route path="/issue/:issueId" element={<IssueDetail />} />
- <Route path="/analytics" element={<Analytics/>}/>
- <Route path="/map" element={<MapView/>}/>
- <Route path="/profile" element={<Profile/>}/>
- <Route path="/post-report" element={<ReportIssue/>}/>
- <Route path="/notifications" element={<UserNotifications/>}/>
+            {/* ADMIN ROUTES (PROTECTED) */}
+            <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><DashboardAdmin /></ProtectedRoute>} />
+            <Route path="/admin-issues" element={<ProtectedRoute allowedRoles={['admin']}><IssueIntelligence /></ProtectedRoute>} />
+            <Route path="/admin-analytics" element={<ProtectedRoute allowedRoles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
+            <Route path="/audit" element={<ProtectedRoute allowedRoles={['admin']}><AuditLogs /></ProtectedRoute>} />
+            <Route path="/departments" element={<ProtectedRoute allowedRoles={['admin']}><Departments /></ProtectedRoute>} />
+            <Route path="/tasks" element={<ProtectedRoute allowedRoles={['admin']}><TaskOperations /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><UserManagement /></ProtectedRoute>} />
+            <Route path="/zones" element={<ProtectedRoute allowedRoles={['admin']}><ZoneMapping /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute allowedRoles={['admin']}><SettingsMain /></ProtectedRoute>} />
+            <Route path="/admin/notifications" element={<ProtectedRoute allowedRoles={['admin']}><AdminDepartmentNotification /></ProtectedRoute>} />
+            <Route path="/admin/contact" element={<ProtectedRoute allowedRoles={['admin']}><AdminContact /></ProtectedRoute>} />
+            <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={['admin']}><AdminProfile /></ProtectedRoute>} />
 
- {/*======Operator==== */}
- <Route path="/operator-login" element={<OperatorLogin/>}/>
- <Route path="/operator-register" element={<OperatorRegister/>}/>
- <Route path="/operator/dashboard" element={<OperatorDashboard/>}/>
- <Route path="/operator/tasks" element={<OperatorMyTasks/>}/>
- <Route path="/operator/tasks/:id" element={<TaskDetailSingle/>}/>
- <Route path="/operator/profile" element={<ProfileOperator/>}/>
- <Route path="/operator/notifications" element={<OperatorNotifications/>}/>
- <Route path="/operator/history" element={<OperatorIssueHistory/>}/>
- 
- {/* == Not found==== */}
- <Route path="*" element={<NotFound/>}/>
+            {/* DEPARTMENT ROUTES (PROTECTED) */}
+            <Route path="/department/dashboard" element={<ProtectedRoute allowedRoles={['department']}><DepartmentDashboard /></ProtectedRoute>} />
+            <Route path="/department/issues" element={<ProtectedRoute allowedRoles={['department']}><DepartmentIssue /></ProtectedRoute>} />
+            <Route path="/department/team" element={<ProtectedRoute allowedRoles={['department']}><TeamManagement /></ProtectedRoute>} />
+            <Route path="/department/zones" element={<ProtectedRoute allowedRoles={['department']}><Zones /></ProtectedRoute>} />
+            <Route path="/department/performance" element={<ProtectedRoute allowedRoles={['department']}><DepartmentPerformance /></ProtectedRoute>} />
+            <Route path="/department/reports" element={<ProtectedRoute allowedRoles={['department']}><DepartmentReports /></ProtectedRoute>} />
+            <Route path="/department/notifications" element={<ProtectedRoute allowedRoles={['department']}><DepartmentNotifications /></ProtectedRoute>} />
+            <Route path="/department/settings" element={<ProtectedRoute allowedRoles={['department']}><DepartmentSettings /></ProtectedRoute>} />
+            <Route path="/department/profile" element={<ProtectedRoute allowedRoles={['department']}><DepartmentProfile /></ProtectedRoute>} />
+            <Route path="/department/operator-requests" element={<ProtectedRoute allowedRoles={['department']}><OperatorRequests /></ProtectedRoute>} />
+            <Route path="/department/settings/issue-types" element={<ProtectedRoute allowedRoles={['department']}><IssueTypeForm /></ProtectedRoute>} />
+            <Route path="/department/settings/zones" element={<ProtectedRoute allowedRoles={['department']}><ZoneConfiguration /></ProtectedRoute>} />
+            <Route path="/department/operator/:operatorId" element={<ProtectedRoute allowedRoles={['department']}><OperatorDetails /></ProtectedRoute>} />
 
- </Routes>
- </BrowserRouter>
- </ThemeProvider>
+            {/* USER ROUTES (PROTECTED) */}
+            <Route path='/dashboard' element={<ProtectedRoute allowedRoles={['citizen']}><Dashboard /></ProtectedRoute>} />
+            <Route path="/community-issues" element={<ProtectedRoute allowedRoles={['citizen']}><CommunityIssues /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute allowedRoles={['citizen']}><Reports /></ProtectedRoute>} />
+            <Route path="/issue/:issueId" element={<ProtectedRoute allowedRoles={['citizen']}><IssueDetail /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute allowedRoles={['citizen']}><Analytics /></ProtectedRoute>} />
+            <Route path="/map" element={<ProtectedRoute allowedRoles={['citizen']}><MapView /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute allowedRoles={['citizen']}><Profile /></ProtectedRoute>} />
+            <Route path="/post-report" element={<ProtectedRoute allowedRoles={['citizen']}><ReportIssue /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute allowedRoles={['citizen']}><UserNotifications /></ProtectedRoute>} />
+
+            {/* OPERATOR ROUTES (PROTECTED) */}
+            <Route path="/operator/dashboard" element={<ProtectedRoute allowedRoles={['operator']}><OperatorDashboard /></ProtectedRoute>} />
+            <Route path="/operator/tasks" element={<ProtectedRoute allowedRoles={['operator']}><OperatorMyTasks /></ProtectedRoute>} />
+            <Route path="/operator/tasks/:id" element={<ProtectedRoute allowedRoles={['operator']}><TaskDetailSingle /></ProtectedRoute>} />
+            <Route path="/operator/profile" element={<ProtectedRoute allowedRoles={['operator']}><ProfileOperator /></ProtectedRoute>} />
+            <Route path="/operator/notifications" element={<ProtectedRoute allowedRoles={['operator']}><OperatorNotifications /></ProtectedRoute>} />
+            <Route path="/operator/history" element={<ProtectedRoute allowedRoles={['operator']}><OperatorIssueHistory /></ProtectedRoute>} />
+
+            {/* == Not found==== */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
  );
 }
 

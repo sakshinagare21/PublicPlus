@@ -18,211 +18,211 @@ import User from "../models/user.model.js";
 /* ================= FIREBASE LOGIN ================= */
 
 export const firebaseLogin = async (req, res) => {
- try {
+    try {
 
- const { uid, email, name, picture } = req.firebaseUser;
+        const { uid, email, name, picture } = req.firebaseUser;
 
- let user = await User.findOne({ firebaseUID: uid });
+        let user = await User.findOne({ firebaseUID: uid });
 
- // 🔥 If user exists but was deleted → restore account
- if (user && user.accountStatus === "deleted") {
+        // 🔥 If user exists but was deleted → restore account
+        if (user && user.accountStatus === "deleted") {
 
- user.accountStatus = "active";
- user.lastLogin = new Date();
+            user.accountStatus = "active";
+            user.lastLogin = new Date();
 
- await user.save();
+            await user.save();
 
- return res.json(user);
- }
+            return res.json(user);
+        }
 
- // If user doesn't exist → create new
- if (!user) {
- user = await User.create({
- firebaseUID: uid,
- email: email,
- fullName: name || "New User",
- profilePhoto: picture || "",
- accountStatus: "active"
- });
- }
+        // If user doesn't exist → create new
+        if (!user) {
+            user = await User.create({
+                firebaseUID: uid,
+                email: email,
+                fullName: name || "New User",
+                profilePhoto: picture || "",
+                accountStatus: "active"
+            });
+        }
 
- user.lastLogin = new Date();
- await user.save();
+        user.lastLogin = new Date();
+        await user.save();
 
- res.json(user);
+        res.json(user);
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
 /* ================= CREATE PROFILE ================= */
 
 export const createProfile = async (req, res) => {
- try {
+    try {
 
- const { uid, email } = req.firebaseUser;
+        const { uid, email } = req.firebaseUser;
 
- let user = await User.findOne({ email });
+        let user = await User.findOne({ email });
 
- // If user exists but firebase account was deleted → restore
- if (user && user.firebaseUID !== uid) {
+        // If user exists but firebase account was deleted → restore
+        if (user && user.firebaseUID !== uid) {
 
- user.firebaseUID = uid;
- user.accountStatus = "active";
- user.fullName = req.body.name;
- user.phoneNumber = req.body.mobile;
- user.dateOfBirth = req.body.dob;
- user.gender = req.body.gender;
+            user.firebaseUID = uid;
+            user.accountStatus = "active";
+            user.fullName = req.body.name;
+            user.phoneNumber = req.body.mobile;
+            user.dateOfBirth = req.body.dob;
+            user.gender = req.body.gender;
 
- user.homeLocation = {
- latitude: req.body.latitude,
- longitude: req.body.longitude,
- address: req.body.address
- };
+            user.homeLocation = {
+                latitude: req.body.latitude,
+                longitude: req.body.longitude,
+                address: req.body.address
+            };
 
- await user.save();
+            await user.save();
 
- return res.json({
- message: "Account restored successfully",
- user
- });
- }
+            return res.json({
+                message: "Account restored successfully",
+                user
+            });
+        }
 
- if (user) {
- return res.status(400).json({
- message: "Profile already exists"
- });
- }
+        if (user) {
+            return res.status(400).json({
+                message: "Profile already exists"
+            });
+        }
 
- // create new user
- user = await User.create({
- firebaseUID: uid,
- email,
- fullName: req.body.name,
- phoneNumber: req.body.mobile,
- dateOfBirth: req.body.dob,
- gender: req.body.gender,
- homeLocation: {
- latitude: req.body.latitude,
- longitude: req.body.longitude,
- address: req.body.address
- }
- });
+        // create new user
+        user = await User.create({
+            firebaseUID: uid,
+            email,
+            fullName: req.body.name,
+            phoneNumber: req.body.mobile,
+            dateOfBirth: req.body.dob,
+            gender: req.body.gender,
+            homeLocation: {
+                latitude: req.body.latitude,
+                longitude: req.body.longitude,
+                address: req.body.address
+            }
+        });
 
- res.status(201).json({
- message: "Profile created successfully",
- user
- });
+        res.status(201).json({
+            message: "Profile created successfully",
+            user
+        });
 
- } catch (error) {
- console.error("Create Profile Error:", error);
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        console.error("Create Profile Error:", error);
+        res.status(500).json({ message: error.message });
+    }
 };
 /* ================= GET PROFILE ================= */
 
 export const getUserProfile = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.user._id).select("-passwordHash");
+        const user = await User.findById(req.user._id).select("-passwordHash");
 
- res.json(user);
+        res.json(user);
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
 /* ================= UPDATE PROFILE ================= */
 
 export const updateUserProfile = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id);
 
- user.fullName = req.body.fullName || user.fullName;
- user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
- user.profilePhoto = req.body.profilePhoto || user.profilePhoto;
+        user.fullName = req.body.fullName || user.fullName;
+        user.phoneNumber = req.body.phoneNumber || user.phoneNumber;
+        user.profilePhoto = req.body.profilePhoto || user.profilePhoto;
 
- await user.save();
+        await user.save();
 
- res.json({
- message: "Profile updated",
- user
- });
+        res.json({
+            message: "Profile updated",
+            user
+        });
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
 /* ================= UPDATE LOCATION ================= */
 
 export const updateLocation = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id);
 
- user.homeLocation = {
- latitude: req.body.latitude,
- longitude: req.body.longitude,
- address: req.body.address
- };
+        user.homeLocation = {
+            latitude: req.body.latitude,
+            longitude: req.body.longitude,
+            address: req.body.address
+        };
 
- await user.save();
+        await user.save();
 
- res.json({ message: "Location updated" });
+        res.json({ message: "Location updated" });
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
 /* ================= DEVICE ================= */
 
 export const addDevice = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id);
 
- user.devices.push({
- deviceId: req.body.deviceId,
- platform: req.body.platform,
- pushToken: req.body.pushToken,
- lastUsed: new Date(),
- });
+        user.devices.push({
+            deviceId: req.body.deviceId,
+            platform: req.body.platform,
+            pushToken: req.body.pushToken,
+            lastUsed: new Date(),
+        });
 
- await user.save();
+        await user.save();
 
- res.json({ message: "Device added" });
+        res.json({ message: "Device added" });
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
 /* ================= NOTIFICATIONS ================= */
 
 export const updateNotificationSettings = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id);
 
- user.notificationSettings = req.body;
+        user.notificationSettings = req.body;
 
- await user.save();
+        await user.save();
 
- res.json({ message: "Notification settings updated" });
+        res.json({ message: "Notification settings updated" });
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
@@ -230,62 +230,62 @@ export const updateNotificationSettings = async (req, res) => {
 
 export const updateTrustScore = async (userId, trustData) => {
 
- const user = await User.findById(userId);
+    const user = await User.findById(userId);
 
- user.trustMetrics = {
- ...user.trustMetrics,
- ...trustData,
- };
+    user.trustMetrics = {
+        ...user.trustMetrics,
+        ...trustData,
+    };
 
- await user.save();
+    await user.save();
 };
 
 
 /* ================= USER REPORTS ================= */
 
 export const getUserReports = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.user._id)
- .populate("reports");
+        const user = await User.findById(req.user._id)
+            .populate("reports");
 
- res.json(user.reports);
+        res.json(user.reports);
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
 /* ================= ADMIN ================= */
 
 export const getAllUsers = async (req, res) => {
- try {
+    try {
 
- const users = await User.find().select("-passwordHash");
+        const users = await User.find().select("-passwordHash");
 
- res.json(users);
+        res.json(users);
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 /*================= BLOCK USER ================= */
 export const blockUser = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id);
 
- user.accountStatus = "suspended";
+        user.accountStatus = "suspended";
 
- await user.save();
+        await user.save();
 
- res.json({ message: "User suspended" });
+        res.json({ message: "User suspended" });
 
- } catch (error) {
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
 /*
@@ -293,28 +293,28 @@ Soft delete user - delete Firebase account
 but keep data in MongoDB
 */
 export const deleteUser = async (req, res) => {
- try {
+    try {
 
- const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id);
 
- if (!user) {
- return res.status(404).json({ message: "User not found" });
- }
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
- // 🔥 Delete from Firebase
- await admin.auth().deleteUser(user.firebaseUID);
+        // 🔥 Delete from Firebase
+        await admin.auth().deleteUser(user.firebaseUID);
 
- // 🔥 Soft delete in MongoDB
- user.accountStatus = "deleted";
+        // 🔥 Soft delete in MongoDB
+        user.accountStatus = "deleted";
 
- await user.save();
+        await user.save();
 
- res.json({
- message: "User deleted successfully (soft delete)"
- });
+        res.json({
+            message: "User deleted successfully (soft delete)"
+        });
 
- } catch (error) {
- console.error("Delete user error:", error);
- res.status(500).json({ message: error.message });
- }
+    } catch (error) {
+        console.error("Delete user error:", error);
+        res.status(500).json({ message: error.message });
+    }
 };
