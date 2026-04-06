@@ -21,7 +21,7 @@ import {
     Target
 } from "lucide-react";
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const mapContainerStyle = {
     width: "100%",
@@ -34,12 +34,12 @@ const defaultCenter = {
 };
 
 const MapView = () => {
+    const navigate = useNavigate();
     const [issues, setIssues] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userLocation, setUserLocation] = useState(null);
     const [selectedIssue, setSelectedIssue] = useState(null);
-    const [isReporting, setIsReporting] = useState(false);
     const [newIssueCoords, setNewIssueCoords] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -113,13 +113,6 @@ const MapView = () => {
         }
     };
 
-    const handleMapClick = (e) => {
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
-        setNewIssueCoords({ lat, lng });
-        setIsReporting(true);
-    };
-
     const filteredIssues = issues.filter(i => {
         const matchesCategory = filters.categories.includes(i.category?._id);
         const matchesPriority = filters.priorities.includes(i.priority?.level?.toUpperCase());
@@ -140,9 +133,9 @@ const MapView = () => {
 
     const getMarkerIcon = (priority) => {
         const p = priority?.toLowerCase();
-        if (p === 'critical' || p === 'high') return "http://maps.google.com/mapfiles/ms/icons/red-pushpin.png";
-        if (p === 'medium') return "http://maps.google.com/mapfiles/ms/icons/orange-pushpin.png";
-        return "http://maps.google.com/mapfiles/ms/icons/green-pushpin.png";
+        if (p === 'critical' || p === 'high') return "https://maps.google.com/mapfiles/ms/icons/red-pushpin.png";
+        if (p === 'medium') return "https://maps.google.com/mapfiles/ms/icons/orange-pushpin.png";
+        return "https://maps.google.com/mapfiles/ms/icons/green-pushpin.png";
     };
 
     return (
@@ -151,21 +144,12 @@ const MapView = () => {
 
                 {/* Tactical Filter Sidebar */}
                 <div className="hidden lg:flex w-80 flex-col border-r border-border bg-card overflow-y-auto custom-scrollbar p-8 z-20">
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                            <Layers size={20} />
-                        </div>
-                        <div>
-                            <h2 className="text-xs font-black tracking-[0.2em] text-foreground">Strategic Overlay</h2>
-                            <p className="text-[10px] font-bold text-muted-foreground opacity-60">Operations Unit 01</p>
-                        </div>
-                    </div>
 
                     <div className="space-y-10">
                         {/* Sector Status */}
                         <div>
                             <p className="text-[10px] font-black text-muted-foreground opacity-40 mb-5 tracking-widest flex items-center gap-2">
-                                <Activity size={12} /> Tracking Topology
+                                <Activity size={12} /> Tracking Details
                             </p>
                             <div className="flex flex-wrap gap-2">
                                 {["reported", "assigned", "in_progress", "resolved"].map(status => (
@@ -173,8 +157,8 @@ const MapView = () => {
                                         key={status}
                                         onClick={() => toggleFilter("statuses", status)}
                                         className={`px-3 py-2 rounded-xl text-[10px] font-black tracking-wider transition-all border ${filters.statuses.includes(status)
-                                                ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20"
-                                                : "bg-muted/50 border-border text-muted-foreground hover:border-primary/50"
+                                            ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20"
+                                            : "bg-muted/50 border-border text-muted-foreground hover:border-primary/50"
                                             }`}
                                     >
                                         {status.replace("_", " ")}
@@ -186,7 +170,7 @@ const MapView = () => {
                         {/* Severity Matrix */}
                         <div>
                             <p className="text-[10px] font-black text-muted-foreground opacity-40 mb-5 tracking-widest flex items-center gap-2">
-                                <AlertTriangle size={12} /> Threat Assessment
+                                <AlertTriangle size={12} /> Priority
                             </p>
                             <div className="space-y-2">
                                 {["CRITICAL", "HIGH", "MEDIUM", "LOW"].map(p => (
@@ -194,8 +178,8 @@ const MapView = () => {
                                         key={p}
                                         onClick={() => toggleFilter("priorities", p)}
                                         className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all ${filters.priorities.includes(p)
-                                                ? "bg-muted border-primary/20 opacity-100 shadow-inner"
-                                                : "bg-transparent border-transparent opacity-40 hover:opacity-100"
+                                            ? "bg-muted border-primary/20 opacity-100 shadow-inner"
+                                            : "bg-transparent border-transparent opacity-40 hover:opacity-100"
                                             }`}
                                     >
                                         <span className="flex items-center gap-4">
@@ -212,7 +196,7 @@ const MapView = () => {
                         {/* Division Selector */}
                         <div>
                             <p className="text-[10px] font-black text-muted-foreground opacity-40 mb-5 tracking-widest flex items-center gap-2">
-                                <Target size={12} /> Infrastructure Divisions
+                                <Target size={12} /> Categories
                             </p>
                             <div className="space-y-3 px-1">
                                 {categories.map(cat => (
@@ -237,9 +221,9 @@ const MapView = () => {
 
                     <div className="mt-auto pt-8 border-t border-border">
                         <div className="p-5 bg-primary/5 rounded-2xl border border-primary/10">
-                            <p className="text-[9px] font-black text-primary mb-2 tracking-[0.2em]">Live Telemetry</p>
+                            <p className="text-[9px] font-black text-primary mb-2 tracking-[0.2em]">Live Filter</p>
                             <p className="text-xs font-bold text-foreground flex items-center justify-between">
-                                Active Nodes <span>{filteredIssues.length}</span>
+                                Active Issues <span>{filteredIssues.length}</span>
                             </p>
                         </div>
                     </div>
@@ -272,7 +256,7 @@ const MapView = () => {
                             <Navigation size={22} className="group-hover:rotate-12 transition-transform" />
                         </button>
                         <button
-                            onClick={() => setIsReporting(true)}
+                            onClick={() => navigate("/post-report")}
                             className="p-6 bg-primary text-primary-foreground rounded-2xl shadow-2xl shadow-primary/40 hover:scale-105 transition-all active:scale-95 group"
                             title="Initialize Field Mission"
                         >
@@ -287,7 +271,6 @@ const MapView = () => {
                                 mapContainerStyle={mapContainerStyle}
                                 center={userLocation || defaultCenter}
                                 zoom={13}
-                                onClick={handleMapClick}
                                 onLoad={setMap}
                                 options={{
                                     disableDefaultUI: true,
@@ -345,7 +328,7 @@ const MapView = () => {
 
                                             <div className="flex items-center gap-3 mb-5">
                                                 <div className={`px-3 py-1 rounded text-[9px] font-black tracking-widest border ${selectedIssue.priority?.level?.toLowerCase() === 'critical' ? 'bg-rose-50 text-rose-600 border-rose-200' :
-                                                        'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                                    'bg-emerald-50 text-emerald-600 border-emerald-200'
                                                     }`}>
                                                     {selectedIssue.priority?.level}
                                                 </div>
@@ -381,58 +364,12 @@ const MapView = () => {
                             </span>
                             <span className="flex items-center gap-3">
                                 <Target size={16} className="text-primary" />
-                                {filteredIssues.length} Verified Log Entries
+                                {filteredIssues.length} Verified Log
                             </span>
                         </div>
-                        <p className="text-[10px] font-black text-primary tracking-[0.4em] opacity-80 animate-in fade-in slide-in-from-right duration-1000">
-                            Autonomous Mission Grid v2.4.0
-                        </p>
                     </div>
                 </div>
 
-                {/* Tactical Mission Report Modal */}
-                {isReporting && (
-                    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-8 backdrop-blur-md bg-background/40 animate-in fade-in duration-500">
-                        <div className="bg-card border border-border rounded-[3rem] w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.2)] overflow-hidden animate-in zoom-in-95 duration-500">
-                            <div className="p-12 border-b border-border bg-muted/10 relative">
-                                <button
-                                    onClick={() => { setIsReporting(false); setNewIssueCoords(null); }}
-                                    className="absolute right-10 top-10 p-3 rounded-2xl bg-muted hover:bg-destructive hover:text-destructive-foreground transition-all active:scale-90 shadow-sm"
-                                >
-                                    <X size={20} />
-                                </button>
-                                <h2 className="text-3xl font-black text-foreground tracking-tighter mb-2">Initialize Mission</h2>
-                                <p className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60 flex items-center gap-2">
-                                    <Target size={14} className="text-primary" />
-                                    {newIssueCoords ? `Co-ords: ${newIssueCoords.lat.toFixed(6)}, ${newIssueCoords.lng.toFixed(6)}` : "Select deployment origin on grid"}
-                                </p>
-                            </div>
-
-                            <div className="p-12 space-y-8">
-                                <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                                    {newIssueCoords
-                                        ? "Origin coordinates locked. Proceed to full verification and evidence capture portal to finalize the mission log."
-                                        : "Please select a tactical origin point on the strategic overlay to begin the mission reporting protocol."}
-                                </p>
-
-                                <div className="flex gap-4">
-                                    <button
-                                        onClick={() => { setIsReporting(false); setNewIssueCoords(null); }}
-                                        className="flex-1 bg-transparent border border-border py-5 rounded-[1.5rem] text-[10px] font-black tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95"
-                                    >
-                                        Abort Protocol
-                                    </button>
-                                    <Link
-                                        to={newIssueCoords ? `/report?lat=${newIssueCoords.lat}&lng=${newIssueCoords.lng}` : `/report`}
-                                        className="flex-1 bg-primary text-primary-foreground py-5 rounded-[1.5rem] text-[10px] font-black tracking-widest text-center shadow-2xl shadow-primary/30 hover:opacity-90 transition-all active:scale-95 group flex items-center justify-center gap-3"
-                                    >
-                                        Proceed to Field Log <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
             </div>
         </DashboardLayout>

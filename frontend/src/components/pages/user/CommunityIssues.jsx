@@ -106,7 +106,7 @@ const CommunityIssues = () => {
 
                     <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
                         <div className="max-w-xl">
-                            <h1 className="text-4xl font-black text-foreground tracking-tighter mb-2 transition-colors">Community Stream</h1>
+                            <h1 className="text-4xl font-black text-foreground tracking-tighter mb-2 transition-colors">All Issues</h1>
                             <p className="text-muted-foreground font-medium leading-relaxed transition-colors opacity-80">
                                 Real-time collective surveillance. Upvote critical failures to prioritize them in the municipal queue.
                             </p>
@@ -161,14 +161,12 @@ const CommunityIssues = () => {
                                     {/* Content Area */}
                                     <div className="flex-1 p-8">
                                         <div className="flex items-center gap-3 mb-4 flex-wrap">
-                                            <span className="bg-background border border-border px-3 py-1 rounded-full text-[10px] font-black text-primary tracking-widest leading-none shadow-sm transition-colors">
-                                                {issue.category?.label || "General Infrastructure"}
-                                            </span>
+
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest leading-none shadow-sm transition-colors border ${issue.status === 'resolved' ? 'bg-success/10 text-success border-success/20' :
-                                                    issue.status === 'closed' ? 'bg-gray-800 text-gray-400 border-gray-700' :
-                                                        issue.status === 'in_progress' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                                            issue.status === 'escalated' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                                'bg-primary/10 text-primary border-primary/20'
+                                                issue.status === 'closed' ? 'bg-gray-800 text-gray-400 border-gray-700' :
+                                                    issue.status === 'in_progress' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                                        issue.status === 'escalated' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                            'bg-primary/10 text-primary border-primary/20'
                                                 }`}>
                                                 {issue.status?.replace('_', ' ')}
                                             </span>

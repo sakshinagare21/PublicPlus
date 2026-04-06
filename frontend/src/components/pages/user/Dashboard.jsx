@@ -142,7 +142,7 @@ const Dashboard = () => {
 
                         <div className="divide-y divide-border relative z-10 transition-colors">
                             {loading ? (
-                                <div className="p-10 text-center text-muted-foreground font-black tracking-widest text-[10px] italic transition-colors animate-pulse">Synchronizing Community Stream...</div>
+                                <div className="p-10 text-center text-muted-foreground font-black tracking-widest text-[10px]   transition-colors animate-pulse">Synchronizing Community Stream...</div>
                             ) : activity.length > 0 ? (
                                 activity.map((item, i) => (
                                     <div key={i} className="p-8 hover:bg-muted/30 transition-all flex items-center justify-between group cursor-pointer border-transparent hover:border-primary/20">
@@ -170,7 +170,7 @@ const Dashboard = () => {
                                     </div>
                                 ))
                             ) : (
-                                <div className="p-20 text-center text-muted-foreground font-black tracking-widest text-[10px] italic transition-colors opacity-30">Null sector detected in community stream.</div>
+                                <div className="p-20 text-center text-muted-foreground font-black tracking-widest text-[10px]   transition-colors opacity-30">Null sector detected in community stream.</div>
                             )}
                         </div>
                     </div>

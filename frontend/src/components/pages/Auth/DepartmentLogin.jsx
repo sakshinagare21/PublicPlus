@@ -91,7 +91,7 @@ const DepartmentLogin = () => {
                                     <Building2 className="w-12 h-12 text-primary shadow-glow group-hover/icon:animate-bounce transition-all duration-700" />
                                 </div>
                                 <h2 className="text-4xl font-black text-foreground mb-4 tracking-tighter transition-colors">
-                                    Department <span className="text-primary italic">Login</span>
+                                    Department <span className="text-primary  ">Login</span>
                                 </h2>
                                 <p className="text-sm text-muted-foreground font-medium opacity-60">
                                     Authorized Department only

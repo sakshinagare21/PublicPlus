@@ -111,7 +111,6 @@ export default function Departments() {
                 {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-muted-foreground">Home › Departments</p>
                         <h1 className="text-2xl font-bold text-foreground">Department Management</h1>
                     </div>
 
@@ -126,18 +125,6 @@ export default function Departments() {
                                 className="bg-transparent outline-none text-sm w-40 text-foreground placeholder:text-muted-foreground/50"
                             />
                         </div>
-
-                        <button
-                            onClick={() => toast("Opening department form...")}
-                            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm hover:bg-primary/90 transition-colors"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Add Department
-                        </button>
-
-                        <button className="p-2 bg-card border border-border rounded-lg text-foreground hover:bg-muted transition-colors">
-                            <Download className="w-4 h-4" />
-                        </button>
 
                     </div>
                 </div>
@@ -173,8 +160,8 @@ export default function Departments() {
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-4 py-2 text-sm rounded-lg transition-all duration-200 ${activeTab === tab
-                                        ? "bg-primary text-primary-foreground shadow-md"
-                                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    ? "bg-primary text-primary-foreground shadow-md"
+                                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                     }`}
                             >
                                 {tab}
@@ -187,7 +174,7 @@ export default function Departments() {
                     <div className="p-4">
 
                         {loading ? (
-                            <p className="text-center text-muted-foreground py-10 italic">Loading...</p>
+                            <p className="text-center text-muted-foreground py-10  ">Loading...</p>
                         ) : activeTab === "Department List" ? (
 
                             <table className="w-full text-sm text-center border-separate border-spacing-y-2">
@@ -197,8 +184,6 @@ export default function Departments() {
                                         <th className="p-3">Department</th>
                                         <th className="p-3">Email</th>
                                         <th className="p-3">City</th>
-                                        <th className="p-3">Tickets</th>
-                                        <th className="p-3">Efficiency</th>
                                         <th className="p-3">Status</th>
                                     </tr>
                                 </thead>
@@ -206,7 +191,7 @@ export default function Departments() {
                                 <tbody>
                                     {filteredDepartments.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="py-12 text-muted-foreground italic">
+                                            <td colSpan="6" className="py-12 text-muted-foreground  ">
                                                 <div className="flex flex-col items-center gap-2">
                                                     <p className="text-lg">📭</p>
                                                     <p>No departments available</p>
@@ -226,13 +211,6 @@ export default function Departments() {
 
                                                 <td className="p-3">{dept.city}</td>
 
-                                                <td className="p-3">
-                                                    {dept.performanceMetrics?.totalIssuesHandled || 0}
-                                                </td>
-
-                                                <td className="p-3">
-                                                    {dept.performanceMetrics?.slaComplianceRate || 0}%
-                                                </td>
 
                                                 <td className="p-3">
                                                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
@@ -264,7 +242,7 @@ export default function Departments() {
                                 <tbody>
                                     {teamMembers.length === 0 ? (
                                         <tr>
-                                            <td colSpan="5" className="py-12 text-muted-foreground italic">
+                                            <td colSpan="5" className="py-12 text-muted-foreground  ">
                                                 <div className="flex flex-col items-center gap-2">
                                                     <p className="text-lg">📭</p>
                                                     <p>No operators available</p>
@@ -316,7 +294,7 @@ export default function Departments() {
                                 <tbody>
                                     {zones.length === 0 ? (
                                         <tr>
-                                            <td colSpan="2" className="py-12 text-muted-foreground italic">
+                                            <td colSpan="2" className="py-12 text-muted-foreground  ">
                                                 <div className="flex flex-col items-center gap-2">
                                                     <p className="text-lg">📭</p>
                                                     <p>No zones available</p>

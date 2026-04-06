@@ -154,6 +154,7 @@ const ReportIssue = () => {
 
 
 
+
     useEffect(() => {
         if (step === 1 && isLoaded && !markerPosition) {
             getLocation();
@@ -501,7 +502,7 @@ const ReportIssue = () => {
                                     <div className="p-8 bg-background rounded-[2rem] border border-border transition-colors relative group">
                                         <div className="absolute top-4 right-4 text-muted-foreground opacity-20"><FileText size={40} /></div>
                                         <p className="text-[10px] font-black tracking-widest text-muted-foreground mb-4 block">Description</p>
-                                        <div className="text-muted-foreground text-lg leading-relaxed italic font-medium">
+                                        <div className="text-muted-foreground text-lg leading-relaxed   font-medium">
                                             "{form.descriptionText || "No additional parameters provided."}"
                                         </div>
                                     </div>

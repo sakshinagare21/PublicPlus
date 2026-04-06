@@ -153,13 +153,6 @@ export default function IssueIntelligence() {
             </span>
           </div>
 
-          <button
-            onClick={() => toast("Opening report form...")}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm hover:bg-primary/90 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Manual Report
-          </button>
         </div>
 
         {/* 🔥 STATS ROW (ADDED ONLY THIS) */}
@@ -199,16 +192,16 @@ export default function IssueIntelligence() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`pb-3 text-sm flex items-center gap-2 border-b-2 transition-all ${activeTab === tab.key
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
             >
               {tab.label}
 
               <span
                 className={`text-xs px-1.5 py-0.5 rounded font-bold transition-colors ${activeTab === tab.key
-                    ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground"
+                  ? "bg-primary/20 text-primary"
+                  : "bg-muted text-muted-foreground"
                   }`}
               >
                 {tab.count}
@@ -237,9 +230,9 @@ export default function IssueIntelligence() {
           <div className="flex-1 bg-card border border-border rounded-xl overflow-hidden transition-colors shadow-sm">
 
             {loading ? (
-              <p className="p-6 text-muted-foreground italic">Loading issues...</p>
+              <p className="p-6 text-muted-foreground  ">Loading issues...</p>
             ) : issues.length === 0 ? (
-              <p className="p-6 text-muted-foreground italic text-center">No issues found</p>
+              <p className="p-6 text-muted-foreground   text-center">No issues found</p>
             ) : (
               <table className="w-full text-sm">
 
@@ -258,8 +251,8 @@ export default function IssueIntelligence() {
                       key={issue._id}
                       onClick={() => setSelectedIssue(issue)}
                       className={`cursor-pointer transition-colors ${selectedIssue?._id === issue._id
-                          ? "bg-muted"
-                          : "hover:bg-muted/50"
+                        ? "bg-muted"
+                        : "hover:bg-muted/50"
                         }`}
                     >
                       <td className="p-4">
@@ -298,7 +291,7 @@ export default function IssueIntelligence() {
                         <span
                           className={`text-[10px] px-2 py-1 rounded font-black border border-current transition-colors ${severityColors[
                             issue.priority?.level?.toUpperCase()
-                            ] || "bg-muted text-muted-foreground"
+                          ] || "bg-muted text-muted-foreground"
                             }`}
                         >
                           {issue.priority?.level?.toUpperCase() || "LOW"}
@@ -316,7 +309,7 @@ export default function IssueIntelligence() {
           <div className="w-80 bg-card border border-border rounded-xl p-5 shadow-sm transition-colors overflow-hidden">
 
             {!selectedIssue ? (
-              <p className="text-muted-foreground italic text-center py-10">Select an issue to view details</p>
+              <p className="text-muted-foreground   text-center py-10">Select an issue to view details</p>
             ) : (
               <div className="space-y-4">
 
@@ -352,7 +345,7 @@ export default function IssueIntelligence() {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-muted h-24 flex items-center justify-center text-muted-foreground rounded-lg border border-border/50 font-bold italic text-xs">
+                    <div className="bg-muted h-24 flex items-center justify-center text-muted-foreground rounded-lg border border-border/50 font-bold   text-xs">
                       No Evidence Uploaded
                     </div>
                   )}
@@ -401,13 +394,13 @@ export default function IssueIntelligence() {
                             <span className="text-[10px] font-bold uppercase text-foreground">{log.status.replace('_', ' ')}</span>
                             <span className="text-[9px] font-medium text-muted-foreground">{new Date(log.updatedAt).toLocaleString()}</span>
                             {log.remark && (
-                              <p className="text-[11px] text-muted-foreground leading-tight mt-1 italic">"{log.remark}"</p>
+                              <p className="text-[11px] text-muted-foreground leading-tight mt-1  ">"{log.remark}"</p>
                             )}
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-[10px] text-muted-foreground italic pl-6">No historical data available.</p>
+                      <p className="text-[10px] text-muted-foreground   pl-6">No historical data available.</p>
                     )}
                   </div>
                 </div>

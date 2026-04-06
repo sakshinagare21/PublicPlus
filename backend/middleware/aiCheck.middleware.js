@@ -24,7 +24,7 @@ export const aiImageCheck = async (req, res, next) => {
         // Check each file against the AI service
         for (const file of files) {
             const filePath = path.resolve(file.path);
-            
+
             // Prepare multipart form data
             const form = new FormData();
             form.append('file', fs.createReadStream(filePath));
@@ -41,7 +41,7 @@ export const aiImageCheck = async (req, res, next) => {
 
                 if (is_ai) {
                     console.warn(`[AI-Detector] THREAT DETECTED: ${file.filename} (${(confidence * 100).toFixed(1)}%)`);
-                    
+
                     // Cleanup locally saved file before rejecting
                     if (fs.existsSync(filePath)) {
                         fs.unlinkSync(filePath);
@@ -54,12 +54,17 @@ export const aiImageCheck = async (req, res, next) => {
                     });
                 }
 
-                console.log(`[AI-Detector] Asset verified: ${file.filename} (REAL: ${( (1 - confidence) * 100).toFixed(1)}%)`);
+                console.log(`[AI-Detector] Asset verified: ${file.filename} (REAL: ${((1 - confidence) * 100).toFixed(1)}%)`);
 
             } catch (apiError) {
                 console.error(`[AI-Detector] Service Communication Failure for ${file.filename}:`, apiError.message);
-                // Fail-safe: If AI service is down, allowed but logged. 
-                // In a high-security environment, you might want to return 503 instead.
+                
+                // High-Security: If AI link is down, we must deny authorization.
+                return res.status(503).json({
+                    success: false,
+                    message: "Identity verification link dropped. Please ensure tactical AI services are operational.",
+                    code: "AI_SERVICE_OFFLINE"
+                });
             }
         }
 
@@ -67,6 +72,6 @@ export const aiImageCheck = async (req, res, next) => {
 
     } catch (error) {
         console.error("[AI-Detector] Execution Failure:", error);
-        next(); 
+        next();
     }
 };

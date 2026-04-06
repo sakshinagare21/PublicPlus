@@ -164,9 +164,6 @@ export default function AdminProfile() {
                             <p className="text-xs text-muted-foreground leading-relaxed">
                                 You have unrestricted access to all municipal protocols and system recalibration units.
                             </p>
-                            <button className="w-full bg-primary text-white font-bold py-3 rounded-xl text-sm shadow-glow shadow-primary/20 hover:opacity-90 transition-all">
-                                Update Profile
-                            </button>
                         </div>
 
                         <div className="bg-card border border-border rounded-[2rem] p-6">
@@ -179,7 +176,7 @@ export default function AdminProfile() {
                                         </div>
                                         <div>
                                             <p className="text-xs font-bold text-foreground">{device.platform || "Unknown Web"}</p>
-                                            <p className="text-[9px] text-muted-foreground font-medium tracking-tighter italic">Last used {new Date(device.lastUsed).toLocaleDateString()}</p>
+                                            <p className="text-[9px] text-muted-foreground font-medium tracking-tighter  ">Last used {new Date(device.lastUsed).toLocaleDateString()}</p>
                                         </div>
                                     </div>
                                 ))}

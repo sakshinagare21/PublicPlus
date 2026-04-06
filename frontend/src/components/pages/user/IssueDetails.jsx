@@ -178,8 +178,8 @@ const IssueDetail = () => {
                                     ISSUE #{issue._id.slice(-6).toUpperCase()}
                                 </span>
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest border transition-colors ${issue.priority?.level === 'critical' ? 'border-destructive text-destructive bg-destructive/10' :
-                                        issue.priority?.level === 'high' ? 'border-amber-500/50 text-amber-500 bg-amber-500/10' :
-                                            'border-success/50 text-success bg-success/10'
+                                    issue.priority?.level === 'high' ? 'border-amber-500/50 text-amber-500 bg-amber-500/10' :
+                                        'border-success/50 text-success bg-success/10'
                                     }`}>
                                     {issue.priority?.level || 'Standard'} Priority
                                 </span>
@@ -323,15 +323,15 @@ const IssueDetail = () => {
                             <div className="p-8 border-b border-border bg-muted/30">
                                 <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-3">
                                     <div className="h-2 w-2 rounded-full bg-primary"></div>
-                                    Incident Intelligence
+                                    Incident Report
                                 </h2>
                             </div>
                             <div className="p-10 space-y-8">
                                 <div className="space-y-4">
-                                    <p className="text-[10px] font-black tracking-[0.2em] text-primary">Citizen Observation Brief</p>
+                                    <p className="text-[20px] font-black text-primary">Citizen Observation Brief</p>
                                     <div className="bg-background border border-border rounded-3xl p-8 relative group">
                                         <div className="absolute top-4 right-4 text-muted opacity-20"><FileText size={40} /></div>
-                                        <p className="text-muted-foreground font-medium leading-relaxed text-lg italic">
+                                        <p className="text-muted-foreground font-medium leading-relaxed text-lg  ">
                                             "{issue.description?.text}"
                                         </p>
                                     </div>
@@ -339,7 +339,7 @@ const IssueDetail = () => {
 
                                 {issue.images?.length > 0 && (
                                     <div className="space-y-4">
-                                        <p className="text-[10px] font-black tracking-[0.2em] text-primary uppercase">Issue Image</p>
+                                        <p className="text-[20px] font-black text-primary uppercase">Issue Image</p>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                             {issue.images.map((img, i) => (
                                                 <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-border group relative transition-colors">
@@ -392,11 +392,6 @@ const IssueDetail = () => {
                     <div className="lg:col-span-4 space-y-8">
                         <div className="rounded-[2rem] border border-border bg-card p-8 overflow-hidden relative">
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl"></div>
-                            <h3 className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-8 flex items-center gap-3">
-                                <div className="h-1 w-1 rounded-full bg-emerald-500"></div>
-                                Dispatch Trace
-                            </h3>
-
                             <div className="space-y-8">
                                 <div className="group">
                                     <p className="text-[10px] font-black text-muted-foreground tracking-widest mb-1 group-hover:text-primary transition-colors">Strategic Node</p>
@@ -445,16 +440,6 @@ const IssueDetail = () => {
                             </div>
                         </div>
 
-                        <div className="rounded-[2rem] border border-border bg-card p-8 group hover:border-primary/30 transition-all">
-                            <h3 className="text-[10px] font-black tracking-[0.2em] text-muted-foreground mb-4">Metadata Integrity</h3>
-                            <div className="p-4 bg-background border border-border rounded-2xl flex items-center justify-between">
-                                <span className="text-xs font-bold text-muted-foreground">Reporter Trust</span>
-                                <div className="flex items-center gap-1">
-                                    <span className="text-xs font-black text-primary">Level 4</span>
-                                    <Star size={12} className="fill-primary text-primary" />
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                 </div>

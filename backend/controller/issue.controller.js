@@ -755,7 +755,7 @@ export const uploadProof = async (req, res) => {
  }
 
  let proofUrl = "";
- if (req.files && req.files.length > 0) {
+ if (req.file) {
  proofUrl = `/uploads/proofs/${req.file.filename}`;
  } else if (req.body.proofUrl) {
  proofUrl = req.body.proofUrl;
@@ -1070,7 +1070,7 @@ export const escalateIssue = async (req, res) => {
  }
 
  let proofUrl = "";
- if (req.files && req.files.length > 0) {
+ if (req.file) {
  proofUrl = `/uploads/proofs/${req.file.filename}`;
  }
 

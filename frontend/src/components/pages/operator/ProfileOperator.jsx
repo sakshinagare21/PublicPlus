@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 import OperatorLayout from "../../layout/OperatorLayout";
 import {
   User,
@@ -29,6 +31,9 @@ const ProfileOperator = () => {
     });
   };
 
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   const handlePasswordUpdate = async () => {
     if (!passwordForm.newPass || passwordForm.newPass.length < 6) {
       toast.error("New passkey must be at least 6 characters.");
@@ -44,14 +49,22 @@ const ProfileOperator = () => {
       const user = auth.currentUser;
       if (user) {
         await updatePassword(user, passwordForm.newPass);
-        toast.success("Operator security passkey updated.");
+        toast.success("Identity passkey updated. Security termination initiated.");
+        
+        // Finalize Operator Session
+        setTimeout(() => {
+          logout();
+          auth.signOut();
+          navigate("/operator-login");
+        }, 1500);
+
         setPasswordForm({ newPass: "", confirm: "" });
       } else {
         toast.error("Session expired.");
       }
     } catch (error) {
       if (error.code === 'auth/requires-recent-login') {
-        toast.error("Security critical: Please login again to change password.");
+        toast.error("Security critical: Please re-login to calibrate passkey.");
       } else {
         toast.error(error.message);
       }

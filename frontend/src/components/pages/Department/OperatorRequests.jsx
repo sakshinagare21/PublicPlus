@@ -166,7 +166,7 @@ const OperatorRequests = () => {
                     <h2 className="text-2xl font-bold mb-6 text-foreground">Pending Operator Requests</h2>
 
                     {operators.length === 0 ? (
-                        <p className="text-muted-foreground italic">No pending operators</p>
+                        <p className="text-muted-foreground  ">No pending operators</p>
                     ) : (
                         <div className="overflow-x-auto mb-10 bg-card border border-border rounded-xl shadow-sm transition-colors overflow-hidden">
                             <table className="w-full text-sm">
@@ -254,7 +254,7 @@ const OperatorRequests = () => {
                         </div>
 
                         {notifications.length === 0 ? (
-                            <p className="p-8 text-muted-foreground italic text-center">No notifications found</p>
+                            <p className="p-8 text-muted-foreground   text-center">No notifications found</p>
                         ) : (
                             <table className="w-full text-sm">
                                 <thead className="bg-muted text-muted-foreground transition-colors text-[10px] font-black tracking-widest">

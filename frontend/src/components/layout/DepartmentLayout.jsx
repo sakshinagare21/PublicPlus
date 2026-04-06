@@ -1,5 +1,6 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "../common/ThemeToggle";
+import LogoutConfirmModal from "../common/LogoutConfirmModal";
 import FAQChatbot from "../common/FAQChatbot";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -21,7 +22,14 @@ import {
 
 const DepartmentLayout = ({ children }) => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const [deptInfo, setDeptInfo] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/decide-role");
+  };
 
   useEffect(() => {
     const fetchDept = async () => {
@@ -40,6 +48,11 @@ const DepartmentLayout = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
+      <LogoutConfirmModal 
+        isOpen={showLogoutConfirm}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
       {/* SIDEBAR */}
       <aside className="w-64 bg-card border-r border-border flex flex-col h-screen overflow-y-auto">
         {/* Logo */}
@@ -165,7 +178,7 @@ const DepartmentLayout = ({ children }) => {
           </div>
           <div className="flex-1 min-w-0">
             <Link to={deptInfo ? "/department/profile" : "#"} className="block group">
-              <p className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors uppercase italic tracking-tighter">
+              <p className="text-sm font-black text-foreground truncate group-hover:text-primary transition-colors uppercase   tracking-tighter">
                 {deptInfo?.departmentName || "Authorization Pending"}
               </p>
               <p className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-50">
@@ -176,14 +189,11 @@ const DepartmentLayout = ({ children }) => {
         </div>
         <div className="p-4 border-t border-border mt-auto">
           <button
-            onClick={() => {
-              logout();
-              window.location.href = "/decide-role";
-            }}
+            onClick={() => setShowLogoutConfirm(true)}
             className="w-full flex items-center justify-center gap-3 py-3 bg-destructive/5 text-destructive rounded-xl border border-destructive/10 font-black tracking-widest text-[10px] hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 group"
           >
             <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" />
-            TERMINATE SESSION
+            Logout
           </button>
         </div>
       </aside>
@@ -196,24 +206,7 @@ const DepartmentLayout = ({ children }) => {
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            {/* Search */}
-            <div className="relative">
-              <Search
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <input
-                type="text"
-                placeholder="Search data..."
-                className="bg-muted/50 border border-border pl-9 pr-3 py-2 rounded-lg text-sm focus:outline-none text-foreground"
-              />
-            </div>
 
-            {/* Button */}
-            <button className="flex items-center gap-2 bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg text-sm transition text-primary-foreground">
-              <Plus size={16} />
-              New Report
-            </button>
           </div>
         </header>
 

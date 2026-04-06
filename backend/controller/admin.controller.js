@@ -137,6 +137,14 @@ export const getAdminDashboard = async (req, res) => {
     admin.lastLogin = new Date();
     await admin.save();
 
+    /* ================= STATS ================= */
+    const [totalIssues, pendingIssues, resolvedIssues, totalUsers] = await Promise.all([
+      Issue.countDocuments(),
+      Issue.countDocuments({ status: { $in: ["reported", "assigned", "in_progress"] } }),
+      Issue.countDocuments({ status: "resolved" }),
+      User.countDocuments({ role: "citizen" })
+    ]);
+
     res.status(200).json({
       success: true,
       admin: {
@@ -145,6 +153,13 @@ export const getAdminDashboard = async (req, res) => {
         role: admin.role,
         status: admin.accountStatus,
       },
+      stats: {
+        totalIssues,
+        pendingIssues,
+        resolvedIssues,
+        totalUsers,
+        resolutionRate: totalIssues > 0 ? Math.round((resolvedIssues / totalIssues) * 100) : 0
+      }
     });
   } catch (error) {
     console.error("Dashboard Error:", error);
@@ -274,7 +289,7 @@ export const getAllAccounts = async (req, res) => {
       name: o.fullName,
       email: o.email,
       role: "Operator",
-      trust: 60,
+      trust: o.trustScore || 50,
       status: o.status?.toUpperCase(),
     }));
 
@@ -289,13 +304,21 @@ export const getAllAccounts = async (req, res) => {
 
     const all = [...citizens, ...ops, ...admins];
 
-    /* ================= COUNTS ================= */
+    /* ================= COUNTS & ANALYTICS ================= */
+    const citizenTrusts = citizens.map(c => c.trust);
+    const avgTrust = citizenTrusts.length > 0
+      ? Math.round(citizenTrusts.reduce((a, b) => a + b, 0) / citizenTrusts.length)
+      : 50;
 
     const counts = {
       citizens: citizens.length,
       operators: ops.length,
       admins: admins.length,
       total: all.length,
+      avgCitizenTrust: avgTrust,
+      flagged: all.filter(u => u.status === "FLAGGED").length,
+      suspended: all.filter(u => u.status === "SUSPENDED" || u.status === "BLOCKED").length,
+      active: all.filter(u => u.status === "ACTIVE").length,
     };
 
     res.json({
@@ -307,6 +330,68 @@ export const getAllAccounts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: err.message,
+    });
+  }
+};
+
+/* Update User Trust Score */
+export const updateTrustScore = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { trustScore, reason } = req.body;
+
+    console.log(`[TRUST UPDATE] CALIBRATING ID: ${id} NEW SCORE: ${trustScore}`);
+
+    // Check Citizens first
+    let account = await User.findById(id);
+    let modelType = "citizen";
+
+    // If not a citizen, check Operators
+    if (!account) {
+      account = await Operator.findById(id);
+      modelType = "operator";
+    }
+
+    if (!account) {
+      console.error(`[TRUST ERROR] ID ${id} NOT FOUND IN CITIZEN OR OPERATOR`);
+      return res.status(404).json({
+        success: false,
+        message: `Database mismatch: Node ID ${id} not found in verified registry.`,
+      });
+    }
+
+    // Update trust score based on model schema
+    if (modelType === "citizen") {
+      account.trustMetrics = {
+        ...account.trustMetrics,
+        trustScore: trustScore,
+      };
+    } else {
+      account.trustScore = trustScore;
+    }
+
+    await account.save();
+
+    // Create notification
+    await Notification.create({
+      userId: modelType === "citizen" ? account._id : null,
+      operatorId: modelType === "operator" ? account._id : null,
+      title: "Trust Score Updated",
+      message: `Admin updated your trust score to ${trustScore}% due to: ${reason}`,
+      type: "trust_update",
+      targetRole: modelType,
+    });
+
+    res.json({
+      success: true,
+      message: "Score adjusted successfully",
+      newScore: trustScore,
+    });
+  } catch (error) {
+    console.error(`[TRUST EXCEPTION] ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };

@@ -73,7 +73,7 @@ const DepartmentNotifications = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20 italic text-muted-foreground">
+          <div className="flex justify-center py-20   text-muted-foreground">
             Loading notifications...
           </div>
         ) : notifications.length === 0 ? (
@@ -111,7 +111,7 @@ const DepartmentNotifications = () => {
                     {n.type === "task_escalated" && n.escalation && (
                       <div className="mb-4 p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 space-y-3">
                         <p className="text-xs text-orange-400 font-bold tracking-widest">Escalation Detail</p>
-                        <p className="text-sm text-gray-300 italic">"{n.escalation.reason}"</p>
+                        <p className="text-sm text-gray-300  ">"{n.escalation.reason}"</p>
                         {n.escalation.proof && (
                           <div className="w-full max-w-[200px] rounded-lg overflow-hidden border border-border bg-black">
                             <img

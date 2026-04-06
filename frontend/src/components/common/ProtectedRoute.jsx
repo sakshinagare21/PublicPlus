@@ -10,9 +10,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   useEffect(() => {
     if (!loading) {
       if (!isAuthenticated || !localStorage.getItem("token")) {
-        toast.error("Unauthorized access. Please login or register first.");
+        console.log("[AuthGuard] Tactical exit detected. Redirecting to mission login.");
       } else if (allowedRoles && !allowedRoles.includes(role)) {
-        toast.error(`Permission denied: You do not have ${allowedRoles.join('/')} access.`);
+        console.warn(`[AuthGuard] Role mismatch. Required: ${allowedRoles}, Current: ${role}. Redirecting.`);
       }
     }
   }, [loading, isAuthenticated, role, allowedRoles]);

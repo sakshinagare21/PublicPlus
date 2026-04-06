@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import ThemeToggle from "../common/ThemeToggle";
+import LogoutConfirmModal from "../common/LogoutConfirmModal";
 import {
   LayoutDashboard,
   AlertTriangle,
@@ -31,9 +32,7 @@ const navItems = [
   { icon: Building2, label: "Departments", path: "/departments" },
   { icon: BarChart3, label: "Analytics", path: "/admin-analytics" },
   { icon: Map, label: "Zone Mapping", path: "/zones" },
-  // { icon: ClipboardList, label: "AI Engine", path: "/ai-engine" },
   { icon: Users, label: "Users", path: "/users" },
-  { icon: Clock, label: "Audit Logs", path: "/audit" },
   { icon: Bell, label: "Notifications", path: "/admin/notifications" },
   { icon: Mail, label: "Contact Messages", path: "/admin/contact" },
 
@@ -46,8 +45,10 @@ const bottomItems = [
 
 export default function AdminLayout({ children }) {
   const { logout } = useAuth();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [admin, setAdmin] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const fetchAdmin = async () => {
@@ -65,8 +66,18 @@ export default function AdminLayout({ children }) {
     fetchAdmin();
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    navigate("/decide-role");
+  };
+
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
+      <LogoutConfirmModal 
+        isOpen={showLogoutConfirm}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
 
       {/* ================= SIDEBAR ================= */}
       <aside
@@ -125,10 +136,7 @@ export default function AdminLayout({ children }) {
 
           {/* LOGOUT BUTTON */}
           <button
-            onClick={() => {
-              logout();
-              window.location.href = "/decide-role";
-            }}
+            onClick={() => setShowLogoutConfirm(true)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors mt-4"
           >
             <LogOut className="w-5 h-5 shrink-0" />
@@ -156,15 +164,6 @@ export default function AdminLayout({ children }) {
                   }`}
               />
             </button>
-
-            {/* Search */}
-            <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
-              <Search className="w-4 h-4 text-muted-foreground" />
-              <input
-                placeholder="Search ticket ID, zone, or department..."
-                className="bg-transparent outline-none text-sm w-64 text-foreground placeholder-muted-foreground"
-              />
-            </div>
 
           </div>
 

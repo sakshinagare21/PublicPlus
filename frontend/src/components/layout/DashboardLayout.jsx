@@ -1,5 +1,5 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Building2,
   LayoutDashboard,
@@ -18,6 +18,7 @@ import LanguageDropdown from "../pages/common/LanguageDropdown";
 import ThemeToggle from "../common/ThemeToggle";
 import FAQChatbot from "../common/FAQChatbot";
 import { useAuth } from "../../context/AuthContext";
+import LogoutConfirmModal from "../common/LogoutConfirmModal";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -29,16 +30,22 @@ const navItems = [
   { icon: Bell, label: "Notifications", path: "/notifications" },
 ];
 
-import { TriangleAlert } from "lucide-react";
 
 const adminItems = [
-  { icon: Users, label: "Users", path: "/profile" },
+  { icon: Users, label: "Profile", path: "/profile" },
   { icon: Settings, label: "Settings", path: "/user-settings" },
 ];
 
 const DashboardLayout = ({ children }) => {
-  const { logout } = useAuth();
+  const { user, role, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login-citizen");
+  };
 
   const getNavClass = (path) => {
     return `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${location.pathname === path
@@ -47,8 +54,18 @@ const DashboardLayout = ({ children }) => {
       }`;
   };
 
+  const getUserInitials = () => {
+    const name = user?.fullName || user?.departmentName || "User";
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  };
+
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
+      <LogoutConfirmModal 
+        isOpen={showLogoutConfirm}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
       {/* Sidebar */}
       <aside className="hidden w-64 flex-col border-r border-border bg-card lg:flex">
 
@@ -57,16 +74,16 @@ const DashboardLayout = ({ children }) => {
             <Building2 className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <span className="text-lg font-bold text-foreground">Civic Intel</span>
+            <span className="text-lg font-bold text-foreground">civic intel</span>
             <p className="text-[10px] tracking-wider text-muted-foreground">
-              Urban Accountability
+              urban accountability
             </p>
           </div>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           <Link to="/post-report">
-            <button className="w-full rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg active:scale-95 mb-4">
+            <button className="w-full rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-primary/90 hover:shadow-lg active:scale-95 mb-4">
               <div className="flex items-center justify-center gap-2"><Plus size={18} /> Post Report </div>
             </button>
           </Link>
@@ -102,14 +119,11 @@ const DashboardLayout = ({ children }) => {
             Support Center
           </Link>
           <button
-            onClick={() => {
-              logout();
-              window.location.href = "/login-citizen";
-            }}
-            className="w-full flex items-center gap-2 text-sm text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors font-bold uppercase tracking-[0.1em] text-[10px]"
+            onClick={() => setShowLogoutConfirm(true)}
+            className="w-full flex items-center gap-2 text-sm text-destructive hover:bg-destructive/10 p-2 rounded-lg transition-colors font-bold tracking-[0.1em] text-[10px]"
           >
             <LogOut className="h-4 w-4" />
-            Terminate session
+            Logout
           </button>
         </div>
       </aside>
@@ -127,36 +141,36 @@ const DashboardLayout = ({ children }) => {
               </div>
             </div>
 
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                placeholder="Search report ID, status..."
-                className="h-10 w-80 rounded-lg border border-border bg-muted/50 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary placeholder-muted-foreground"
-              />
-            </div>
+
 
           </div>
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <LanguageDropdown />
-
             <Link to="/notifications" className="relative rounded-lg p-2 hover:bg-accent transition">
               <Bell className="h-5 w-5 text-muted-foreground" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
             </Link>
 
             <div className="flex items-center gap-3 border-l border-border pl-4">
-
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-medium text-foreground">Citizen User</p>
-                <p className="text-[10px] text-muted-foreground tracking-widest">Active Member</p>
+                <p className="text-sm font-medium text-foreground text-center">
+                  {user?.fullName || user?.departmentName || "User Profile"}
+                </p>
+                <p className="text-[10px] text-muted-foreground tracking-widest text-center">
+                  {role ? `${role} Member` : "Identity Active"}
+                </p>
               </div>
 
-              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50">
-                <span className="text-sm font-bold text-primary">CU</span>
+              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50 overflow-hidden">
+                {user?.profilePhoto ? (
+                  <img src={user.profilePhoto} alt={user?.fullName} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-sm font-bold text-primary">
+                    {getUserInitials()}
+                  </span>
+                )}
               </div>
-
             </div>
 
           </div>

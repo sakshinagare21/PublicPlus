@@ -113,7 +113,7 @@ const CitizenLogin = () => {
             <div className="flex-1 flex items-center justify-center px-10 py-20 relative z-10 transition-colors">
                 <div className="w-full max-w-xl bg-card border border-border rounded-[3rem] p-16 shadow-[0_0_100px_rgba(0,0,0,0.1)] dark:shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 duration-700 transition-colors relative overflow-hidden group">
                     <h2 className="text-6xl font-bold mb-8 leading-[1.05] text-foreground tracking-tight transition-colors">
-                        <span className="text-primary italic shadow-glow">Citizen Portal</span>
+                        <span className="text-primary shadow-glow">Citizen Portal</span>
                     </h2>
                     <p className="text-sm text-muted-foreground mb-10">
                         Report and track issues in your city
@@ -163,7 +163,7 @@ const CitizenLogin = () => {
                                 <button
                                     type="button"
                                     onClick={handleForgotPassword}
-                                    className="text-[10px] font-black tracking-widest text-primary hover:text-foreground transition-all italic opacity-60 hover:opacity-100"
+                                    className="text-[10px] font-black tracking-widest text-primary hover:text-foreground transition-all   opacity-60 hover:opacity-100"
                                 >
                                     Forget Password
                                 </button>

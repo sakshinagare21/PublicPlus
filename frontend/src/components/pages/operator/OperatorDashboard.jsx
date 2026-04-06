@@ -169,7 +169,7 @@ const OperatorDashboard = () => {
                                         </tr>
                                     ) : priorityTasks.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="p-10 text-center text-muted-foreground font-bold tracking-widest opacity-40 italic">
+                                            <td colSpan={5} className="p-10 text-center text-muted-foreground font-bold tracking-widest opacity-40  ">
                                                 No Critical Directives Detected
                                             </td>
                                         </tr>
@@ -309,7 +309,7 @@ const OperatorDashboard = () => {
                                     <div className="space-y-2 flex-grow">
                                         <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Mission Description</p>
                                         <div className="p-4 bg-muted/30 rounded-2xl border border-border">
-                                            <p className="text-sm text-foreground leading-relaxed italic">
+                                            <p className="text-sm text-foreground leading-relaxed  ">
                                                 "{selectedTask.description || "No tactical details provided by reporter."}"
                                             </p>
                                         </div>

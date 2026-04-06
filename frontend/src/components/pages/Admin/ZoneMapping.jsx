@@ -354,7 +354,7 @@ export default function ZoneMapping() {
                                         <button className="w-full bg-primary text-white font-bold py-5 rounded-2xl shadow-glow shadow-primary/30 hover:scale-[1.01] active:scale-[0.98] transition-all">
                                             {isEditing ? "Apply Global Recalibration" : "Finalize Infrastructure Link"}
                                         </button>
-                                        <p className="text-[9px] font-black text-center tracking-[0.3em] text-muted-foreground mt-4 opacity-40 italic">Click on the map to recalibrate geo-anchor</p>
+                                        <p className="text-[9px] font-black text-center tracking-[0.3em] text-muted-foreground mt-4 opacity-40  ">Click on the map to recalibrate geo-anchor</p>
                                     </div>
                                 </form>
                             </div>
@@ -374,7 +374,7 @@ export default function ZoneMapping() {
                                                     <span className={`w-2 h-2 rounded-full ${zone.priority === 'high' ? 'bg-red-500 shadow-glow-destructive' : zone.priority === 'medium' ? 'bg-yellow-500 shadow-glow-warning' : 'bg-green-500 shadow-glow-success'}`}></span>
                                                     <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{zone.areaName}</h4>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-[10px] font-black tracking-widest text-muted-foreground/40 italic">
+                                                <div className="flex items-center gap-4 text-[10px] font-black tracking-widest text-muted-foreground/40  ">
                                                     <span>{zone.zoneId}</span>
                                                     <span className="flex items-center gap-1">• <Activity size={10} /> {zone.incidentCount} Alerts</span>
                                                 </div>

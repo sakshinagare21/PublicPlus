@@ -330,7 +330,7 @@ const Issues = () => {
                           <span className="text-xs font-medium">{issue.deadline.toLocaleDateString()}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground/40 text-[10px] font-bold italic">Unspecified</span>
+                        <span className="text-muted-foreground/40 text-[10px] font-bold  ">Unspecified</span>
                       )}
                     </td>
                     <td className="p-5 text-right">
@@ -347,7 +347,7 @@ const Issues = () => {
                   <tr>
                     <td colSpan={7} className="p-20 text-center">
                       <Activity size={32} className="mx-auto mb-4 text-muted-foreground/30" />
-                      <p className="text-sm font-medium text-muted-foreground tracking-widest italic opacity-50">Zero tactical missions detected</p>
+                      <p className="text-sm font-medium text-muted-foreground tracking-widest   opacity-50">Zero tactical missions detected</p>
                     </td>
                   </tr>
                 )}
@@ -480,7 +480,7 @@ const Issues = () => {
                   <div className="flex items-center gap-3 text-red-500 font-bold text-xs tracking-widest">
                     <AlertTriangle size={18} /> ESCALATION DIRECTIVE & EVIDENCE
                   </div>
-                  <p className="text-sm italic font-medium">"{task.escalation.reason}"</p>
+                  <p className="text-sm   font-medium">"{task.escalation.reason}"</p>
                   {task.escalation.proof && (
                     <div className="rounded-xl overflow-hidden border shadow-lg bg-black/40">
                       <img
@@ -506,12 +506,12 @@ const Issues = () => {
                           <span className="text-[9px] font-bold text-muted-foreground">{new Date(log.updatedAt).toLocaleString()}</span>
                         </div>
                         {log.remark && (
-                          <p className="text-xs text-muted-foreground leading-relaxed italic">"{log.remark}"</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed  ">"{log.remark}"</p>
                         )}
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-muted-foreground italic pl-8">No initial deployment logs captured.</p>
+                    <p className="text-xs text-muted-foreground   pl-8">No initial deployment logs captured.</p>
                   )}
                 </div>
               </div>

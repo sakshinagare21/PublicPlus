@@ -12,23 +12,20 @@ import {
     Star,
     Megaphone,
     Loader2,
+    Activity
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const achievements = [
-    { icon: Megaphone, label: "Top Reporter", sub: "30+ Verified Reports", unlocked: true },
-    { icon: CheckCircle2, label: "Fact Checker", sub: "100 Verifications", unlocked: true },
-    { icon: Users, label: "Pillar", sub: "Active for 1 Year", unlocked: true },
-    { icon: Lock, label: "Urban Hero", sub: "10 Major Resolutions", unlocked: false },
-];
 
 import ChangePasswordModal from "../../common/ChangePasswordModal";
+import EditProfileModal from "../../common/EditProfileModal";
 
 const Profile = () => {
     const [userData, setUserData] = useState(null);
     const [stats, setStats] = useState({ totalReports: 0, resolved: 0, trustScore: 0 });
     const [loading, setLoading] = useState(true);
     const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
     const token = localStorage.getItem("token");
 
     useEffect(() => {
@@ -106,12 +103,12 @@ const Profile = () => {
                                     </h1>
 
                                     <div className="flex gap-2">
-                                        <button className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-xl text-xs font-black tracking-widest text-muted-foreground hover:text-foreground hover:border-primary transition-all active:scale-95 shadow-sm">
+                                        <button
+                                            onClick={() => setEditModalOpen(true)}
+                                            className="flex items-center gap-2 bg-background border border-border px-4 py-2 rounded-xl text-xs font-black tracking-widest text-muted-foreground hover:text-foreground hover:border-primary transition-all active:scale-95 shadow-sm"
+                                        >
                                             <Edit size={14} />
                                             Edit Profile
-                                        </button>
-                                        <button className="bg-background border border-border p-2 rounded-xl hover:text-primary hover:border-primary transition-all active:scale-95 shadow-sm">
-                                            <Share2 size={16} />
                                         </button>
                                     </div>
                                 </div>
@@ -171,17 +168,14 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        <p className="mt-8 text-[11px] font-bold text-muted-foreground tracking-widest opacity-70">
-                            Identity Sector: {user.identificationNumber || "METRO-ID-492"}
-                        </p>
                     </div>
 
                     {/* Security Status */}
                     <div className="rounded-[2.5rem] border border-border bg-card p-10 shadow-2xl group transition-all">
                         <div className="flex items-center gap-3 mb-6">
                             <Shield size={20} className="text-primary shadow-glow" />
-                            <h3 className="text-[10px] font-black tracking-[0.2em] text-primary">
-                                Security Node
+                            <h3 className="text-[15px] font-black text-primary">
+                                Security Mode
                             </h3>
                         </div>
                         <div className="space-y-4">
@@ -197,9 +191,9 @@ const Profile = () => {
                                     <p className="text-[9px] font-black text-muted-foreground tracking-widest">Identity Passkey</p>
                                     <button
                                         onClick={() => setPasswordModalOpen(true)}
-                                        className="text-[10px] font-black text-primary hover:text-foreground transition-all italic underline underline-offset-4 decoration-border"
+                                        className="text-[10px] font-black text-primary hover:text-foreground transition-all   underline underline-offset-4 decoration-border"
                                     >
-                                        Change Secret Key
+                                        Change Password
                                     </button>
                                 </div>
                                 <Lock size={16} className="text-muted-foreground opacity-30" />
@@ -212,6 +206,12 @@ const Profile = () => {
             </div>
 
             <ChangePasswordModal isOpen={isPasswordModalOpen} onClose={() => setPasswordModalOpen(false)} />
+            <EditProfileModal
+                isOpen={isEditModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                currentData={user}
+                onUpdate={(updatedUser) => setUserData(updatedUser)}
+            />
         </DashboardLayout>
     );
 };

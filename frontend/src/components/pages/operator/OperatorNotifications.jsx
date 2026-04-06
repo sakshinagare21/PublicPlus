@@ -54,7 +54,7 @@ const OperatorNotifications = () => {
                         </div>
                         <div>
                             <h1 className="text-4xl font-black text-foreground tracking-tighter transition-colors ">Intelligence Hub</h1>
-                            <p className="text-muted-foreground text-[10px] font-black tracking-[0.2em] opacity-60 transition-colors italic">Mission updates and protocol alerts.</p>
+                            <p className="text-muted-foreground text-[10px] font-black tracking-[0.2em] opacity-60 transition-colors  ">Mission updates and protocol alerts.</p>
                         </div>
                     </div>
                     <button

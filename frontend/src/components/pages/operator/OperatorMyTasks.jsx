@@ -241,7 +241,7 @@ const OperatorMyTasks = () => {
                                         <td colSpan={5} className="p-32 text-center">
                                             <div className="flex flex-col items-center gap-4 opacity-30">
                                                 <Activity size={48} />
-                                                <p className="text-sm font-bold tracking-widest italic">Scanning Sector... Zero Data Hits</p>
+                                                <p className="text-sm font-bold tracking-widest  ">Scanning Sector... Zero Data Hits</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -309,7 +309,7 @@ const OperatorMyTasks = () => {
                                         <div className="space-y-2">
                                             <p className="text-[9px] font-black text-muted-foreground tracking-widest">Description</p>
                                             <div className="p-5 bg-muted/50 rounded-2xl border border-border">
-                                                <p className="text-sm text-foreground leading-relaxed italic font-medium opacity-80">
+                                                <p className="text-sm text-foreground leading-relaxed   font-medium opacity-80">
                                                     "{selectedTask.description}"
                                                 </p>
                                             </div>

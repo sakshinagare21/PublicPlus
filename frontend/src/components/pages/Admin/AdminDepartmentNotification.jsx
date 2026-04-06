@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
@@ -133,7 +134,7 @@ const AdminDepartmentNotification = () => {
           </div>
           <div className="p-6">
             {departments.length === 0 ? (
-              <p className="text-muted-foreground italic text-center py-8">No pending requests</p>
+              <p className="text-muted-foreground   text-center py-8">No pending requests</p>
             ) : (
               <div className="space-y-4">
                 {departments.map((dept) => (
@@ -227,7 +228,7 @@ const AdminDepartmentNotification = () => {
                             </div>
                           )}
                         </div>
-                        <p className={`text-sm italic leading-relaxed ${n.type === "task_escalated" ? "text-red-400 font-medium" : "text-muted-foreground"}`}>{n.message}</p>
+                        <p className={`text-sm   leading-relaxed ${n.type === "task_escalated" ? "text-red-400 font-medium" : "text-muted-foreground"}`}>{n.message}</p>
                         {n.issueId && (
                           <Link
                             to={`/admin-issues?issueId=${n.issueId}`}
@@ -253,9 +254,9 @@ const AdminDepartmentNotification = () => {
                       </td>
                       <td className="p-4">
                         <span className={`px-3 py-1 text-[10px] font-bold rounded-full tracking-wider ${n.type === "task_escalated" ? "bg-red-600 text-white" :
-                            n.type.includes("rejected") || n.type.includes("failed") || n.type.includes("reopened") ? "bg-red-600/10 text-red-500" :
-                              n.type.includes("approved") || n.type.includes("resolved") ? "bg-green-600/10 text-green-500" :
-                                "bg-blue-600/10 text-blue-500"
+                          n.type.includes("rejected") || n.type.includes("failed") || n.type.includes("reopened") ? "bg-red-600/10 text-red-500" :
+                            n.type.includes("approved") || n.type.includes("resolved") ? "bg-green-600/10 text-green-500" :
+                              "bg-blue-600/10 text-blue-500"
                           }`}>
                           {n.type.replace(/_/g, " ")}
                         </span>

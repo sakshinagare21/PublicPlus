@@ -10,6 +10,7 @@ import {
   getAllAccounts,
   getAdminDashboard,
   getAdminProfile,
+  updateTrustScore,
 } from "../controller/admin.controller.js";
 import { getAllDepartments } from "../controller/admin.controller.js";
 const router = express.Router();
@@ -48,4 +49,5 @@ router.get("/zones", firebaseAuth, verifyAdmin, getAllZones);
 router.get("/users",firebaseAuth, verifyAdmin, getAllUsers);
 router.get("/accounts", firebaseAuth, verifyAdmin, getAllAccounts);
 router.get("/profile", firebaseAuth, verifyAdmin, getAdminProfile);
+router.put("/update-trust/:id", firebaseAuth, verifyAdmin, updateTrustScore);
 export default router;

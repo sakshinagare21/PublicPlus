@@ -40,7 +40,6 @@ import ZoneConfiguration from "./components/pages/Department/ZoneConfiguration";
 import AdminLogin from "./components/pages/Auth/AdminLogin";
 import DashboardAdmin from "./components/pages/Admin/Dashboard";
 import AdminAnalytics from "./components/pages/Admin/AnalyticsDashboard";
-import AuditLogs from "./components/pages/Admin/AuditsLog";
 import Departments from "./components/pages/Admin/Departments";
 import IssueIntelligence from "./components/pages/Admin/IssueIntelligence";
 import TaskOperations from "./components/pages/Admin/TaskOperations";
@@ -58,7 +57,6 @@ import DepartmentDashboard from "./components/pages/Department/DepartmentDashboa
 import OperatorDashboard from "./components/pages/operator/OperatorDashboard";
 import OperatorMyTasks from "./components/pages/operator/OperatorMyTasks";
 import TaskDetailSingle from "./components/pages/operator/TaskDetailSingle";
-import UploadProof from "./components/pages/operator/UploadProof";
 import ProfileOperator from "./components/pages/operator/ProfileOperator";
 import OperatorNotifications from "./components/pages/operator/OperatorNotifications";
 import OperatorIssueHistory from "./components/pages/operator/OperatorIssueHistory";
@@ -68,12 +66,21 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
+import UserSettings from "./components/pages/user/UserSettings";
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
-          <Toaster position="top-right" />
+          <Toaster 
+            position="top-right" 
+            toastOptions={{
+              style: {
+                zIndex: 999999,
+              },
+            }}
+          />
           <Routes>
             {/* PUBLIC ROUTES */}
             <Route path="/" element={<Index />} />
@@ -96,7 +103,6 @@ function App() {
             <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><DashboardAdmin /></ProtectedRoute>} />
             <Route path="/admin-issues" element={<ProtectedRoute allowedRoles={['admin']}><IssueIntelligence /></ProtectedRoute>} />
             <Route path="/admin-analytics" element={<ProtectedRoute allowedRoles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
-            <Route path="/audit" element={<ProtectedRoute allowedRoles={['admin']}><AuditLogs /></ProtectedRoute>} />
             <Route path="/departments" element={<ProtectedRoute allowedRoles={['admin']}><Departments /></ProtectedRoute>} />
             <Route path="/tasks" element={<ProtectedRoute allowedRoles={['admin']}><TaskOperations /></ProtectedRoute>} />
             <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><UserManagement /></ProtectedRoute>} />
@@ -131,6 +137,7 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute allowedRoles={['citizen']}><Profile /></ProtectedRoute>} />
             <Route path="/post-report" element={<ProtectedRoute allowedRoles={['citizen']}><ReportIssue /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute allowedRoles={['citizen']}><UserNotifications /></ProtectedRoute>} />
+            <Route path="/user-settings" element={<ProtectedRoute allowedRoles={['citizen']}><UserSettings /></ProtectedRoute>} />
 
             {/* OPERATOR ROUTES (PROTECTED) */}
             <Route path="/operator/dashboard" element={<ProtectedRoute allowedRoles={['operator']}><OperatorDashboard /></ProtectedRoute>} />

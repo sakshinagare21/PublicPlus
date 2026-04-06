@@ -124,7 +124,7 @@ export default function CategorySettings() {
                 <h3 className="mb-6 font-semibold text-foreground/80">Issue Types List</h3>
 
                 {types.length === 0 ? (
-                    <p className="text-muted-foreground italic text-sm py-4">No issue types found in the grid...</p>
+                    <p className="text-muted-foreground   text-sm py-4">No issue types found in the grid...</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {types.map((t) => (

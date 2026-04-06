@@ -161,8 +161,8 @@ const UserNotifications = () => {
                             key={tab}
                             onClick={() => setFilter(tab)}
                             className={`px-6 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-all ${filter === tab
-                                    ? "bg-background border border-border text-foreground shadow-xl shadow-background/20"
-                                    : "text-muted-foreground hover:text-foreground"
+                                ? "bg-background border border-border text-foreground shadow-xl shadow-background/20"
+                                : "text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             {tab}
@@ -184,7 +184,7 @@ const UserNotifications = () => {
                 ) : filtered.length === 0 ? (
                     <div className="bg-card border border-border rounded-[2.5rem] p-20 flex flex-col items-center justify-center text-center shadow-2xl overflow-hidden relative group transition-colors">
                         <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-[100px] transition-colors"></div>
-                        <div className="h-20 w-20 rounded-3xl bg-background border border-border flex items-center justify-center text-muted-foreground/30 mb-6 group-hover:scale-110 group-hover:text-primary/30 transition-all duration-700 shadow-sm font-black italic">
+                        <div className="h-20 w-20 rounded-3xl bg-background border border-border flex items-center justify-center text-muted-foreground/30 mb-6 group-hover:scale-110 group-hover:text-primary/30 transition-all duration-700 shadow-sm font-black  ">
                             <Bell size={40} />
                         </div>
                         <h3 className="text-2xl font-black text-foreground tracking-tighter mb-2 transition-colors">Null Sector</h3>
@@ -200,8 +200,8 @@ const UserNotifications = () => {
                                 <div
                                     key={n._id}
                                     className={`group relative overflow-hidden rounded-[2.25rem] border transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl shadow-sm ${!n.isRead
-                                            ? "bg-card border-primary/30 shadow-primary/5"
-                                            : "bg-card/50 border-border hover:border-primary/20"
+                                        ? "bg-card border-primary/30 shadow-primary/5"
+                                        : "bg-card/50 border-border hover:border-primary/20"
                                         }`}
                                 >
                                     {!n.isRead && (

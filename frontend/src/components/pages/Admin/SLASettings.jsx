@@ -147,7 +147,7 @@ export default function SLASettings() {
                 </p>
 
                 {lastUpdated && (
-                    <p className="text-xs text-muted-foreground/60 mt-1 italic">
+                    <p className="text-xs text-muted-foreground/60 mt-1  ">
                         Last updated: {new Date(lastUpdated).toLocaleString()}
                     </p>
                 )}
@@ -259,8 +259,8 @@ export default function SLASettings() {
                                 <tr key={i} className="border-b border-border/50 transition-colors hover:bg-muted/5 group">
                                     <td className="py-4 px-4">
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${sla.priority === 'critical' ? 'bg-destructive/10 text-destructive border border-destructive/20' :
-                                                sla.priority === 'high' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
-                                                    'bg-primary/10 text-primary border border-primary/20'
+                                            sla.priority === 'high' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' :
+                                                'bg-primary/10 text-primary border border-primary/20'
                                             }`}>
                                             {sla.priority}
                                         </span>
@@ -276,7 +276,7 @@ export default function SLASettings() {
                                         </div>
                                     </td>
 
-                                    <td className="py-4 px-4 text-muted-foreground/60 italic text-xs">
+                                    <td className="py-4 px-4 text-muted-foreground/60   text-xs">
                                         {sla.updatedAt
                                             ? new Date(sla.updatedAt).toLocaleString()
                                             : "Not available"}

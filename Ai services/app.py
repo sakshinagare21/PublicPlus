@@ -84,6 +84,9 @@ def detect_image():
         result = CLASS_NAMES[index]
         confidence = float(conf.item())
         
+        # Diagnostics: Log the raw prediction to the Flask console
+        print(f"[AI-ENGINE] Result: {result.upper()} | Confidence: {confidence*100:.1f}% | Index: {index}")
+
         return jsonify({
             "success": True,
             "detected_as": result,

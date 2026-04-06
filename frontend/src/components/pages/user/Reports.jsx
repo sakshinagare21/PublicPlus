@@ -107,7 +107,7 @@ const Reports = () => {
                             <h1 className="text-3xl font-black text-foreground tracking-tighter transition-colors">Your Registry</h1>
                             <p className="text-sm text-muted-foreground font-medium font-mono tracking-widest mt-1 transition-colors">Incident Archive & Tracking</p>
                         </div>
-                        <Link to="/report-issue">
+                        <Link to="/post-report">
                             <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-2xl font-black tracking-widest text-xs transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center gap-2 group">
                                 Log New Incident <Plus size={16} className="group-hover:rotate-90 transition-transform" />
                             </button>
@@ -195,7 +195,7 @@ const Reports = () => {
                             disabled={page === 1}
                             className="px-6 py-2 bg-card border border-border text-[10px] font-black tracking-widest text-muted-foreground hover:text-foreground hover:border-primary transition-all rounded-xl disabled:opacity-20 shadow-sm"
                         >
-                            Prev Segment
+                            Prev
                         </button>
                         <div className="flex items-center gap-2">
                             {[...Array(totalPages)].map((_, i) => (
@@ -207,7 +207,7 @@ const Reports = () => {
                             disabled={page === totalPages}
                             className="px-6 py-2 bg-card border border-border text-[10px] font-black tracking-widest text-muted-foreground hover:text-foreground hover:border-primary transition-all rounded-xl disabled:opacity-20 shadow-sm"
                         >
-                            Next Segment
+                            Next
                         </button>
                     </div>
 
@@ -220,9 +220,9 @@ const Reports = () => {
                             <div className="rounded-[2.5rem] border border-border bg-card overflow-hidden shadow-2xl animate-in slide-in-from-right-8 duration-700 transition-colors">
                                 <div className="p-8 border-b border-border bg-muted/20 flex items-center justify-between transition-colors">
                                     <h2 className="text-xs font-black text-foreground transition-colors tracking-[0.2em] flex items-center gap-2">
-                                        <div className="h-2 w-2 rounded-full bg-primary shadow-glow"></div> Intelligence Panel
+                                        <div className="h-2 w-2 rounded-full bg-primary shadow-glow"></div> Issue Detail View
                                     </h2>
-                                    <span className="text-[10px] font-black text-muted-foreground transition-colors opacity-50">v2.0.4</span>
+                                    {/* <span className="text-[10px] font-black text-muted-foreground transition-colors opacity-50">v2.0.4</span> */}
                                 </div>
 
                                 <div className="p-10 space-y-8">
@@ -239,45 +239,39 @@ const Reports = () => {
                                             </div>
                                         )}
 
-                                        <div className="flex items-center gap-2">
-                                            <span className="bg-background border border-border px-3 py-1 rounded-full text-[10px] font-black text-primary tracking-widest transition-colors shadow-sm">
-                                                {selectedIssue.category?.label || "General"}
-                                            </span>
-                                            <span className="text-[10px] font-bold text-muted-foreground transition-colors tracking-widest opacity-50">Global Registry</span>
-                                        </div>
                                     </div>
 
                                     <div className="bg-background border border-border rounded-3xl p-6 relative overflow-hidden group transition-colors shadow-sm">
                                         <div className="absolute top-2 right-2 opacity-5 text-primary"><TrendingUp size={60} /></div>
                                         <p className="text-[10px] font-black tracking-widest text-muted-foreground transition-colors mb-4 flex items-center gap-2">
-                                            <Eye size={12} className="text-primary" /> Observation Brief
+                                            <Eye size={12} className="text-primary" /> Description
                                         </p>
-                                        <p className="text-sm text-muted-foreground transition-colors font-medium leading-relaxed italic opacity-80">
+                                        <p className="text-sm text-muted-foreground transition-colors font-medium leading-relaxed   opacity-80">
                                             "{selectedIssue.description?.text?.slice(0, 150)}{selectedIssue.description?.text?.length > 150 ? '...' : ''}"
                                         </p>
                                     </div>
 
                                     <div className="space-y-4">
-                                        <p className="text-[10px] font-black tracking-widest text-muted-foreground transition-colors opacity-50">Trace Timeline</p>
+                                        <p className="text-[10px] font-black tracking-widest text-muted-foreground transition-colors opacity-50">Timeline</p>
                                         <div className="relative pl-6 space-y-6 before:absolute before:left-1 before:top-2 before:bottom-2 before:w-px before:bg-border transition-colors">
                                             <div className="relative">
-                                                <div className="absolute -left-6 top-1.5 w-2 h-2 rounded-full bg-primary shadow-glow ring-4 ring-primary/10"></div>
-                                                <p className="text-[10px] font-black text-foreground transition-colors tracking-tight">Incident Registered</p>
+                                                <div className="absolute -left-6 top-1.5 w-2 h-2 rounded-full bg-primary  ring-4 ring-primary/10"></div>
+                                                <p className="text-[15px] font-black text-foreground transition-colors tracking-tight">Incident Registered</p>
                                                 <p className="text-[10px] font-bold text-muted-foreground transition-colors mt-0.5 opacity-60">{new Date(selectedIssue.createdAt).toLocaleString()}</p>
                                             </div>
                                             <div className="relative">
                                                 <div className={`absolute -left-6 top-1.5 w-2 h-2 rounded-full ring-4 transition-colors ${selectedIssue.status !== 'reported' ? 'bg-amber-600 ring-amber-600/10' : 'bg-muted ring-transparent'}`}></div>
-                                                <p className={`text-[10px] font-black tracking-tight transition-colors ${selectedIssue.status !== 'reported' ? 'text-foreground' : 'text-muted-foreground opacity-30'}`}>Unit Dispatched</p>
+                                                <p className={`text-[15px] font-black tracking-tight transition-colors ${selectedIssue.status !== 'reported' ? 'text-foreground' : 'text-muted-foreground opacity-30'}`}>Unit Dispatched</p>
                                             </div>
                                             <div className="relative">
                                                 <div className={`absolute -left-6 top-1.5 w-2 h-2 rounded-full ring-4 transition-colors ${selectedIssue.status === 'resolved' ? 'bg-success ring-success/10' : 'bg-muted ring-transparent'}`}></div>
-                                                <p className={`text-[10px] font-black tracking-tight transition-colors ${selectedIssue.status === 'resolved' ? 'text-foreground' : 'text-muted-foreground opacity-30'}`}>Mission Finalized</p>
+                                                <p className={`text-[15px] font-black tracking-tight transition-colors ${selectedIssue.status === 'resolved' ? 'text-foreground' : 'text-muted-foreground opacity-30'}`}>Mission Finalized</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <Link to={`/issue/${selectedIssue._id}`} className="block">
-                                        <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-5 rounded-2xl font-black tracking-[0.2em] text-[10px] transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center justify-center gap-2">
+                                        <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-5 rounded-2xl font-black text-[15px] transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center justify-center gap-2">
                                             Inspect Detailed Logs <ArrowRight size={14} />
                                         </button>
                                     </Link>

@@ -100,27 +100,36 @@ export default function UserManagement() {
                 {/* Header */}
                 <div className="flex justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">User Management</h1>
+                        <h1 className="text-4xl font-black text-foreground">User Management</h1>
                         <p className="text-sm text-muted-foreground">
                             Manage {counts.total} platform participants
                         </p>
                     </div>
+                </div>
 
-                    <div className="flex gap-3">
-                        <button
-                            onClick={() => toast("Exporting users...")}
-                            className="flex gap-2 bg-card border border-border px-4 py-2 rounded-lg hover:border-primary text-foreground transition-colors"
-                        >
-                            <Download className="w-4 h-4" /> Export
-                        </button>
-
-                        <button
-                            onClick={() => toast.success("Add user form opened")}
-                            className="flex gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-                        >
-                            <UserPlus className="w-4 h-4" /> Add User
-                        </button>
-                    </div>
+                {/* Stats Row */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <StatCard 
+                        title="Platform Trust Score" 
+                        value={`${counts.avgCitizenTrust || 0}%`} 
+                        subtitle="Global Reliability Average"
+                    />
+                    <StatCard
+                        title="Active Citizens"
+                        value={counts.citizens}
+                        subtitle="Verified Public Accounts"
+                    />
+                    <StatCard
+                        title="Operators in Field"
+                        value={counts.operators}
+                        subtitle="Department Staff Active"
+                    />
+                    <StatCard 
+                        title="Security Intervention" 
+                        value={counts.flagged || 0} 
+                        subtitle="Total Accounts Flagged"
+                        critical={(counts.flagged || 0) > 0}
+                    />
                 </div>
 
                 {/* Tabs */}
@@ -130,8 +139,8 @@ export default function UserManagement() {
                             key={tab.label}
                             onClick={() => setActiveTab(tab.label)}
                             className={`pb-3 text-sm border-b-2 transition-colors ${activeTab === tab.label
-                                    ? "border-primary text-primary"
-                                    : "border-transparent text-muted-foreground hover:text-foreground"
+                                ? "border-primary text-primary"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
                                 }`}
                         >
                             {tab.label} ({tab.count})
@@ -174,7 +183,7 @@ export default function UserManagement() {
                             <tbody>
                                 {filteredUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan="4" className="p-6 text-center text-muted-foreground italic">
+                                        <td colSpan="4" className="p-6 text-center text-muted-foreground  ">
                                             No users found
                                         </td>
                                     </tr>
@@ -225,44 +234,126 @@ export default function UserManagement() {
 
                     {/* SIDE PANEL */}
                     {selectedUser && (
-                        <div className="w-80 bg-card border border-border rounded-xl p-5 space-y-4 transition-colors shadow-sm">
-
-                            <h3 className="text-lg font-bold text-foreground">{selectedUser.name}</h3>
-
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => setTrustScore(Math.max(0, trustScore - 5))} className="p-1 hover:bg-muted rounded transition-colors text-foreground">
-                                    <Minus />
-                                </button>
-
-                                <span className="font-bold text-foreground">{trustScore}%</span>
-
-                                <button onClick={() => setTrustScore(Math.min(100, trustScore + 5))} className="p-1 hover:bg-muted rounded transition-colors text-foreground">
-                                    <Plus />
-                                </button>
+                        <div className="w-80 bg-card border border-border rounded-xl p-6 space-y-6 transition-all animate-in slide-in-from-right-10 duration-500 shadow-sm">
+                            
+                            <div className="border-b border-border pb-4">
+                                <h3 className="text-xl font-black text-foreground">{selectedUser.name}</h3>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${roleColors[selectedUser.role]}`}>
+                                    {selectedUser.role} Account
+                                </p>
                             </div>
 
-                            <textarea
-                                value={adjustReason}
-                                onChange={(e) => setAdjustReason(e.target.value)}
-                                placeholder="Adjustment reason..."
-                                className="w-full bg-background border border-border rounded-lg p-3 text-foreground focus:ring-2 focus:ring-primary/50 outline-none transition-all placeholder:text-muted-foreground/50"
-                            />
+                            {selectedUser.role === "Admin" ? (
+                                <div className="p-5 bg-primary/5 border border-primary/20 rounded-2xl flex flex-col items-center text-center gap-4">
+                                     <Minus size={32} className="text-primary opacity-40 rotate-90" />
+                                     <div>
+                                        <p className="text-[10px] font-black tracking-widest text-primary mb-2 uppercase">Metric Locked</p>
+                                        <p className="text-xs text-muted-foreground leading-relaxed leading-relaxed">
+                                            This is a Department Admin account. Reliability scores for administrative nodes are fixed at 80% and cannot be manually adjusted.
+                                        </p>
+                                     </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-end">
+                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Adjust Reliability</p>
+                                            <span className="text-3xl font-black text-primary">{trustScore}%</span>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-3">
+                                            <button onClick={() => setTrustScore(Math.max(0, trustScore - 5))} className="p-2 hover:bg-muted rounded-xl transition-colors text-foreground border border-border bg-card shadow-sm active:scale-95">
+                                                <Minus size={14} />
+                                            </button>
 
-                            <button
-                                onClick={() => {
-                                    toast.success(`Trust updated to ${trustScore}%`);
-                                    setAdjustReason("");
-                                }}
-                                className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-bold hover:bg-primary/90 transition-colors"
-                            >
-                                Update Trust
-                            </button>
+                                            <input 
+                                                type="range" 
+                                                min="0" 
+                                                max="100" 
+                                                value={trustScore} 
+                                                onChange={(e) => setTrustScore(parseInt(e.target.value))}
+                                                className="w-full h-1.5 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary" 
+                                            />
 
+                                            <button onClick={() => setTrustScore(Math.min(100, trustScore + 5))} className="p-2 hover:bg-muted rounded-xl transition-colors text-foreground border border-border bg-card shadow-sm active:scale-95">
+                                                <Plus size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Calibration Reason</p>
+                                        <textarea
+                                            value={adjustReason}
+                                            onChange={(e) => setAdjustReason(e.target.value)}
+                                            placeholder="Specify justification for reliability calibration..."
+                                            className="w-full bg-muted/30 border border-border rounded-xl p-4 text-xs text-foreground focus:ring-1 focus:ring-primary/30 outline-none transition-all placeholder:text-muted-foreground/40 resize-none h-28"
+                                        />
+                                    </div>
+
+                                    <button
+                                        onClick={async () => {
+                                            if (!adjustReason.trim()) {
+                                                return toast.error("Please provide an adjustment reason");
+                                            }
+
+                                            try {
+                                                const res = await fetch(`http://localhost:5000/api/admin/update-trust/${selectedUser._id}`, {
+                                                    method: "PUT",
+                                                    headers: {
+                                                        "Content-Type": "application/json",
+                                                        "Authorization": `Bearer ${token}`
+                                                    },
+                                                    body: JSON.stringify({
+                                                        trustScore,
+                                                        reason: adjustReason
+                                                    })
+                                                });
+
+                                                const data = await res.json();
+                                                if (res.ok) {
+                                                    toast.success(data.message);
+                                                    setAdjustReason("");
+                                                    fetchUsers(); // Refresh list
+                                                } else {
+                                                    toast.error(data.message || "Failed to update trust");
+                                                }
+                                            } catch (err) {
+                                                toast.error("Transmission error");
+                                            }
+                                        }}
+                                        className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-black tracking-widest text-[10px] hover:bg-primary/90 transition-all active:scale-95 shadow-xl shadow-primary/20 uppercase"
+                                    >
+                                        Transmit Adjustment
+                                    </button>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>
             </div>
         </AdminLayout>
+    );
+}
+
+function StatCard({ title, value, subtitle, critical = false }) {
+    return (
+        <div className={`bg-card border rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${critical ? "border-red-500/30" : "border-border shadow-inner"}`}>
+            <div className="flex justify-between items-start mb-3">
+                <p className={`text-[10px] font-black tracking-widest ${critical ? "text-red-500" : "text-muted-foreground opacity-60"}`}>
+                    {title}
+                </p>
+                {critical && (
+                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                )}
+            </div>
+            <h2 className={`text-3xl font-black ${critical ? "text-red-500" : "text-foreground"}`}>
+                {value}
+            </h2>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1 opacity-50 tracking-wide">
+                {subtitle}
+            </p>
+        </div>
     );
 }
 

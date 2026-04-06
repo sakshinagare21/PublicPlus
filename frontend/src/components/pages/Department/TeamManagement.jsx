@@ -95,8 +95,8 @@ const TeamManagement = () => {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`${activeTab === tab
-                                    ? "text-primary border-b-2 border-primary pb-1 font-bold"
-                                    : "text-muted-foreground hover:text-foreground transition-colors"
+                                ? "text-primary border-b-2 border-primary pb-1 font-bold"
+                                : "text-muted-foreground hover:text-foreground transition-colors"
                                 }`}
                         >
                             {tab} {tab === "All" ? `(${operators.length})` : tab === "High" ? "Workload" : ""}
@@ -149,7 +149,7 @@ const TeamManagement = () => {
                                 {/* Info */}
                                 <div className="p-5 space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="font-bold text-foreground italic">{op.fullName}</h3>
+                                        <h3 className="font-bold text-foreground  ">{op.fullName}</h3>
                                         <div className="flex items-center gap-1 text-[10px] bg-warning/10 text-warning px-2 py-1 rounded-md font-black shadow-sm">
                                             ⭐ {op.ratingAverage ? op.ratingAverage.toFixed(1) : "NEW"}
                                         </div>
@@ -177,8 +177,8 @@ const TeamManagement = () => {
                                         <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                                             <div
                                                 className={`h-full transition-all duration-1000 ${workloadPercent >= 80
-                                                        ? "bg-warning"
-                                                        : "bg-primary"
+                                                    ? "bg-warning"
+                                                    : "bg-primary"
                                                     }`}
                                                 style={{
                                                     width: `${workloadPercent}%`,
@@ -243,7 +243,7 @@ const TeamManagement = () => {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <h2 className="text-3xl font-black text-foreground italic tracking-tight">
+                                    <h2 className="text-3xl font-black text-foreground   tracking-tight">
                                         {operatorDetails.fullName}
                                     </h2>
                                     <p className="text-muted-foreground font-medium text-sm">{operatorDetails.email}</p>
@@ -253,8 +253,8 @@ const TeamManagement = () => {
                             {/* CREDENTIAL TAGS */}
                             <div className="flex flex-wrap gap-2 mb-8">
                                 <div className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest flex items-center gap-2 border ${operatorDetails.status === "active"
-                                        ? "bg-success/5 text-success border-success/20"
-                                        : "bg-muted text-muted-foreground border-border"
+                                    ? "bg-success/5 text-success border-success/20"
+                                    : "bg-muted text-muted-foreground border-border"
                                     }`}
                                 >
                                     <div className={`w-1.5 h-1.5 rounded-full ${operatorDetails.status === "active" ? "bg-success" : "bg-muted-foreground"}`} />
@@ -315,7 +315,7 @@ const TeamManagement = () => {
                             {/* ANALYTICS FOOTER */}
                             <div className="mt-8 flex justify-between items-center bg-foreground/5 p-4 rounded-xl border border-foreground/5 border-dashed">
                                 <p className="text-[10px] font-black text-muted-foreground tracking-widest">Historical Performance Index</p>
-                                <p className="text-lg font-black text-primary italic">
+                                <p className="text-lg font-black text-primary  ">
                                     {operatorStats.total > 0
                                         ? Math.round((operatorStats.completed / operatorStats.total) * 100)
                                         : 0}

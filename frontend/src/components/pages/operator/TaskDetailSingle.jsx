@@ -337,7 +337,13 @@ const TaskDetailSingle = () => {
     const handleEscalate = async (e) => {
         e.preventDefault();
         if (!escalationReason.trim() || !proofLat || !proofLng) {
-            toast.error("Escalation rationale required");
+            toast.error("Escalation rationale and Geo-Lock required");
+            return;
+        }
+
+        const isMatched = detectedZone?.trim().toLowerCase() === task?.zone?.trim().toLowerCase();
+        if (!isMatched) {
+            toast.error(`Sector mismatch: Escalation in ${detectedZone || "Unknown"} denied.`);
             return;
         }
 
@@ -400,6 +406,22 @@ const TaskDetailSingle = () => {
         );
     }
 
+    if (!task) {
+        return (
+            <OperatorLayout>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 animate-in fade-in duration-700">
+                    <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center shadow-glow border border-rose-500/20">
+                        <AlertTriangle size={40} className="text-rose-500" />
+                    </div>
+                    <div className="text-center space-y-2">
+                        <h2 className="text-3xl font-black text-foreground">Mission Archive Not Found</h2>
+                        <p className="text-sm text-muted-foreground font-medium opacity-60 uppercase tracking-widest">Target ID: {id} | Telemetry Link Failed</p>
+                    </div>
+                </div>
+            </OperatorLayout>
+        );
+    }
+
     return (
         <OperatorLayout>
             <div className="max-w-[1400px] mx-auto space-y-10 animate-in fade-in duration-700 pb-20" style={{ fontFamily: "Calibri, sans-serif" }}>
@@ -414,8 +436,8 @@ const TaskDetailSingle = () => {
                             Mission Directive
                         </h1>
                         <div className="flex items-center gap-3">
-                            <span className="bg-muted px-3 py-1 rounded-lg text-xs font-bold text-muted-foreground">ID: #{task.id.slice(-8).toUpperCase()}</span>
-                            <span className="text-muted-foreground text-sm font-medium opacity-60">| {task.title}</span>
+                            <span className="bg-muted px-3 py-1 rounded-lg text-xs font-bold text-muted-foreground">ID: #{task?.id?.slice(-8).toUpperCase()}</span>
+                            <span className="text-muted-foreground text-sm font-medium opacity-60">| {task?.title}</span>
                         </div>
                     </div>
 
@@ -485,7 +507,7 @@ const TaskDetailSingle = () => {
                                         <FileText size={14} className="text-primary" />
                                         Title
                                     </h4>
-                                    <div className="bg-muted/30 p-6 rounded-2xl border text-sm font-medium text-foreground/80 leading-relaxed italic">
+                                    <div className="bg-muted/30 p-6 rounded-2xl border text-sm font-medium text-foreground/80 leading-relaxed  ">
                                         "{task.title}"
                                     </div>
                                 </div>
@@ -494,10 +516,10 @@ const TaskDetailSingle = () => {
                                         <MapPin size={14} className="text-primary" />
                                         Location
                                     </h4>
-                                    <div className="bg-muted/30 p-6 rounded-2xl border text-sm font-medium text-foreground/80 leading-relaxed italic relative">
+                                    <div className="bg-muted/30 p-6 rounded-2xl border text-sm font-medium text-foreground/80 leading-relaxed   relative">
                                         "{task.location}"
                                         {taskDetectedZone && (
-                                            <div className="mt-3 flex items-center gap-2 text-[9px] font-bold text-primary bg-primary/5 border border-primary/20 w-fit px-3 py-1.5 rounded-lg not-italic">
+                                            <div className="mt-3 flex items-center gap-2 text-[9px] font-bold text-primary bg-primary/5 border border-primary/20 w-fit px-3 py-1.5 rounded-lg not- ">
                                                 <Target size={12} className="opacity-60" /> Verified Zone: {taskDetectedZone}
                                             </div>
                                         )}
@@ -754,6 +776,43 @@ const TaskDetailSingle = () => {
                                 </div>
 
                                 <form onSubmit={handleEscalate} className="space-y-6">
+                                    <div className="bg-rose-500/5 p-6 rounded-2xl border border-rose-500/20 space-y-5">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex flex-col">
+                                                <p className="text-[10px] font-bold tracking-widest text-rose-500/60">Escalation Locale Sync</p>
+                                                <p className="text-[9px] font-mono text-rose-500/40">Target Sector: {task?.zone}</p>
+                                            </div>
+                                            <button type="button" onClick={handleAutoDetect} className="text-[10px] font-bold text-rose-500 flex items-center gap-2 bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 active:scale-95 transition-all">
+                                                <Navigation2 size={12} /> SCAN LOCALE
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <input value={proofLat} onChange={e => setProofLat(e.target.value)} placeholder="0.000000" className="w-full bg-background border px-4 py-3 rounded-xl text-xs font-mono font-bold outline-none border-rose-500/20 text-rose-500" />
+                                            <input value={proofLng} onChange={e => setProofLng(e.target.value)} placeholder="0.000000" className="w-full bg-background border px-4 py-3 rounded-xl text-xs font-mono font-bold outline-none border-rose-500/20 text-rose-500" />
+                                        </div>
+                                        <div className="bg-rose-500/5 p-4 rounded-xl border border-dashed border-rose-500/20">
+                                            {!proofLat || !proofLng ? (
+                                                <div className="flex flex-col items-center justify-center py-2 gap-2 opacity-40 text-rose-500">
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                    <p className="text-[10px] font-bold tracking-[0.2em]">AWAITING GEO-LOCK...</p>
+                                                </div>
+                                            ) : (
+                                                <div className={`flex items-center justify-between animate-in zoom-in-95 duration-300 ${detectedZone?.trim().toLowerCase() === task?.zone?.trim().toLowerCase() ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <Shield size={16} className={detectedZone?.trim().toLowerCase() === task?.zone?.trim().toLowerCase() ? 'animate-pulse' : ''} />
+                                                        <div className="flex flex-col">
+                                                            <p className="text-[10px] font-bold tracking-widest leading-none">Sector Identified</p>
+                                                            <p className="text-xs font-black tracking-tight">{detectedZone || "Analyzing..."}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-current/10 px-3 py-1.5 rounded-lg border border-current/20 text-[10px] font-bold tracking-[0.1em]">
+                                                        {detectedZone?.trim().toLowerCase() === task?.zone?.trim().toLowerCase() ? "PROTOCOL VERIFIED" : "SECTOR MISMATCH"}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-3">
                                         <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Escalation Rationale</p>
                                         <textarea

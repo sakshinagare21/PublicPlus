@@ -91,7 +91,7 @@ const UploadProof = () => {
 
                 <div className="transition-colors">
                     <h1 className="text-4xl font-black text-foreground tracking-tighter transition-colors ">Mission Certification</h1>
-                    <p className="text-muted-foreground text-[10px] font-black tracking-[0.2em] mt-1 opacity-60 transition-colors italic">
+                    <p className="text-muted-foreground text-[10px] font-black tracking-[0.2em] mt-1 opacity-60 transition-colors  ">
                         Submit visual evidence for Directive {id.slice(-6).toUpperCase()}
                     </p>
                 </div>
@@ -159,8 +159,8 @@ const UploadProof = () => {
                         onClick={handleSubmit}
                         disabled={isSubmitting}
                         className={`w-full py-5 rounded-2xl flex items-center justify-center gap-3 font-black text-[10px] tracking-[0.2em] transition-all relative z-10 mt-10 shadow-xl ${isSubmitting
-                                ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                                : "bg-primary text-primary-foreground hover:bg-primary/95 shadow-primary/20 active:scale-95 shadow-glow"
+                            ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                            : "bg-primary text-primary-foreground hover:bg-primary/95 shadow-primary/20 active:scale-95 shadow-glow"
                             }`}
                     >
                         {isSubmitting ? (
@@ -201,7 +201,7 @@ const UploadProof = () => {
                         </div>
                     ) : proofs.length === 0 ? (
                         <div className="text-center py-12 border-2 border-dashed border-border rounded-xl">
-                            <p className="text-muted-foreground italic">
+                            <p className="text-muted-foreground  ">
                                 You haven't uploaded any proofs yet. Start by completing a task!
                             </p>
                         </div>
@@ -232,7 +232,7 @@ const UploadProof = () => {
                                         </h4>
 
                                         {issue.resolution.notes && (
-                                            <p className="text-[11px] text-muted-foreground line-clamp-2 font-medium italic opacity-80 leading-relaxed">
+                                            <p className="text-[11px] text-muted-foreground line-clamp-2 font-medium   opacity-80 leading-relaxed">
                                                 "{issue.resolution.notes}"
                                             </p>
                                         )}
