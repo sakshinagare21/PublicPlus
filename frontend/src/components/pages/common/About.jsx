@@ -1,24 +1,7 @@
 import { Shield, Workflow, Radar } from "lucide-react";
 import LandingNavbar from "../../layout/LandingNavbar";
-import img1 from "../../../assets/landing/Road.jpg";
-import img2 from "../../../assets/landing/dataprocess.jpg";
-import img3 from "../../../assets/landing/map.jpg";
-import bgImage from "../../../assets/landing/about1.jpg";
+import bgImage from "../../../assets/images/landing/background.jpeg";
 import Footer from "../../layout/Footer";
-const techItems = [
-    {
-        title: "AI Image Recognition",
-        image: img1,
-    },
-    {
-        title: "Data Processing",
-        image: img2,
-    },
-    {
-        title: "Automated Routing",
-        image: img3,
-    },
-];
 
 const About = () => {
     return (<div className="min-h-screen bg-background text-foreground transition-colors duration-300"> <LandingNavbar />
@@ -97,34 +80,6 @@ const About = () => {
                         </div>
                     ))}
                 </div>
-            </div>
-        </section>
-
-        {/* TECHNOLOGY */}
-        <section className="max-w-7xl mx-auto px-6 py-16">
-            <h2 className="text-2xl font-bold mb-4 text-foreground">
-                The Technology Behind Accountability
-            </h2>
-
-            <p className="text-muted-foreground mb-10 max-w-2xl">
-                Our proprietary AI engine classifies and prioritizes infrastructure
-                issues using deep learning models trained on urban datasets.
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-8">
-                {techItems.map((item) => (
-                    <div key={item.title} className="space-y-3">
-                        <img
-                            src={item.image}
-                            alt={item.title}
-                            className="h-40 w-full object-cover rounded-xl border border-border"
-                        />
-                        <h3 className="font-semibold text-foreground">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                            Advanced algorithms enable smarter and faster decision making.
-                        </p>
-                    </div>
-                ))}
             </div>
         </section>
 
