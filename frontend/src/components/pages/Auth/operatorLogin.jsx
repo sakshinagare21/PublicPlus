@@ -71,7 +71,7 @@ const OperatorLogin = () => {
       );
       const user = userCredential.user;
       const token = await user.getIdToken();
-      const res = await fetch("http://localhost:5000/api/operator/login", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/operator/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -249,3 +249,4 @@ const OperatorLogin = () => {
 };
 
 export default OperatorLogin;
+

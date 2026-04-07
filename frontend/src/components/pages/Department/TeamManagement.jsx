@@ -16,7 +16,7 @@ const TeamManagement = () => {
         const fetchOperators = async () => {
             try {
                 const res = await axios.get(
-                    "http://localhost:5000/api/departments/operators",
+                    `${import.meta.env.VITE_API_BASE_URL}/api/departments/operators`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -39,14 +39,14 @@ const TeamManagement = () => {
             const token = localStorage.getItem("token");
 
             const profileRes = await axios.get(
-                `http://localhost:5000/api/operator/department/operator/${id}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/operator/department/operator/${id}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 },
             );
 
             const statsRes = await axios.get(
-                `http://localhost:5000/api/operator/department/operator/${id}/stats`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/operator/department/operator/${id}/stats`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 },
@@ -331,4 +331,5 @@ const TeamManagement = () => {
 };
 
 export default TeamManagement;
+
 

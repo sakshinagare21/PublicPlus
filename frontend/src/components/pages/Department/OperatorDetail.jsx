@@ -15,7 +15,7 @@ const OperatorDetails = () => {
         const fetchData = async () => {
             try {
                 const res = await axios.get(
-                    `http://localhost:5000/api/operator/${operatorId}`,
+                    `${import.meta.env.VITE_API_BASE_URL}/api/operator/${operatorId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -86,4 +86,5 @@ const OperatorDetails = () => {
 };
 
 export default OperatorDetails;
+
 

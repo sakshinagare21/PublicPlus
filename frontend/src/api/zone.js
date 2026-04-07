@@ -37,3 +37,4 @@ export const detectZone = (lat, lng, zones = []) => {
 
   return matchedZone ? matchedZone.areaName : "Outside Boundaries";
 };
+

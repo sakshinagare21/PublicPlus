@@ -26,7 +26,7 @@ const OperatorRegister = () => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const res = await fetch("http://localhost:5000/api/departments/list");
+                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/departments/list`);
                 const data = await res.json();
                 setDepartments(data);
             } catch (err) {
@@ -43,7 +43,7 @@ const OperatorRegister = () => {
     const handleSendOtp = async () => {
         setOtpLoading(true);
         try {
-            const response = await fetch("http://localhost:5000/api/otp/send-otp", {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/otp/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: form.email }),
@@ -62,7 +62,7 @@ const OperatorRegister = () => {
     const handleVerifyOtp = async () => {
         setOtpLoading(true);
         try {
-            const response = await fetch("http://localhost:5000/api/otp/verify-otp", {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/otp/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: form.email, otp }),
@@ -88,7 +88,7 @@ const OperatorRegister = () => {
             firebaseUser = userCredential.user;
             const token = await firebaseUser.getIdToken(true);
 
-            const res = await fetch("http://localhost:5000/api/operator/register", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/operator/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -307,3 +307,4 @@ const OperatorRegister = () => {
 };
 
 export default OperatorRegister;
+

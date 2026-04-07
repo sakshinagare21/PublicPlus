@@ -52,7 +52,7 @@ const DepartmentLogin = () => {
                 form.password
             );
             const token = await userCredential.user.getIdToken(true);
-            const response = await fetch("http://localhost:5000/api/departments/login", {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/departments/login`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -203,4 +203,5 @@ const DepartmentLogin = () => {
 };
 
 export default DepartmentLogin;
+
 

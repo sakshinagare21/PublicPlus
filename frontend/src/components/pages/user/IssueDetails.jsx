@@ -59,7 +59,7 @@ const IssueDetail = () => {
     const fetchIssue = async () => {
         try {
             const res = await axios.get(
-                `http://localhost:5000/api/issues/${issueId}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/issues/${issueId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -96,7 +96,7 @@ const IssueDetail = () => {
             }
 
             await axios.post(
-                `http://localhost:5000/api/issues/${issueId}/verify`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/issues/${issueId}/verify`,
                 formData,
                 {
                     headers: {
@@ -127,7 +127,7 @@ const IssueDetail = () => {
 
         try {
             await axios.post(
-                `http://localhost:5000/api/issues/${issueId}/reopen`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/issues/${issueId}/reopen`,
                 formData,
                 {
                     headers: {
@@ -247,7 +247,7 @@ const IssueDetail = () => {
                                     {issue.resolution?.proof?.url ? (
                                         <>
                                             <img
-                                                src={`http://localhost:5000${issue.resolution.proof.url}`}
+                                                src={`${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`}
                                                 className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-700"
                                                 alt="Visual Proof"
                                             />
@@ -344,7 +344,7 @@ const IssueDetail = () => {
                                             {issue.images.map((img, i) => (
                                                 <div key={i} className="aspect-square rounded-2xl overflow-hidden border border-border group relative transition-colors">
                                                     <img
-                                                        src={img.url ? (img.url.startsWith('http') ? img.url : `http://localhost:5000${img.url.startsWith('/') ? '' : '/'}${img.url}`) : '/placeholder-image.png'}
+                                                        src={img.url ? (img.url.startsWith('http') ? img.url : `${import.meta.env.VITE_API_BASE_URL}${img.url.startsWith('/') ? '' : '/'}${img.url}`) : '/placeholder-image.png'}
                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                         onError={(e) => { e.target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found'; }}
                                                     />
@@ -364,7 +364,7 @@ const IssueDetail = () => {
                                 <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
                                     <div className="w-full md:w-64 aspect-square rounded-3xl overflow-hidden border border-emerald-500/20 shadow-2xl">
                                         <img
-                                            src={issue.resolution.proof.url.startsWith('http') ? issue.resolution.proof.url : `http://localhost:5000${issue.resolution.proof.url}`}
+                                            src={issue.resolution.proof.url.startsWith('http') ? issue.resolution.proof.url : `${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`}
                                             className="w-full h-full object-cover"
                                             alt="Final Resolution"
                                         />
@@ -497,4 +497,5 @@ const IssueDetail = () => {
 };
 
 export default IssueDetail;
+
 

@@ -18,7 +18,7 @@ const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await axios.put("http://localhost:5000/api/users/profile", formData, {
+            const res = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/users/profile`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -128,3 +128,4 @@ const EditProfileModal = ({ isOpen, onClose, currentData, onUpdate }) => {
 };
 
 export default EditProfileModal;
+

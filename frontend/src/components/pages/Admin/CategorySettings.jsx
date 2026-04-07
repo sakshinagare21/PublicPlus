@@ -12,7 +12,7 @@ export default function CategorySettings() {
     /* ================= FETCH ================= */
     const fetchTypes = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/issue-types", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/issue-types`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -42,7 +42,7 @@ export default function CategorySettings() {
         try {
             setLoading(true);
 
-            const res = await fetch("http://localhost:5000/api/issue-types", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/issue-types`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export default function CategorySettings() {
     /* ================= DELETE ================= */
     const deleteType = async (id) => {
         try {
-            await fetch(`http://localhost:5000/api/issue-types/${id}`, {
+            await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/issue-types/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -148,4 +148,5 @@ export default function CategorySettings() {
         </div>
     );
 }
+
 

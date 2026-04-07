@@ -16,7 +16,7 @@ const AdminContact = () => {
 
     const fetchInquiries = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/contact/all");
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/contact/all`);
             setInquiries(res.data);
         } catch (error) {
             toast.error("Failed to load inquiries");
@@ -192,4 +192,5 @@ const AdminContact = () => {
 };
 
 export default AdminContact;
+
 

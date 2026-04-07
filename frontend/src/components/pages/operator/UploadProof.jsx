@@ -20,7 +20,7 @@ const UploadProof = () => {
     /* ================= FETCH PROOF HISTORY ================= */
     const fetchHistory = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/issues/operator/issue", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/operator/issue`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
 
@@ -62,7 +62,7 @@ const UploadProof = () => {
         formData.append("isInvalid", isInvalid);
 
         try {
-            await axios.post(`http://localhost:5000/api/issues/${id}/upload-proof`, formData, {
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/issues/${id}/upload-proof`, formData, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                     "Content-Type": "multipart/form-data"
@@ -214,7 +214,7 @@ const UploadProof = () => {
                                 >
                                     <div className="relative aspect-video overflow-hidden">
                                         <img
-                                            src={`http://localhost:5000${issue.resolution.proof.url}`}
+                                            src={`${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`}
                                             alt="Proof"
                                             className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
                                         />
@@ -262,4 +262,5 @@ const UploadProof = () => {
 };
 
 export default UploadProof;
+
 

@@ -23,7 +23,7 @@ export default function SLASettings() {
             const token = localStorage.getItem("token"); // or firebase token
 
             const res = await fetch(
-                `http://localhost:5000/api/sla/get-sla?priority=${priority}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/sla/get-sla?priority=${priority}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -52,7 +52,7 @@ export default function SLASettings() {
         try {
             const token = localStorage.getItem("token");
 
-            const res = await fetch("http://localhost:5000/api/sla/get-sla", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sla/get-sla`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
@@ -108,7 +108,7 @@ export default function SLASettings() {
 
             const token = localStorage.getItem("token"); // 🔥 get token
 
-            const res = await fetch("http://localhost:5000/api/sla/set-sla", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sla/set-sla`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -290,4 +290,5 @@ export default function SLASettings() {
         </div>
     );
 }
+
 

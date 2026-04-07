@@ -31,7 +31,7 @@ const DepartmentRegister = () => {
     const handleSendOtp = async () => {
         setOtpLoading(true);
         try {
-            const response = await fetch("http://localhost:5000/api/otp/send-otp", {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/otp/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: form.officialEmail }),
@@ -50,7 +50,7 @@ const DepartmentRegister = () => {
     const handleVerifyOtp = async () => {
         setOtpLoading(true);
         try {
-            const response = await fetch("http://localhost:5000/api/otp/verify-otp", {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/otp/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: form.officialEmail, otp }),
@@ -76,7 +76,7 @@ const DepartmentRegister = () => {
             firebaseUser = userCredential.user;
             const token = await firebaseUser.getIdToken(true);
 
-            const response = await fetch("http://localhost:5000/api/departments/register", {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/departments/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -323,3 +323,4 @@ const DepartmentRegister = () => {
 };
 
 export default DepartmentRegister;
+

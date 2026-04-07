@@ -97,10 +97,10 @@ const Issues = () => {
       if (!token) return;
 
       const [issuesRes, statsRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/issues/department/issue?page=${page}&limit=${limit}&zone=${zone}&priority=${priority}`, {
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/department/issue?page=${page}&limit=${limit}&zone=${zone}&priority=${priority}`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get("http://localhost:5000/api/issues/department/stats", {
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/department/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -118,7 +118,7 @@ const Issues = () => {
               "In Progress",
         deadline: issue.sla?.resolutionDeadline ? new Date(issue.sla.resolutionDeadline) : null,
         isBreach: issue.sla?.isBreached,
-        images: (issue.images || []).map(img => `http://localhost:5000${img.url}`)
+        images: (issue.images || []).map(img => `${import.meta.env.VITE_API_BASE_URL}${img.url}`)
       }));
 
       setIssuesData(formatted);
@@ -140,7 +140,7 @@ const Issues = () => {
   const fetchTask = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/issues/${id}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const issue = res.data;
@@ -160,8 +160,8 @@ const Issues = () => {
         citizen: issue.reportedBy?.fullName || "Verified Citizen",
         escalation: issue.resolution?.escalation || null,
         rawStatus: issue.status,
-        images: (issue.images || []).map(img => `http://localhost:5000${img.url}`),
-        proof: issue.resolution?.proof?.url ? `http://localhost:5000${issue.resolution.proof.url}` : null,
+        images: (issue.images || []).map(img => `${import.meta.env.VITE_API_BASE_URL}${img.url}`),
+        proof: issue.resolution?.proof?.url ? `${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}` : null,
         history: issue.statusHistory || [],
         escalationHistory: issue.sla?.escalationHistory || [],
         coordinates: issue.location?.coordinates ? `${issue.location.coordinates[1].toFixed(6)}, ${issue.location.coordinates[0].toFixed(6)}` : "Unavailable"
@@ -484,7 +484,7 @@ const Issues = () => {
                   {task.escalation.proof && (
                     <div className="rounded-xl overflow-hidden border shadow-lg bg-black/40">
                       <img
-                        src={`http://localhost:5000${task.escalation.proof}`}
+                        src={`${import.meta.env.VITE_API_BASE_URL}${task.escalation.proof}`}
                         alt="Escalation Proof"
                         className="w-full h-auto max-h-[350px] object-contain mx-auto"
                       />
@@ -522,7 +522,7 @@ const Issues = () => {
                   onClick={async () => {
                     if (task.rawStatus === "escalated" || task.rawStatus === "pending_verification") {
                       const token = localStorage.getItem("token");
-                      await axios.put(`http://localhost:5000/api/issues/${task.id}/status`,
+                      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/issues/${task.id}/status`,
                         { status: "closed", remark: "Status approved via mission oversight." },
                         { headers: { Authorization: `Bearer ${token}` } }
                       );
@@ -564,3 +564,4 @@ const StatBox = ({ title, value, icon: Icon, color, bg }) => (
 );
 
 export default Issues;
+

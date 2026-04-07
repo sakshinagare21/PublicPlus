@@ -11,7 +11,7 @@ const DepartmentNotifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/notification/department", {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/notification/department`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -27,7 +27,7 @@ const DepartmentNotifications = () => {
 
   const markAllRead = async () => {
     try {
-      await axios.put("http://localhost:5000/api/notification/department/read-all", {}, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/notification/department/read-all`, {}, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -115,7 +115,7 @@ const DepartmentNotifications = () => {
                         {n.escalation.proof && (
                           <div className="w-full max-w-[200px] rounded-lg overflow-hidden border border-border bg-black">
                             <img
-                              src={`http://localhost:5000${n.escalation.proof}`}
+                              src={`${import.meta.env.VITE_API_BASE_URL}${n.escalation.proof}`}
                               alt="Proof"
                               className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition"
                             />
@@ -148,7 +148,7 @@ const DepartmentNotifications = () => {
                         <button
                           onClick={async () => {
                             try {
-                              await axios.put(`http://localhost:5000/api/issues/${n.issueId}/status`,
+                              await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/issues/${n.issueId}/status`,
                                 { status: "closed", remark: "Escalation approved from notification center." },
                                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
                               );
@@ -163,7 +163,7 @@ const DepartmentNotifications = () => {
                         <button
                           onClick={async () => {
                             try {
-                              await axios.put(`http://localhost:5000/api/issues/${n.issueId}/status`,
+                              await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/issues/${n.issueId}/status`,
                                 { status: "in_progress", remark: "Escalation rejected from notification center." },
                                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
                               );
@@ -200,4 +200,5 @@ const DepartmentNotifications = () => {
 };
 
 export default DepartmentNotifications;
+
 

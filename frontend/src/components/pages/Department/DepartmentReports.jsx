@@ -35,7 +35,7 @@ const DepartmentReports = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/departments/detailed-reports", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/detailed-reports`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setData(res.data);
@@ -54,7 +54,7 @@ const DepartmentReports = () => {
     const logReportToBackend = async (name, type, format) => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post("http://localhost:5000/api/departments/log-report",
+            const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/departments/log-report`,
                 { name, type, format, stats: data.summary },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -310,4 +310,5 @@ const DepartmentReports = () => {
 };
 
 export default DepartmentReports;
+
 

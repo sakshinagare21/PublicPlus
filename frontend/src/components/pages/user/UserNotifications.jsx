@@ -71,7 +71,7 @@ const UserNotifications = () => {
     const fetchNotifications = async () => {
         try {
             const res = await axios.get(
-                "http://localhost:5000/api/notification/user",
+                `${import.meta.env.VITE_API_BASE_URL}/api/notification/user`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setNotifications(res.data);
@@ -89,7 +89,7 @@ const UserNotifications = () => {
     const markRead = async (id) => {
         try {
             await axios.put(
-                `http://localhost:5000/api/notification/user/read/${id}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/notification/user/read/${id}`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -104,7 +104,7 @@ const UserNotifications = () => {
     const markAllRead = async () => {
         try {
             await axios.put(
-                "http://localhost:5000/api/notification/user/read-all",
+                `${import.meta.env.VITE_API_BASE_URL}/api/notification/user/read-all`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -285,4 +285,5 @@ const UserNotifications = () => {
 };
 
 export default UserNotifications;
+
 

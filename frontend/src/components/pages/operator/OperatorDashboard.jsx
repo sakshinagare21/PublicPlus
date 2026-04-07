@@ -38,10 +38,10 @@ const OperatorDashboard = () => {
         try {
             const token = localStorage.getItem("token");
             const [statsRes, tasksRes] = await Promise.all([
-                axios.get("http://localhost:5000/api/issues/operator/stats", {
+                axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/operator/stats`, {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get("http://localhost:5000/api/issues/operator/issue", {
+                axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/operator/issue`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);
@@ -248,7 +248,7 @@ const OperatorDashboard = () => {
                                 <div className="w-full md:w-1/2 bg-muted relative min-h-[300px]">
                                     {selectedTask.images && selectedTask.images.length > 0 ? (
                                         <img
-                                            src={`http://localhost:5000${selectedTask.images[0].url}`}
+                                            src={`${import.meta.env.VITE_API_BASE_URL}${selectedTask.images[0].url}`}
                                             alt="Issue"
                                             className="w-full h-full object-cover"
                                         />
@@ -359,3 +359,4 @@ const StatCard = ({ title, value, critical = false }) => {
 };
 
 export default OperatorDashboard;
+

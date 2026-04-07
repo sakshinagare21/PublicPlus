@@ -32,7 +32,7 @@ const CommunityIssues = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem("token");
-            const res = await axios.get(`http://localhost:5000/api/issues/all?search=${search}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/all?search=${search}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) {
@@ -55,7 +55,7 @@ const CommunityIssues = () => {
         try {
             const token = localStorage.getItem("token");
             const endpoint = type === "up" ? "upvote" : "downvote";
-            const res = await axios.post(`http://localhost:5000/api/issues/${id}/${endpoint}`, {}, {
+            const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/issues/${id}/${endpoint}`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -207,7 +207,7 @@ const CommunityIssues = () => {
                                     {issue.images?.[0] && (
                                         <div className="lg:w-72 border-l border-border/50 relative overflow-hidden group/img">
                                             <img
-                                                src={`http://localhost:5000${issue.images[0].url}`}
+                                                src={`${import.meta.env.VITE_API_BASE_URL}${issue.images[0].url}`}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110"
                                                 alt="Issue Context"
                                             />
@@ -247,4 +247,5 @@ const CommunityIssues = () => {
 };
 
 export default CommunityIssues;
+
 

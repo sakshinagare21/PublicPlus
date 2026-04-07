@@ -62,7 +62,7 @@ const ReportIssue = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/issue-types", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issue-types`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setCategories(res.data.types);
@@ -73,7 +73,7 @@ const ReportIssue = () => {
 
     const fetchZones = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/zones", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/zones`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setZonesData(res.data);
@@ -182,7 +182,7 @@ const ReportIssue = () => {
             formData.append("lng", form.lng);
             images.forEach((img) => formData.append("images", img));
 
-            await axios.post("http://localhost:5000/api/issues", formData, {
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/issues`, formData, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -543,5 +543,6 @@ const ReportIssue = () => {
 };
 
 export default ReportIssue;
+
 
 

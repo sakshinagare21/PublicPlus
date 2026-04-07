@@ -46,7 +46,7 @@ export default function UserManagement() {
 
     const fetchUsers = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/admin/accounts", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/accounts`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -298,7 +298,7 @@ export default function UserManagement() {
                                             }
 
                                             try {
-                                                const res = await fetch(`http://localhost:5000/api/admin/update-trust/${selectedUser._id}`, {
+                                                const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/update-trust/${selectedUser._id}`, {
                                                     method: "PUT",
                                                     headers: {
                                                         "Content-Type": "application/json",
@@ -356,4 +356,5 @@ function StatCard({ title, value, subtitle, critical = false }) {
         </div>
     );
 }
+
 

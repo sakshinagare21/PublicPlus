@@ -36,7 +36,7 @@ const ZoneConfiguration = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/departments/all-zones", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/all-zones`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setZones(res.data);
@@ -77,10 +77,10 @@ const ZoneConfiguration = () => {
             const headers = { Authorization: `Bearer ${token}` };
 
             if (editingZone) {
-                await axios.put(`http://localhost:5000/api/departments/config-zones/${editingZone._id}`, formData, { headers });
+                await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/departments/config-zones/${editingZone._id}`, formData, { headers });
                 toast.success("Zone updated successfully");
             } else {
-                await axios.post("http://localhost:5000/api/departments/config-zones", formData, { headers });
+                await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/departments/config-zones`, formData, { headers });
                 toast.success("Zone created successfully");
             }
 
@@ -108,7 +108,7 @@ const ZoneConfiguration = () => {
         if (!window.confirm("Are you sure you want to delete this zone?")) return;
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`http://localhost:5000/api/departments/config-zones/${id}`, {
+            await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/departments/config-zones/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success("Zone deleted successfully");
@@ -372,4 +372,5 @@ const ZoneConfiguration = () => {
 };
 
 export default ZoneConfiguration;
+
 

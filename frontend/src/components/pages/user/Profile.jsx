@@ -39,7 +39,7 @@ const Profile = () => {
                 }
 
                 // 2. Fetch Live Stats
-                const res = await axios.get("http://localhost:5000/api/analytics/citizen", {
+                const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/analytics/citizen`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -217,4 +217,5 @@ const Profile = () => {
 };
 
 export default Profile;
+
 

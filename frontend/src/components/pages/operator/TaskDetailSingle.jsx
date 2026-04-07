@@ -27,7 +27,7 @@ import toast from "react-hot-toast";
 import { GoogleMap, useJsApiLoader, Marker, Polyline } from "@react-google-maps/api";
 import { detectZone } from "../../../api/zone";
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const mapContainerStyle = {
     width: "100%",
@@ -845,3 +845,4 @@ const TaskDetailSingle = () => {
 };
 
 export default TaskDetailSingle;
+

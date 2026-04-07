@@ -51,7 +51,7 @@ const AdminLogin = () => {
         form.password
       );
       const token = await userCredential.user.getIdToken();
-      const response = await fetch("http://localhost:5000/api/admin/dashboard", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/dashboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error("You are not authorized as admin");
@@ -196,4 +196,5 @@ const AdminLogin = () => {
 };
 
 export default AdminLogin;
+
 

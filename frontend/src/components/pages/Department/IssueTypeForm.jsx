@@ -15,7 +15,7 @@ const IssueTypeForm = () => {
     const fetchIssueTypes = async () => {
         try {
             const res = await axios.get(
-                "http://localhost:5000/api/issue-types",
+                `${import.meta.env.VITE_API_BASE_URL}/api/issue-types`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ const IssueTypeForm = () => {
     const fetchTaken = async () => {
         try {
             const res = await axios.get(
-                "http://localhost:5000/api/departments/taken-types",
+                `${import.meta.env.VITE_API_BASE_URL}/api/departments/taken-types`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -52,7 +52,7 @@ const IssueTypeForm = () => {
     const fetchMyDepartment = async () => {
         try {
             const res = await axios.get(
-                "http://localhost:5000/api/departments/me",
+                `${import.meta.env.VITE_API_BASE_URL}/api/departments/me`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -95,7 +95,7 @@ const IssueTypeForm = () => {
             setLoading(true);
 
             const res = await axios.put(
-                "http://localhost:5000/api/departments/issue-types",
+                `${import.meta.env.VITE_API_BASE_URL}/api/departments/issue-types`,
                 { issueTypes: selectedTypes },
                 {
                     headers: { Authorization: `Bearer ${token}` },
@@ -221,4 +221,5 @@ const IssueTypeForm = () => {
 };
 
 export default IssueTypeForm;
+
 

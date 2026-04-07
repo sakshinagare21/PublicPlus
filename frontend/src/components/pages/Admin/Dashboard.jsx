@@ -21,7 +21,7 @@ export default function Dashboard() {
 
     const fetchStats = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/issues/admin/stats", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/admin/stats`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
             setStats(res.data.stats);
@@ -169,4 +169,5 @@ export default function Dashboard() {
         </AdminLayout>
     );
 }
+
 

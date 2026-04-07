@@ -14,7 +14,7 @@ export default function AdminProfile() {
     const fetchProfile = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch("http://localhost:5000/api/admin/profile", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/profile`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -188,4 +188,5 @@ export default function AdminProfile() {
         </AdminLayout>
     );
 }
+
 

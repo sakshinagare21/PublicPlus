@@ -11,7 +11,7 @@ const OperatorNotifications = () => {
 
     const fetchNotifications = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/notification/operator", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/notification/operator`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
@@ -27,7 +27,7 @@ const OperatorNotifications = () => {
 
     const markAllRead = async () => {
         try {
-            await axios.put("http://localhost:5000/api/notification/operator/read-all", {}, {
+            await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/notification/operator/read-all`, {}, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
@@ -140,4 +140,5 @@ const OperatorNotifications = () => {
 };
 
 export default OperatorNotifications;
+
 

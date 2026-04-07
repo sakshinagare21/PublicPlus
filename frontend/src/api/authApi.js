@@ -8,7 +8,7 @@
 // longitude: form.longitude,
 // };
 
-// const response = await fetch("http://localhost:5000/api/users/register", {
+// const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/register`, {
 // method: "POST",
 // headers: {
 // "Content-Type": "application/json",
@@ -20,7 +20,7 @@
 // };
 
 // export const loginCitizen = async (form) => {
-// const response = await fetch("http://localhost:5000/api/users/login", {
+// const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/login`, {
 // method: "POST",
 // headers: {
 // "Content-Type": "application/json",
@@ -52,7 +52,7 @@
 
 // export const createUserProfile = async (token, formData) => {
 
-// const response = await fetch("http://localhost:5000/api/users/create-profile", {
+// const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/create-profile`, {
 // method: "POST",
 // headers: {
 // "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export const registerCitizen = async (form) => {
 
         // 🔥 Send data to backend
         const response = await fetch(
-            "http://localhost:5000/api/users/create-profile",
+            `${import.meta.env.VITE_API_BASE_URL}/api/users/create-profile`,
             {
                 method: "POST",
                 headers: {
@@ -131,7 +131,7 @@ export const loginCitizen = async (form) => {
         const token = await firebaseUser.getIdToken();
 
         const response = await fetch(
-            "http://localhost:5000/api/users/login",
+            `${import.meta.env.VITE_API_BASE_URL}/api/users/login`,
             {
                 method: "POST",
                 headers: {
@@ -150,4 +150,5 @@ export const loginCitizen = async (form) => {
         throw new Error(error.message);
     }
 };
+
 

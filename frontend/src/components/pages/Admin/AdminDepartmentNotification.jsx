@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import AdminLayout from "../../layout/AdminLayout";
 import { Bell, Trash2, CheckCircle, AlertTriangle, Building2, User } from "lucide-react";
 
-const socket = io("http://localhost:5000");
+const socket = io(import.meta.env.VITE_API_BASE_URL);
 
 const AdminDepartmentNotification = () => {
   const [notifications, setNotifications] = useState([]);
@@ -18,7 +18,7 @@ const AdminDepartmentNotification = () => {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/department-requests", {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/admin/department-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDepartments(res.data);
@@ -29,7 +29,7 @@ const AdminDepartmentNotification = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/notification/admin", {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/notification/admin`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("Admin Notifications Received:", res.data);
@@ -41,7 +41,7 @@ const AdminDepartmentNotification = () => {
 
   const deleteNotification = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/notification/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notification/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -54,7 +54,7 @@ const AdminDepartmentNotification = () => {
 
   const approveDepartment = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/approve-department/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/approve-department/${id}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -68,7 +68,7 @@ const AdminDepartmentNotification = () => {
 
   const rejectDepartment = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/reject-department/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/reject-department/${id}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -82,7 +82,7 @@ const AdminDepartmentNotification = () => {
 
   const markAllAsRead = async () => {
     try {
-      await fetch("http://localhost:5000/api/notification/admin/read-all", {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notification/admin/read-all`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -298,4 +298,5 @@ const AdminDepartmentNotification = () => {
 };
 
 export default AdminDepartmentNotification;
+
 

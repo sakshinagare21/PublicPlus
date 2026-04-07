@@ -221,3 +221,4 @@ const DepartmentSettings = () => {
 
 export default DepartmentSettings;
 
+

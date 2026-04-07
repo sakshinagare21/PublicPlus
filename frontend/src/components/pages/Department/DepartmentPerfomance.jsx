@@ -25,7 +25,7 @@ const DepartmentPerformance = () => {
  try {
  setLoading(true);
  const token = localStorage.getItem("token");
- const res = await axios.get("http://localhost:5000/api/departments/detailed-reports", {
+ const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/detailed-reports`, {
  headers: { Authorization: `Bearer ${token}` }
  });
  setData(res.data);
@@ -229,4 +229,5 @@ const DepartmentPerformance = () => {
 };
 
 export default DepartmentPerformance;
+
 

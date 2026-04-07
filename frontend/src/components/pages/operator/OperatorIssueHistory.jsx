@@ -26,7 +26,7 @@ const OperatorIssueHistory = () => {
     const fetchHistory = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get("http://localhost:5000/api/issues/operator/issue", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/operator/issue`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIssues(res.data);
@@ -232,4 +232,5 @@ const OperatorIssueHistory = () => {
 };
 
 export default OperatorIssueHistory;
+
 

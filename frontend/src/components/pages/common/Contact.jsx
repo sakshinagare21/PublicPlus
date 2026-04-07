@@ -22,7 +22,7 @@ const Contact = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await axios.post("http://localhost:5000/api/contact/submit", formData);
+            const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/contact/submit`, formData);
             if (res.data.success) {
                 toast.success("Message sent successfully!");
                 setSubmitted(true);
@@ -200,4 +200,5 @@ const Contact = () => {
 };
 
 export default Contact;
+
 

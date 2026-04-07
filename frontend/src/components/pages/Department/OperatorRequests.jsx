@@ -20,7 +20,7 @@ const OperatorRequests = () => {
     const fetchOperators = async () => {
         try {
             const res = await fetch(
-                "http://localhost:5000/api/departments/pending-operators",
+                `${import.meta.env.VITE_API_BASE_URL}/api/departments/pending-operators`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 },
@@ -37,7 +37,7 @@ const OperatorRequests = () => {
     const fetchZones = async () => {
         try {
             const res = await fetch(
-                "http://localhost:5000/api/departments/my-zones",
+                `${import.meta.env.VITE_API_BASE_URL}/api/departments/my-zones`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 },
@@ -54,7 +54,7 @@ const OperatorRequests = () => {
     const fetchNotifications = async () => {
         try {
             const res = await fetch(
-                "http://localhost:5000/api/notification/department",
+                `${import.meta.env.VITE_API_BASE_URL}/api/notification/department`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 },
@@ -77,7 +77,7 @@ const OperatorRequests = () => {
         }
 
         const res = await fetch(
-            `http://localhost:5000/api/departments/approve-operator/${operatorId}`,
+            `${import.meta.env.VITE_API_BASE_URL}/api/departments/approve-operator/${operatorId}`,
             {
                 method: "PUT",
                 headers: {
@@ -101,7 +101,7 @@ const OperatorRequests = () => {
     /* ================= REJECT ================= */
     const rejectOperator = async (operatorId) => {
         const res = await fetch(
-            `http://localhost:5000/api/departments/reject-operator/${operatorId}`,
+            `${import.meta.env.VITE_API_BASE_URL}/api/departments/reject-operator/${operatorId}`,
             {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${token}` },
@@ -129,7 +129,7 @@ const OperatorRequests = () => {
 
         try {
             await fetch(
-                "http://localhost:5000/api/notification/department/read-all",
+                `${import.meta.env.VITE_API_BASE_URL}/api/notification/department/read-all`,
                 {
                     method: "PUT",
                     headers: { Authorization: `Bearer ${token}` },
@@ -146,7 +146,7 @@ const OperatorRequests = () => {
     /* ================= DELETE ================= */
     const deleteNotification = async (id) => {
         try {
-            await fetch(`http://localhost:5000/api/notification/${id}`, {
+            await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notification/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -306,4 +306,5 @@ const OperatorRequests = () => {
 };
 
 export default OperatorRequests;
+
 

@@ -30,7 +30,7 @@ export default function Departments() {
 
     const fetchDepartments = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/admin/departments", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/departments`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -51,7 +51,7 @@ export default function Departments() {
 
     const fetchOperators = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/admin/operators", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/operators`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -72,7 +72,7 @@ export default function Departments() {
 
     const fetchZones = async () => {
         try {
-            const res = await fetch("http://localhost:5000/api/admin/zones", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/zones`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -322,4 +322,5 @@ export default function Departments() {
         </AdminLayout>
     );
 }
+
 

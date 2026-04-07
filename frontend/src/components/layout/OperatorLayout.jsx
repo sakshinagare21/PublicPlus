@@ -26,7 +26,7 @@ const OperatorLayout = ({ children }) => {
     const fetchOperator = async () => {
         try {
             const res = await axios.get(
-                "http://localhost:5000/api/operator/profile",
+                `${import.meta.env.VITE_API_BASE_URL}/api/operator/profile`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -185,3 +185,4 @@ const OperatorLayout = ({ children }) => {
 };
 
 export default OperatorLayout;
+

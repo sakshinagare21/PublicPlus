@@ -35,10 +35,10 @@ export default function TaskOperations() {
         try {
             setLoading(true);
             const [issuesRes, statsRes] = await Promise.all([
-                axios.get("http://localhost:5000/api/issues/admin/all", {
+                axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/admin/all`, {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
-                axios.get("http://localhost:5000/api/issues/admin/stats", {
+                axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/issues/admin/stats`, {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
             ]);
@@ -373,4 +373,5 @@ export default function TaskOperations() {
         </AdminLayout>
     );
 }
+
 

@@ -32,7 +32,7 @@ const Reports = () => {
     const fetchIssues = async (pageNumber = 1) => {
         try {
             const res = await axios.get(
-                `http://localhost:5000/api/issues/my?page=${pageNumber}&limit=${limit}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/issues/my?page=${pageNumber}&limit=${limit}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -231,7 +231,7 @@ const Reports = () => {
                                         {selectedIssue.images?.[0] && (
                                             <div className="relative aspect-video rounded-3xl overflow-hidden border border-border group/img shadow-sm mb-6 mt-6">
                                                 <img
-                                                    src={`http://localhost:5000${selectedIssue.images[0].url}`}
+                                                    src={`${import.meta.env.VITE_API_BASE_URL}${selectedIssue.images[0].url}`}
                                                     className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-700"
                                                     alt="Issue Preview"
                                                 />
@@ -306,4 +306,5 @@ const Reports = () => {
 };
 
 export default Reports;
+
 

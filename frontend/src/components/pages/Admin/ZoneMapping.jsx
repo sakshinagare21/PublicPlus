@@ -75,7 +75,7 @@ export default function ZoneMapping() {
                 search
             }).toString();
 
-            const res = await fetch(`http://localhost:5000/api/zones?${query}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/zones?${query}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await res.json();
@@ -106,8 +106,8 @@ export default function ZoneMapping() {
         e.preventDefault();
         const token = localStorage.getItem("token");
         const url = isEditing
-            ? `http://localhost:5000/api/zones/${formData._id}`
-            : "http://localhost:5000/api/zones";
+            ? `${import.meta.env.VITE_API_BASE_URL}/api/zones/${formData._id}`
+            : `${import.meta.env.VITE_API_BASE_URL}/api/zones`;
         const method = isEditing ? "PUT" : "POST";
 
         try {
@@ -137,7 +137,7 @@ export default function ZoneMapping() {
         if (!window.confirm("Permanently delete this zone protocol?")) return;
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:5000/api/zones/${id}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/zones/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -436,4 +436,5 @@ export default function ZoneMapping() {
         </AdminLayout>
     );
 }
+
 

@@ -154,3 +154,4 @@ const FAQChatbot = ({ role = "user" }) => {
 };
 
 export default FAQChatbot;
+

@@ -12,7 +12,7 @@ const DepartmentProfile = () => {
         const fetchDept = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await axios.get("http://localhost:5000/api/departments/me", {
+                const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/me`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setDeptInfo(res.data);
@@ -161,3 +161,4 @@ const DepartmentProfile = () => {
 };
 
 export default DepartmentProfile;
+

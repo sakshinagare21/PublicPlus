@@ -72,7 +72,7 @@ const CitizenRegister = () => {
   const handleSendOtp = async () => {
     setOtpLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/otp/send-otp", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/otp/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email }),
@@ -91,7 +91,7 @@ const CitizenRegister = () => {
   const handleVerifyOtp = async () => {
     setOtpLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/otp/verify-otp", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/otp/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, otp }),
@@ -121,7 +121,7 @@ const CitizenRegister = () => {
       const token = await firebaseUser.getIdToken(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/users/create-profile",
+        `${import.meta.env.VITE_API_BASE_URL}/api/users/create-profile`,
         {
           method: "POST",
           headers: {
@@ -477,3 +477,4 @@ const CitizenRegister = () => {
 };
 
 export default CitizenRegister;
+

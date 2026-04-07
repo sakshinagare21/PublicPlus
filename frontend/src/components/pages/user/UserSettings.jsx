@@ -42,7 +42,7 @@ const UserSettings = () => {
         setSettings(newSettings);
         
         try {
-            await axios.put("http://localhost:5000/api/users/notifications", {
+            await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/users/notifications`, {
                 pushEnabled: newSettings.pushEnabled,
                 emailEnabled: newSettings.emailEnabled
             }, {
@@ -59,7 +59,7 @@ const UserSettings = () => {
             setLoading(true);
             try {
                 // Soft delete in backend (updates accountStatus to 'deleted')
-                await axios.delete(`http://localhost:5000/api/users/${user._id}`, {
+                await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/users/${user._id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 toast.success("Account Deactivated");
@@ -210,3 +210,4 @@ const UserSettings = () => {
 };
 
 export default UserSettings;
+

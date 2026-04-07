@@ -34,7 +34,7 @@ const AnalyticsDashboard = () => {
         setLoading(true);
         try {
             const queryParams = new URLSearchParams(filters).toString();
-            const res = await axios.get(`http://localhost:5000/api/analytics/admin?${queryParams}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/analytics/admin?${queryParams}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             console.log("Analytics Data Received:", res.data);
@@ -48,7 +48,7 @@ const AnalyticsDashboard = () => {
 
     const fetchZones = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/zones", {
+            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/zones`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setZones(res.data.zones || res.data);
@@ -332,4 +332,5 @@ const AnalyticsDashboard = () => {
 };
 
 export default AnalyticsDashboard;
+
 

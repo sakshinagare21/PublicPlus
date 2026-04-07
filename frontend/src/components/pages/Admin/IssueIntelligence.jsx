@@ -83,7 +83,7 @@ export default function IssueIntelligence() {
       setLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/issues/admin/all?search=${searchQuery}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/issues/admin/all?search=${searchQuery}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -260,7 +260,7 @@ export default function IssueIntelligence() {
                           <div className="h-10 w-10 flex-shrink-0 rounded-lg overflow-hidden border border-border/50 bg-muted">
                             {issue.images && issue.images.length > 0 ? (
                               <img
-                                src={`http://localhost:5000${issue.images[0].url}`}
+                                src={`${import.meta.env.VITE_API_BASE_URL}${issue.images[0].url}`}
                                 alt="Tactical"
                                 className="w-full h-full object-cover"
                               />
@@ -337,7 +337,7 @@ export default function IssueIntelligence() {
                       {selectedIssue.images.map((img, idx) => (
                         <div key={idx} className="rounded-lg overflow-hidden border border-border/50 h-24 bg-muted">
                           <img
-                            src={`http://localhost:5000${img.url}`}
+                            src={`${import.meta.env.VITE_API_BASE_URL}${img.url}`}
                             alt="Evidence"
                             className="w-full h-full object-cover hover:scale-110 transition-transform duration-500 cursor-pointer"
                           />
@@ -360,7 +360,7 @@ export default function IssueIntelligence() {
                     <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Resolution Proof</p>
                     <div className="rounded-lg overflow-hidden border border-border/50 h-24 bg-muted">
                       <img
-                        src={`http://localhost:5000${selectedIssue.resolution.proof.url}`}
+                        src={`${import.meta.env.VITE_API_BASE_URL}${selectedIssue.resolution.proof.url}`}
                         alt="Resolution Proof"
                         className="w-full h-full object-cover"
                       />
@@ -415,4 +415,5 @@ export default function IssueIntelligence() {
     </AdminLayout>
   );
 }
+
 

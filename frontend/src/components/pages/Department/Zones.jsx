@@ -22,22 +22,22 @@ const Zones = () => {
  const headers = { Authorization: `Bearer ${token}` };
 
  // 1. Fetch Department Info
- const deptRes = await axios.get("http://localhost:5000/api/departments/me", { headers });
+ const deptRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/me`, { headers });
  const assigned = deptRes.data.assignedZones || [];
  setAssignedZones(assigned);
 
  // 2. Fetch All Available City Zones
- const availableRes = await axios.get("http://localhost:5000/api/departments/available-zones", { headers });
+ const availableRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/available-zones`, { headers });
  const cityZones = availableRes.data || [];
  setAvailableZones(cityZones);
 
  // 3. Fetch Operators
- const opsRes = await axios.get("http://localhost:5000/api/departments/operators", { headers });
+ const opsRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/operators`, { headers });
  setOperators(opsRes.data || []);
 
  // 4. Fetch Issues for stats
  const issuesRes = await axios.get(
- "http://localhost:5000/api/issues/department/issue?page=1&limit=2000",
+ `${import.meta.env.VITE_API_BASE_URL}/api/issues/department/issue?page=1&limit=2000`,
  { headers }
  );
  const fetchedIssues = issuesRes.data.issues || [];
@@ -91,7 +91,7 @@ const Zones = () => {
  try {
  const token = localStorage.getItem("token");
  await axios.post(
- "http://localhost:5000/api/departments/zones",
+ `${import.meta.env.VITE_API_BASE_URL}/api/departments/zones`,
  { zoneName, zoneCode },
  { headers: { Authorization: `Bearer ${token}` } }
  );
@@ -311,4 +311,5 @@ const Zones = () => {
 };
 
 export default Zones;
+
 
