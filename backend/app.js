@@ -31,7 +31,9 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://public-plus.vercel.app"
+  "https://public-plus.vercel.app",
+  "https://publicplus-b458a.web.app",
+  "https://publicplus-b458a.firebaseapp.com"
 ];
 
 app.use(cors({

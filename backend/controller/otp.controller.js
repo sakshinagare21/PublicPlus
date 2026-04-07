@@ -12,20 +12,30 @@ export const sendOTP = async (req, res) => {
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save/Update OTP in DB
-    await OTP.findOneAndUpdate(
-      { email },
-      { otp, createdAt: new Date() },
-      { upsert: true, new: true }
-    );
+    // PHASE 1: DATABASE SAVE
+    try {
+      await OTP.findOneAndUpdate(
+        { email },
+        { otp, createdAt: new Date() },
+        { upsert: true, new: true }
+      );
+    } catch (dbError) {
+      console.error("Database Save Error:", dbError);
+      return res.status(500).json({ message: "Failed to save OTP to database" });
+    }
 
-    // Send email
-    await sendOTPEmail(email, otp);
+    // PHASE 2: EMAIL SENDING
+    try {
+      await sendOTPEmail(email, otp);
+    } catch (mailError) {
+      console.error("Email Sending Error Details:", mailError);
+      return res.status(500).json({ message: `Mail Error: ${mailError.message}` });
+    }
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error("Send OTP Error:", error);
-    res.status(500).json({ message: error.message });
+    console.error("Critical Send OTP Error:", error);
+    res.status(500).json({ message: "Unexpected server error during OTP flow" });
   }
 };
 
