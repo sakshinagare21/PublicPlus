@@ -1,5 +1,5 @@
 import Contact from "../models/contact.model.js";
-import { transporter } from "../utils/email.js";
+import { sgMail } from "../utils/email.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -41,7 +41,7 @@ export const submitContactForm = async (req, res) => {
  `,
  };
 
- await transporter.sendMail(mailOptions);
+ await sgMail.send(mailOptions);
 
  res.status(201).json({
  success: true,

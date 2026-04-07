@@ -1,39 +1,17 @@
 // utils/email.js
-import dns from "dns";
-dns.setDefaultResultOrder("ipv4first");
-
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 
-export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // Use STARTTLS (standard for Render/AWS)
-  family: 4, // Forces IPv4
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 20000, 
-  greetingTimeout: 20000,
-  socketTimeout: 20000,
-  tls: {
-    rejectUnauthorized: false
-  }
-});
-
-// Verify SMTP connection
-transporter.verify((error) => {
-  if (error) console.log("SMTP Error:", error);
-  else console.log("SMTP Server Ready");
-});
+// Configure SendGrid with API Key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+export { sgMail };
 
 const generateEmailTemplate = (title, subtitle, details, actionLabel, actionUrl, statusColor = "#3b82f6") => {
   return `
     <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 650px; margin: auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.05);">
       <div style="background-color: ${statusColor}; padding: 48px 40px; text-align: left; position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -50px; right: -50px; width: 150px; hieght: 150px; background-color: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background-color: rgba(255,255,255,0.1); border-radius: 50%;"></div>
         <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1.1;">${title}</h1>
         <p style="color: rgba(255,255,255,0.9); margin-top: 12px; font-size: 14px; font-weight: 600; letter-spacing: 2px;">${subtitle}</p>
       </div>
@@ -82,10 +60,10 @@ export const sendDepartmentRegistrationEmail = async (department) => {
     "Metropolitan Department Incoming",
     details,
     "Review Application",
-    "http://localhost:5173/admin/departments"
+    "https://public-plus.vercel.app/admin/departments"
   );
 
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: process.env.ADMIN_EMAIL,
     subject: "New Department Registration: " + department.departmentName,
@@ -104,9 +82,9 @@ export const sendDepartmentApprovedEmail = async (department) => {
     "Department Account Activated",
     details,
     "Access Portal",
-    "http://localhost:5173/login"
+    "https://public-plus.vercel.app/login"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: department.email,
     subject: "Department Approved",
@@ -124,10 +102,10 @@ export const sendDepartmentRejectedEmail = async (department) => {
     "Application Status Notification",
     details,
     "Contact Support",
-    "http://localhost:5173/support",
+    "https://public-plus.vercel.app/support",
     "#ef4444"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: department.email,
     subject: "Department Registration Rejected",
@@ -150,9 +128,9 @@ export const sendOperatorRequestEmail = async (operator, departmentEmail) => {
     "New Personnel Request",
     details,
     "Review Application",
-    "http://localhost:5173/department/operators"
+    "https://public-plus.vercel.app/department/operators"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: departmentEmail,
     subject: "New Operator Registration Request",
@@ -171,9 +149,9 @@ export const sendOperatorApprovedEmail = async (operator) => {
     "Personnel Access Granted",
     details,
     "Login to Portal",
-    "http://localhost:5173/login"
+    "https://public-plus.vercel.app/login"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: operator.email,
     subject: "Operator Account Approved",
@@ -191,10 +169,10 @@ export const sendOperatorRejectedEmail = async (operator) => {
     "Personnel Update",
     details,
     "Contact Department",
-    "http://localhost:5173/support",
+    "https://public-plus.vercel.app/support",
     "#ef4444"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: operator.email,
     subject: "Operator Application Rejected",
@@ -221,10 +199,10 @@ export const sendIssueAssignedToDepartmentEmail = async (department, issue, oper
     "Mission Assigned to Department",
     details,
     "Initialize Response",
-    "http://localhost:5173/department/issues"
+    "https://public-plus.vercel.app/department/issues"
   );
 
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: department.email,
     subject: `🚨 [ALERT] New Incident Assigned: ${issue.title}`,
@@ -244,9 +222,9 @@ export const sendIssueAssignedToOperatorEmail = async (operator, issue) => {
     "Assignment Notification",
     details,
     "View Task Details",
-    "http://localhost:5173/operator/tasks"
+    "https://public-plus.vercel.app/operator/tasks"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: operator.email,
     subject: "📌 Task Assignment: " + issue.title,
@@ -266,9 +244,9 @@ export const sendIssueToAdminEmail = async (issue, department, operator) => {
     "Administrative Alert",
     details,
     "View Dashboard",
-    "http://localhost:5173/admin"
+    "https://public-plus.vercel.app/admin"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: process.env.ADMIN_EMAIL,
     subject: "📢 Incident Alert: " + issue.title,
@@ -292,11 +270,11 @@ export const sendVerificationEmail = async (userEmail, issueTitle, operatorName,
     "Verification Protocol Required",
     details,
     "Verify Mission Resolution",
-    `http://localhost:5173/issue/${issueId}`,
+    `https://public-plus.vercel.app/issue/${issueId}`,
     "#10b981"
   );
 
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: userEmail,
     subject: `[ACTION REQUIRED] Verify Resolution: ${issueTitle}`,
@@ -315,10 +293,10 @@ export const sendReopenedEmail = async (operatorEmail, issueTitle, reasonProofUr
     "Citizen Feedback Alert",
     details,
     "Review Feedback",
-    "http://localhost:5173/operator/tasks",
+    "https://public-plus.vercel.app/operator/tasks",
     "#ef4444"
   );
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: operatorEmail,
     subject: "🚨 Reopened: " + issueTitle,
@@ -328,7 +306,7 @@ export const sendReopenedEmail = async (operatorEmail, issueTitle, reasonProofUr
 };
 
 export const sendIssueResolvedEmail = async (operatorEmail, issueTitle, rating) => {
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: operatorEmail,
     subject: "✅ Resolution Verified",
@@ -352,15 +330,15 @@ export const sendEscalationEmail = async (issue, department, operator) => {
     "Metropolitan Intelligence Alert",
     details,
     "Review Escalated Mission",
-    "http://localhost:5173/admin",
+    "https://public-plus.vercel.app/admin",
     "#ef4444"
   );
   
   const subjects = `🚨 [CRITICAL] Mission Escalated: ${issue.title}`;
 
-  await transporter.sendMail({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject: subjects, html });
-  if (department?.email) await transporter.sendMail({ from: process.env.EMAIL, to: department.email, subject: subjects, html });
-  if (operator?.email) await transporter.sendMail({ from: process.env.EMAIL, to: operator.email, subject: subjects, html });
+  await sgMail.send({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject: subjects, html });
+  if (department?.email) await sgMail.send({ from: process.env.EMAIL, to: department.email, subject: subjects, html });
+  if (operator?.email) await sgMail.send({ from: process.env.EMAIL, to: operator.email, subject: subjects, html });
 };
 
 export const sendCriticalEscalationEmail = async (issue) => {
@@ -377,12 +355,12 @@ export const sendCriticalEscalationEmail = async (issue) => {
     "DEEP ESCALATION LEVEL 3 ALERT",
     details,
     "OVERRIDE MISSION",
-    "http://localhost:5173/admin/issues",
-    "#7f1d1d" // Dark blood red for critical
+    "https://public-plus.vercel.app/admin/issues",
+    "#7f1d1d" 
   );
 
   const subject = `🚨 [EMERGENCY] Level 3 Breach: ${issue.title}`;
-  await transporter.sendMail({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject, html });
+  await sgMail.send({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject, html });
 };
 
 export const sendIssueClosedEmail = async (userEmail, issueTitle, operatorName, remark) => {
@@ -398,11 +376,11 @@ export const sendIssueClosedEmail = async (userEmail, issueTitle, operatorName, 
     "Mission Resolved/Closed",
     details,
     "Verify Status",
-    `http://localhost:5173/dashboard`,
+    `https://public-plus.vercel.app/dashboard`,
     "#ef4444"
   );
 
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: userEmail,
     subject: `[UPDATE] Mission Closed: ${issueTitle}`,
@@ -426,7 +404,7 @@ export const sendOTPEmail = async (email, otp) => {
     "#3b82f6"
   );
 
-  await transporter.sendMail({
+  await sgMail.send({
     from: process.env.EMAIL,
     to: email,
     subject: `[OTP] Your Verification Code: ${otp}`,

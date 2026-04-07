@@ -14,7 +14,7 @@ import {
  sendReopenedEmail,
  sendIssueResolvedEmail,
  sendIssueClosedEmail,
- transporter
+ sgMail
 } from "../utils/email.js";
 
 export const createIssue = async (req, res) => {
@@ -826,7 +826,7 @@ export const uploadProof = async (req, res) => {
  const department = await Department.findById(issue.assignedDepartment);
  if (department && department.email) {
  // Email to Dept Admin
- await transporter.sendMail({
+ await sgMail.send({
  from: process.env.EMAIL,
  to: department.email,
  subject: `Task Closed: ${issue.title} (Invalid/Wrong Issue)`,
