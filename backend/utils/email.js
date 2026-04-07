@@ -3,10 +3,16 @@ dotenv.config({ path: "./.env" });
 import nodemailer from "nodemailer";
 
 export const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS
+  },
+  connectionTimeout: 10000, // 10 seconds timeout
+  tls: {
+    rejectUnauthorized: false // Helps with certificate resolution on cloud networks
   }
 });
 
