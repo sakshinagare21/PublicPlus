@@ -8,8 +8,9 @@ import nodemailer from "nodemailer";
 
 export const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
+  family: 4, // Forces Nodemailer to use IPv4 only
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS
