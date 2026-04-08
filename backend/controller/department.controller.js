@@ -218,9 +218,10 @@ export const rejectOperator = async (req, res) => {
 /*get all department*/
 export const getDepartments = async (req, res) => {
  try {
- const departments = await Department.find().select(
- "_id departmentName assignedZones",
- );
+ const departments = await Department.find({
+   approvalStatus: "approved",
+   accountStatus: "active",
+ }).select("_id departmentName assignedZones");
 
  res.status(200).json(departments);
  } catch (error) {

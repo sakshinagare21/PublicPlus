@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+image.jpeg
+download_dataset.py
+setup_and_run.ps1
