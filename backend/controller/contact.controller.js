@@ -1,7 +1,5 @@
 import Contact from "../models/contact.model.js";
-import { sgMail } from "../utils/email.js";
-import dotenv from "dotenv";
-dotenv.config();
+import { sendEmail } from "../utils/email.js";
 
 export const submitContactForm = async (req, res) => {
  try {
@@ -22,7 +20,6 @@ export const submitContactForm = async (req, res) => {
 
  // Send email to Admin
  const mailOptions = {
- from: process.env.EMAIL,
  to: process.env.ADMIN_EMAIL,
  subject: `New Contact Inquiry: ${subject}`,
  html: `
@@ -41,7 +38,7 @@ export const submitContactForm = async (req, res) => {
  `,
  };
 
- await sgMail.send(mailOptions);
+ sendEmail(mailOptions).catch(err => console.log("Contact Email Error:", err.message));
 
  res.status(201).json({
  success: true,

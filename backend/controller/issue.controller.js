@@ -882,8 +882,7 @@ export const uploadProof = async (req, res) => {
                     const department = await Department.findById(issue.assignedDepartment);
                     if (department && department.email) {
                         // Email to Dept Admin
-                        await sgMail.send({
-                            from: process.env.EMAIL,
+                        sendEmail({
                             to: department.email,
                             subject: `Task Closed: ${issue.title} (Invalid/Wrong Issue)`,
                             html: `<div style="padding:20px; font-family:sans-serif;">
@@ -893,7 +892,7 @@ export const uploadProof = async (req, res) => {
  <p>Reason: marked as non-existent/incorrect report.</p>
  <p>Operator Remark: ${req.body.notes || "No additional comments"}</p>
  </div>`
-                        });
+                        }).catch(e => console.log("Dept Close Notify Fail:", e.message));
 
                         // Notification to Dept Admin
                         await Notification.create({

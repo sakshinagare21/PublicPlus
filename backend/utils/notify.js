@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
 import Notification from "../models/notification.model.js";
 import { io } from "../server.js"; // ✅ using your existing io
 

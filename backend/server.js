@@ -31,7 +31,7 @@ export const io = new Server(server, {
 // Socket connection event
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
-    // ✅ ADD THIS
+  // ✅ ADD THIS
   socket.on("join", (id) => {
     socket.join(id);
     console.log("User joined room:", id);

@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Debugging wrapper for all emails
-const sendEmail = async (msg) => {
+export const sendEmail = async (msg) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL,
