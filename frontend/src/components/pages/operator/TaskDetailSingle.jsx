@@ -35,6 +35,8 @@ const mapContainerStyle = {
     borderRadius: "1.5rem",
 };
 
+const LIBRARIES = ["places", "geometry"];
+
 const TaskDetailSingle = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -63,7 +65,7 @@ const TaskDetailSingle = () => {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: ["places", "geometry"],
+        libraries: LIBRARIES,
     });
 
     const [routePath, setRoutePath] = useState(null);
@@ -546,7 +548,7 @@ const TaskDetailSingle = () => {
                                                     src={img.url ? (img.url.startsWith('http') ? img.url : `${BASE_URL}${img.url.startsWith('/') ? '' : '/'}${img.url}`) : '/placeholder-image.png'}
                                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                     alt={`Evidence ${i}`}
-                                                    onError={(e) => { e.target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found'; }}
+                                                    onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=Image+Not+Found'; }}
                                                 />
                                                 <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             </div>
@@ -639,7 +641,7 @@ const TaskDetailSingle = () => {
                                         src={task.rejectionProof.startsWith('http') ? task.rejectionProof : `${BASE_URL}${task.rejectionProof.startsWith('/') ? '' : '/'}${task.rejectionProof}`}
                                         alt="Evidence"
                                         className="w-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/400x400?text=Rejection+Proof+Not+Found'; }}
+                                        onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=Rejection+Proof+Not+Found'; }}
                                     />
                                 </div>
                                 <p className="text-[10px] font-bold text-rose-500/80 tracking-widest text-center">Citizen has rejected previous resolution. Sector revisit required.</p>

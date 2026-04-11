@@ -33,6 +33,8 @@ const defaultCenter = {
     lng: 73.8567,
 };
 
+const LIBRARIES = ["places", "geometry"];
+
 const MapView = () => {
     const navigate = useNavigate();
     const [issues, setIssues] = useState([]);
@@ -53,7 +55,7 @@ const MapView = () => {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: ["places", "geometry"],
+        libraries: LIBRARIES,
     });
 
     const [map, setMap] = useState(null);

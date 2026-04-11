@@ -24,6 +24,8 @@ const defaultCenter = {
     lng: 73.8567,
 };
 
+const LIBRARIES = ["places", "geometry"];
+
 const ReportIssue = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(0);
@@ -47,7 +49,7 @@ const ReportIssue = () => {
     const { isLoaded } = useJsApiLoader({
         id: "google-map-script",
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: ["places", "geometry"],
+        libraries: LIBRARIES,
     });
 
     const [map, setMap] = useState(null);

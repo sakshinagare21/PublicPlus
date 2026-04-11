@@ -346,7 +346,7 @@ const IssueDetail = () => {
                                                     <img
                                                         src={img.url ? (img.url.startsWith('http') ? img.url : `${import.meta.env.VITE_API_BASE_URL}${img.url.startsWith('/') ? '' : '/'}${img.url}`) : '/placeholder-image.png'}
                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found'; }}
+                                                        onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=Image+Not+Found'; }}
                                                     />
                                                     <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                                 </div>
