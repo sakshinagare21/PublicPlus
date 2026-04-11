@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import DashboardLayout from "../../layout/DashboardLayout";
-import { Camera, MapPin, Mic, MicOff, Target, ArrowLeft, CheckCircle2, FileText, ChevronRight, X, Navigation2 } from "lucide-react";
+import { Camera, MapPin, Mic, MicOff, Target, ArrowLeft, CheckCircle2, FileText, ChevronRight, X, Navigation2, AlertTriangle } from "lucide-react";
 import { detectZone } from "../../../api/zone";
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from "@react-google-maps/api";
 
@@ -24,6 +25,7 @@ const defaultCenter = {
 };
 
 const ReportIssue = () => {
+    const navigate = useNavigate();
     const [step, setStep] = useState(0);
     const [images, setImages] = useState([]);
     const [listening, setListening] = useState(false);
@@ -193,7 +195,41 @@ const ReportIssue = () => {
             setForm({ title: "", category: "", descriptionText: "", lat: "", lng: "" });
             setMarkerPosition(null);
         } catch (err) {
-            toast.error(err.response?.data?.message || "Transmission failed");
+            if (err.response?.status === 409 && err.response?.data?.duplicateFound) {
+                const { existingIssue } = err.response.data;
+                toast.custom((t) => (
+                    <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-card border border-primary/50 shadow-2xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+                        <div className="flex-1 w-0 p-4">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0 pt-0.5">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <AlertTriangle className="text-primary" size={20} />
+                                    </div>
+                                </div>
+                                <div className="ml-3 flex-1">
+                                    <p className="text-sm font-black text-foreground">Duplicate Issue Detected</p>
+                                    <p className="mt-1 text-xs text-muted-foreground font-medium line-clamp-1">
+                                        "{existingIssue.title}" is already being tracked nearby.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex border-l border-border">
+                            <button
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    navigate(`/issue/${existingIssue._id}`);
+                                }}
+                                className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-xs font-black tracking-widest text-primary hover:bg-primary/5 transition-colors uppercase"
+                            >
+                                Upvote & View
+                            </button>
+                        </div>
+                    </div>
+                ), { duration: 6000 });
+            } else {
+                toast.error(err.response?.data?.message || "Transmission failed");
+            }
         } finally {
             setIsSubmitting(false);
         }
