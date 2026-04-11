@@ -14,6 +14,18 @@ Delete User (Soft Delete)
 
 import User from "../models/user.model.js";
 
+// Helper function to calculate age from DOB
+const calculateAge = (dob) => {
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+};
+
 
 /* ================= FIREBASE LOGIN ================= */
 
@@ -63,6 +75,18 @@ export const createProfile = async (req, res) => {
     try {
 
         const { uid, email } = req.firebaseUser;
+        const { dob } = req.body;
+        
+        let age = 0;
+        if (dob) {
+            age = calculateAge(dob);
+        }
+
+        if (age > 0 && age <= 15) {
+            return res.status(400).json({
+                message: "Citizens must be older than 15 years to register on PublicPlus."
+            });
+        }
 
         let user = await User.findOne({ email });
 
@@ -74,6 +98,7 @@ export const createProfile = async (req, res) => {
             user.fullName = req.body.name;
             user.phoneNumber = req.body.mobile;
             user.dateOfBirth = req.body.dob;
+            user.age = req.body.age;
             user.gender = req.body.gender;
 
             user.homeLocation = {
@@ -103,6 +128,7 @@ export const createProfile = async (req, res) => {
             fullName: req.body.name,
             phoneNumber: req.body.mobile,
             dateOfBirth: req.body.dob,
+            age: age,
             gender: req.body.gender,
             homeLocation: {
                 latitude: req.body.latitude,
