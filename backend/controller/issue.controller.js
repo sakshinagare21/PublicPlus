@@ -14,6 +14,7 @@ import {
  sendReopenedEmail,
  sendIssueResolvedEmail,
  sendIssueClosedEmail,
+ sendIssueReportedEmailToCitizen,
  sgMail
 } from "../utils/email.js";
 
@@ -172,6 +173,13 @@ export const createIssue = async (req, res) => {
 
  /* ================= ASSIGN ================= */
  await assignIssue(issue);
+
+  // 🔥 Send automated confirmation to citizen
+  if (req.user?.email) {
+    sendIssueReportedEmailToCitizen(req.user.email, issue).catch(err => 
+      console.log("Confirmation Email Background Error:", err.message)
+    );
+  }
 
  res.status(201).json({
  message: "Issue created successfully",

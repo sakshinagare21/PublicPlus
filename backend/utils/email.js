@@ -4,7 +4,26 @@ dotenv.config({ path: "./.env" });
 import sgMail from "@sendgrid/mail";
 
 // Configure SendGrid with API Key
+if (!process.env.SENDGRID_API_KEY) {
+  dotenv.config({ path: "./.env" });
+}
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+// Debugging wrapper for all emails
+const sendEmail = async (msg) => {
+  try {
+    await sgMail.send(msg);
+    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject})`);
+  } catch (error) {
+    console.error("❌ SendGrid Error:");
+    if (error.response) {
+      console.error("Body:", JSON.stringify(error.response.body, null, 2));
+    } else {
+      console.error(error.message);
+    }
+    throw error;
+  }
+};
 export { sgMail };
 
 const generateEmailTemplate = (title, subtitle, details, actionLabel, actionUrl, statusColor = "#3b82f6") => {
@@ -63,7 +82,7 @@ export const sendDepartmentRegistrationEmail = async (department) => {
     "https://public-plus.vercel.app/admin/departments"
   );
 
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: process.env.ADMIN_EMAIL,
     subject: "New Department Registration: " + department.departmentName,
@@ -84,7 +103,7 @@ export const sendDepartmentApprovedEmail = async (department) => {
     "Access Portal",
     "https://public-plus.vercel.app/login"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: department.email,
     subject: "Department Approved",
@@ -105,7 +124,7 @@ export const sendDepartmentRejectedEmail = async (department) => {
     "https://public-plus.vercel.app/support",
     "#ef4444"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: department.email,
     subject: "Department Registration Rejected",
@@ -130,7 +149,7 @@ export const sendOperatorRequestEmail = async (operator, departmentEmail) => {
     "Review Application",
     "https://public-plus.vercel.app/department/operators"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: departmentEmail,
     subject: "New Operator Registration Request",
@@ -151,7 +170,7 @@ export const sendOperatorApprovedEmail = async (operator) => {
     "Login to Portal",
     "https://public-plus.vercel.app/login"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: operator.email,
     subject: "Operator Account Approved",
@@ -172,7 +191,7 @@ export const sendOperatorRejectedEmail = async (operator) => {
     "https://public-plus.vercel.app/support",
     "#ef4444"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: operator.email,
     subject: "Operator Application Rejected",
@@ -202,7 +221,7 @@ export const sendIssueAssignedToDepartmentEmail = async (department, issue, oper
     "https://public-plus.vercel.app/department/issues"
   );
 
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: department.email,
     subject: `🚨 [ALERT] New Incident Assigned: ${issue.title}`,
@@ -224,7 +243,7 @@ export const sendIssueAssignedToOperatorEmail = async (operator, issue) => {
     "View Task Details",
     "https://public-plus.vercel.app/operator/tasks"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: operator.email,
     subject: "📌 Task Assignment: " + issue.title,
@@ -246,7 +265,7 @@ export const sendIssueToAdminEmail = async (issue, department, operator) => {
     "View Dashboard",
     "https://public-plus.vercel.app/admin"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: process.env.ADMIN_EMAIL,
     subject: "📢 Incident Alert: " + issue.title,
@@ -274,7 +293,7 @@ export const sendVerificationEmail = async (userEmail, issueTitle, operatorName,
     "#10b981"
   );
 
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: userEmail,
     subject: `[ACTION REQUIRED] Verify Resolution: ${issueTitle}`,
@@ -296,7 +315,7 @@ export const sendReopenedEmail = async (operatorEmail, issueTitle, reasonProofUr
     "https://public-plus.vercel.app/operator/tasks",
     "#ef4444"
   );
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: operatorEmail,
     subject: "🚨 Reopened: " + issueTitle,
@@ -306,7 +325,7 @@ export const sendReopenedEmail = async (operatorEmail, issueTitle, reasonProofUr
 };
 
 export const sendIssueResolvedEmail = async (operatorEmail, issueTitle, rating) => {
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: operatorEmail,
     subject: "✅ Resolution Verified",
@@ -336,9 +355,9 @@ export const sendEscalationEmail = async (issue, department, operator) => {
   
   const subjects = `🚨 [CRITICAL] Mission Escalated: ${issue.title}`;
 
-  await sgMail.send({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject: subjects, html });
-  if (department?.email) await sgMail.send({ from: process.env.EMAIL, to: department.email, subject: subjects, html });
-  if (operator?.email) await sgMail.send({ from: process.env.EMAIL, to: operator.email, subject: subjects, html });
+  await sendEmail({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject: subjects, html });
+  if (department?.email) await sendEmail({ from: process.env.EMAIL, to: department.email, subject: subjects, html });
+  if (operator?.email) await sendEmail({ from: process.env.EMAIL, to: operator.email, subject: subjects, html });
 };
 
 export const sendCriticalEscalationEmail = async (issue) => {
@@ -360,7 +379,7 @@ export const sendCriticalEscalationEmail = async (issue) => {
   );
 
   const subject = `🚨 [EMERGENCY] Level 3 Breach: ${issue.title}`;
-  await sgMail.send({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject, html });
+  await sendEmail({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject, html });
 };
 
 export const sendIssueClosedEmail = async (userEmail, issueTitle, operatorName, remark) => {
@@ -380,7 +399,7 @@ export const sendIssueClosedEmail = async (userEmail, issueTitle, operatorName, 
     "#ef4444"
   );
 
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: userEmail,
     subject: `[UPDATE] Mission Closed: ${issueTitle}`,
@@ -404,10 +423,38 @@ export const sendOTPEmail = async (email, otp) => {
     "#3b82f6"
   );
 
-  await sgMail.send({
+  await sendEmail({
     from: process.env.EMAIL,
     to: email,
     subject: `[OTP] Your Verification Code: ${otp}`,
     html
   });
+};
+/* ============================================================ */
+/* NEW: ISSUE CREATED CONFIRMATION                              */
+/* ============================================================ */
+
+export const sendIssueReportedEmailToCitizen = async (userEmail, issue) => {
+  const details = [
+    { label: " Mission ID\, value: \#\ + issue._id.toString().slice(-8).toUpperCase() },
+ { label: \Mission Title\, value: issue.title },
+ { label: \Category\, value: issue.category?.label || \General Infrastructure\ },
+ { label: \Status\, value: \PROTOCOL INITIALIZED\ }
+ ];
+
+ const html = generateEmailTemplate(
+ \Report Received\,
+ \Citizen Broadcast Logged\,
+ details,
+ \Track Progress\,
+ \https://public-plus.vercel.app/dashboard\,
+ \#10b981\
+ );
+
+ await sendEmail({
+ from: process.env.EMAIL,
+ to: userEmail,
+ subject: \[CONFIRMED] Report Logged: \ + issue.title,
+ html
+ });
 };
