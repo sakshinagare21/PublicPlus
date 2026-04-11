@@ -1,58 +1,51 @@
+import sgMail from "@sendgrid/mail";
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
-import nodemailer from "nodemailer";
 
-console.log("Loading Email Utility... EMAIL present:", !!process.env.EMAIL);
+// Configure SendGrid API Key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// Configure Nodemailer Transporter
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // use STARTTLS
-  family: 4, // 🔥 Force IPv4 to avoid ENETUNREACH issues with IPv6
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
-
-// Verify SMTP Connection on Startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ SMTP Connection Error:", error.message);
-  } else {
-    console.log("✅ SMTP Server is ready to send emails");
-  }
-});
+console.log("Loading Email Utility (SendGrid)... API Key present:", !!process.env.SENDGRID_API_KEY);
 
 // Debugging wrapper for all emails
 export const sendEmail = async (msg) => {
   try {
-    if (!process.env.EMAIL || !process.env.EMAIL_PASS) {
-      throw new Error("Email credentials missing in environment variables");
+    if (!process.env.SENDGRID_API_KEY) {
+      throw new Error("SendGrid API Key missing in environment variables");
     }
 
-    const mailOptions = {
-      from: process.env.EMAIL,
+    const message = {
       to: msg.to,
+      from: process.env.EMAIL, // Ensure this matches your SendGrid verified sender
       subject: msg.subject,
       html: msg.html,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject}) - ID: ${info.messageId}`);
-    return info;
+    const response = await sgMail.send(message);
+    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject}) - Status: ${response[0].statusCode}`);
+    return response;
   } catch (error) {
-    console.error("❌ Nodemailer Error:", error.message);
-    // Log more details if available
-    if (error.response) console.error("SMTP Response:", error.response);
+    if (error.response) {
+      console.error("❌ SendGrid Error Details:", JSON.stringify(error.response.body, null, 2));
+    }
+    console.error("❌ SendGrid Error:", error.message);
     throw error;
   }
 };
+
+// Placeholder for backward compatibility if anywhere uses 'transporter'
+const transporter = {
+  sendMail: async (options) => {
+    return await sendEmail({
+      to: options.to,
+      subject: options.subject,
+      html: options.html
+    });
+  },
+  verify: (cb) => cb(null, true)
+};
 export { transporter };
+
 
 const generateEmailTemplate = (title, subtitle, details, actionLabel, actionUrl, statusColor = "#3b82f6") => {
   return `

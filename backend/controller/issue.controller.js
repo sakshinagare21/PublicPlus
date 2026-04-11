@@ -14,8 +14,7 @@ import {
     sendReopenedEmail,
     sendIssueResolvedEmail,
     sendIssueClosedEmail,
-    sendIssueReportedEmailToCitizen,
-    transporter
+    sendIssueReportedEmailToCitizen
 } from "../utils/email.js";
 
 export const createIssue = async (req, res) => {
