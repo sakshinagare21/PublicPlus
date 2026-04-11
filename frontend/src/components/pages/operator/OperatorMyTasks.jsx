@@ -268,7 +268,7 @@ const OperatorMyTasks = () => {
                                 {/* MODAL VISUAL */}
                                 <div className="w-full md:w-5/12 bg-muted relative min-h-[300px]">
                                     {selectedTask.images && selectedTask.images.length > 0 ? (
-                                        <img src={`${import.meta.env.VITE_API_BASE_URL}${selectedTask.images[0].url}`} className="w-full h-full object-cover" alt="Mission Scan" />
+                                        <img src={selectedTask.images[0].url.startsWith('http') ? selectedTask.images[0].url : `${import.meta.env.VITE_API_BASE_URL}${selectedTask.images[0].url}`} className="w-full h-full object-cover" alt="Mission Scan" />
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/30 gap-4">
                                             <MapPin size={48} />

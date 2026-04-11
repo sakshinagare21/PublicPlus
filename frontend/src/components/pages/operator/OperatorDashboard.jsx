@@ -248,7 +248,7 @@ const OperatorDashboard = () => {
                                 <div className="w-full md:w-1/2 bg-muted relative min-h-[300px]">
                                     {selectedTask.images && selectedTask.images.length > 0 ? (
                                         <img
-                                            src={`${import.meta.env.VITE_API_BASE_URL}${selectedTask.images[0].url}`}
+                                            src={selectedTask.images[0].url.startsWith('http') ? selectedTask.images[0].url : `${import.meta.env.VITE_API_BASE_URL}${selectedTask.images[0].url}`}
                                             alt="Issue"
                                             className="w-full h-full object-cover"
                                         />

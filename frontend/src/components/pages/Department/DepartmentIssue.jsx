@@ -118,7 +118,7 @@ const Issues = () => {
               "In Progress",
         deadline: issue.sla?.resolutionDeadline ? new Date(issue.sla.resolutionDeadline) : null,
         isBreach: issue.sla?.isBreached,
-        images: (issue.images || []).map(img => `${import.meta.env.VITE_API_BASE_URL}${img.url}`)
+        images: (issue.images || []).map(img => img.url.startsWith('http') ? img.url : `${import.meta.env.VITE_API_BASE_URL}${img.url}`)
       }));
 
       setIssuesData(formatted);
@@ -160,8 +160,8 @@ const Issues = () => {
         citizen: issue.reportedBy?.fullName || "Verified Citizen",
         escalation: issue.resolution?.escalation || null,
         rawStatus: issue.status,
-        images: (issue.images || []).map(img => `${import.meta.env.VITE_API_BASE_URL}${img.url}`),
-        proof: issue.resolution?.proof?.url ? `${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}` : null,
+        images: (issue.images || []).map(img => img.url.startsWith('http') ? img.url : `${import.meta.env.VITE_API_BASE_URL}${img.url}`),
+        proof: issue.resolution?.proof?.url ? (issue.resolution.proof.url.startsWith('http') ? issue.resolution.proof.url : `${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`) : null,
         history: issue.statusHistory || [],
         escalationHistory: issue.sla?.escalationHistory || [],
         coordinates: issue.location?.coordinates ? `${issue.location.coordinates[1].toFixed(6)}, ${issue.location.coordinates[0].toFixed(6)}` : "Unavailable"
@@ -484,7 +484,7 @@ const Issues = () => {
                   {task.escalation.proof && (
                     <div className="rounded-xl overflow-hidden border shadow-lg bg-black/40">
                       <img
-                        src={`${import.meta.env.VITE_API_BASE_URL}${task.escalation.proof}`}
+                        src={task.escalation.proof.startsWith('http') ? task.escalation.proof : `${import.meta.env.VITE_API_BASE_URL}${task.escalation.proof}`}
                         alt="Escalation Proof"
                         className="w-full h-auto max-h-[350px] object-contain mx-auto"
                       />

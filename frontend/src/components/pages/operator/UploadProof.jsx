@@ -214,7 +214,7 @@ const UploadProof = () => {
                                 >
                                     <div className="relative aspect-video overflow-hidden">
                                         <img
-                                            src={`${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`}
+                                            src={issue.resolution.proof.url.startsWith('http') ? issue.resolution.proof.url : `${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`}
                                             alt="Proof"
                                             className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
                                         />

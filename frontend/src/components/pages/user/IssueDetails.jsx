@@ -247,7 +247,7 @@ const IssueDetail = () => {
                                     {issue.resolution?.proof?.url ? (
                                         <>
                                             <img
-                                                src={`${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`}
+                                                src={issue.resolution.proof.url.startsWith('http') ? issue.resolution.proof.url : `${import.meta.env.VITE_API_BASE_URL}${issue.resolution.proof.url}`}
                                                 className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-700"
                                                 alt="Visual Proof"
                                             />

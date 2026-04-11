@@ -1034,8 +1034,8 @@ export const reopenIssue = async (req, res) => {
 
         // Save citizen's rejection proof
         let citizenProofUrl = "";
-        if (req.files && req.files.length > 0) {
-            citizenProofUrl = `/uploads/${req.file.filename}`;
+        if (req.file) {
+            citizenProofUrl = await uploadToCloudinary(req.file, 'citizen_proofs');
             if (!issue.resolution) issue.resolution = {};
             issue.resolution.rejectionProof = citizenProofUrl;
         }
@@ -1126,7 +1126,7 @@ export const escalateIssue = async (req, res) => {
 
         let proofUrl = "";
         if (req.file) {
-            proofUrl = `/uploads/proofs/${req.file.filename}`;
+            proofUrl = await uploadToCloudinary(req.file, 'operator_escalations');
         }
 
         issue.status = "escalated";

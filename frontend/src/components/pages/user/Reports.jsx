@@ -231,7 +231,7 @@ const Reports = () => {
                                         {selectedIssue.images?.[0] && (
                                             <div className="relative aspect-video rounded-3xl overflow-hidden border border-border group/img shadow-sm mb-6 mt-6">
                                                 <img
-                                                    src={`${import.meta.env.VITE_API_BASE_URL}${selectedIssue.images[0].url}`}
+                                                    src={selectedIssue.images[0].url.startsWith('http') ? selectedIssue.images[0].url : `${import.meta.env.VITE_API_BASE_URL}${selectedIssue.images[0].url}`}
                                                     className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-700"
                                                     alt="Issue Preview"
                                                 />

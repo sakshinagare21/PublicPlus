@@ -115,7 +115,7 @@ const DepartmentNotifications = () => {
                         {n.escalation.proof && (
                           <div className="w-full max-w-[200px] rounded-lg overflow-hidden border border-border bg-black">
                             <img
-                              src={`${import.meta.env.VITE_API_BASE_URL}${n.escalation.proof}`}
+                              src={n.escalation.proof.startsWith('http') ? n.escalation.proof : `${import.meta.env.VITE_API_BASE_URL}${n.escalation.proof}`}
                               alt="Proof"
                               className="w-full h-auto object-cover opacity-90 hover:opacity-100 transition"
                             />

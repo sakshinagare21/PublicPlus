@@ -149,7 +149,7 @@ const Dashboard = () => {
                                         <div className="flex items-center gap-6">
                                             <div className="h-16 w-16 rounded-2xl bg-background border border-border flex items-center justify-center text-foreground ring-4 ring-transparent group-hover:ring-primary/10 transition-all shadow-inner overflow-hidden shadow-sm">
                                                 {item.images?.[0] ? (
-                                                    <img src={`${import.meta.env.VITE_API_BASE_URL}${item.images[0].url}`} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
+                                                    <img src={item.images[0].url.startsWith('http') ? item.images[0].url : `${import.meta.env.VITE_API_BASE_URL}${item.images[0].url}`} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
                                                 ) : (
                                                     <AlertTriangle size={24} className="text-warning opacity-30 group-hover:opacity-100 transition-opacity" />
                                                 )}

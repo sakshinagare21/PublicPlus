@@ -207,7 +207,7 @@ const CommunityIssues = () => {
                                     {issue.images?.[0] && (
                                         <div className="lg:w-72 border-l border-border/50 relative overflow-hidden group/img">
                                             <img
-                                                src={`${import.meta.env.VITE_API_BASE_URL}${issue.images[0].url}`}
+                                                src={issue.images[0].url.startsWith('http') ? issue.images[0].url : `${import.meta.env.VITE_API_BASE_URL}${issue.images[0].url}`}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110"
                                                 alt="Issue Context"
                                             />
