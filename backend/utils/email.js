@@ -9,8 +9,17 @@ const transporter = nodemailer.createTransport({
   secure: true, // Use SSL for deployment safety
   auth: {
     user: process.env.EMAIL,
-    pass: process.env.SENDGRID_API_KEY, // Use App Password here
+    pass: process.env.EMAIL_PASS, // Using your new variable name
   },
+});
+
+// Verify SMTP Connection on Startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("❌ SMTP Connection Error:", error.message);
+  } else {
+    console.log("✅ SMTP Server is ready to send emails");
+  }
 });
 
 // Debugging wrapper for all emails
