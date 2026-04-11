@@ -24,13 +24,10 @@ export const sendOTP = async (req, res) => {
       return res.status(500).json({ message: "Failed to save OTP to database" });
     }
 
-    // PHASE 2: EMAIL SENDING
-    try {
-      await sendOTPEmail(email, otp);
-    } catch (mailError) {
-      console.error("Email Sending Error Details:", mailError);
-      return res.status(500).json({ message: `Mail Error: ${mailError.message}` });
-    }
+    // PHASE 2: EMAIL SENDING (Backgrounded for speed)
+    sendOTPEmail(email, otp).catch(mailError => {
+      console.error("Background Email Error:", mailError.message);
+    });
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {

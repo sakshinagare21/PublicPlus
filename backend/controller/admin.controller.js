@@ -53,8 +53,8 @@ export const approveDepartment = async (req, res) => {
   io.emit("department-approved", {
     departmentName: department.departmentName,
   });
-  //send approval email
-  await sendDepartmentApprovedEmail(department);
+  // send approval email (Background)
+  await sendDepartmentApprovedEmail(department).catch(err => console.log("Approval Email Fail:", err.message));
   res.json({
     message: "Department approved",
   });
@@ -95,8 +95,8 @@ export const rejectDepartment = async (req, res) => {
     io.emit("department-rejected", {
       departmentName: department.departmentName,
     });
-    // Send rejection email
-    await sendDepartmentRejectedEmail(department);
+    // Send rejection email (Background)
+    sendDepartmentRejectedEmail(department).catch(err => console.log("Reject Email Fail:", err.message));
 
     res.json({
       message: "Department rejected successfully",

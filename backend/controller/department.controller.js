@@ -182,7 +182,7 @@ export const approveOperator = async (req, res) => {
 
  /* send email */
 
- await sendOperatorApprovedEmail(operator);
+ sendOperatorApprovedEmail(operator).catch(e => console.log("Op Approval Fail:", e.message));
 
  res.json({
  message: "Operator approved and zone assigned successfully",
@@ -212,7 +212,7 @@ export const rejectOperator = async (req, res) => {
  $pull: { pendingOperators: operator._id },
  });
 
- await sendOperatorRejectedEmail(operator);
+ sendOperatorRejectedEmail(operator).catch(e => console.log("Op Reject Fail:", e.message));
 
  res.json({
  message: "Operator rejected",

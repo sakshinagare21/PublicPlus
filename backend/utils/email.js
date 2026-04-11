@@ -28,37 +28,30 @@ export { sgMail };
 
 const generateEmailTemplate = (title, subtitle, details, actionLabel, actionUrl, statusColor = "#3b82f6") => {
   return `
-    <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 650px; margin: auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.05);">
-      <div style="background-color: ${statusColor}; padding: 48px 40px; text-align: left; position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background-color: rgba(255,255,255,0.1); border-radius: 50%;"></div>
-        <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1.1;">${title}</h1>
-        <p style="color: rgba(255,255,255,0.9); margin-top: 12px; font-size: 14px; font-weight: 600; letter-spacing: 2px;">${subtitle}</p>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+      <div style="background-color: ${statusColor}; padding: 20px; color: #ffffff;">
+        <h1 style="margin: 0; font-size: 24px;">${title}</h1>
+        <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.9;">${subtitle}</p>
       </div>
-      
-      <div style="padding: 40px;">
-        <div style="background-color: #f8fafc; border-radius: 20px; padding: 32px; margin-bottom: 32px; border: 1px solid #f1f5f9;">
-          <table style="width: 100%; border-collapse: collapse;">
-            ${details.map(d => `
-              <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 16px 0; color: #64748b; font-size: 11px; font-weight: 800; letter-spacing: 1px; width: 35%;">${d.label}</td>
-                <td style="padding: 16px 0; color: #1e293b; font-size: 14px; font-weight: 700;">${d.value}</td>
-              </tr>
-            `).join("")}
-          </table>
-        </div>
-
+      <div style="padding: 20px; color: #333;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          ${details.map(d => `
+            <tr>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #666; font-size: 12px; width: 40%; text-transform: uppercase;">${d.label}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold;">${d.value}</td>
+            </tr>
+          `).join("")}
+        </table>
         ${actionUrl ? `
-          <div style="text-align: center;">
-            <a href="${actionUrl}" style="display: inline-block; background-color: #1e293b; color: #ffffff; padding: 18px 40px; border-radius: 16px; text-decoration: none; font-weight: 800; font-size: 12px; letter-spacing: 2px; box-shadow: 0 10px 30px rgba(30,41,59,0.2);">
+          <div style="text-align: center; margin-top: 20px;">
+            <a href="${actionUrl}" style="background-color: #1e293b; color: #ffffff; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block;">
               ${actionLabel}
             </a>
           </div>
         ` : ""}
       </div>
-      
-      <div style="background-color: #f1f5f9; padding: 24px; text-align: center;">
-        <p style="margin: 0; color: #94a3b8; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;">PublicPlus Metropolitan Intelligence Matrix</p>
-        <p style="margin-top: 8px; color: #cbd5e1; font-size: 9px;">Automated system notification. Secure encrypted transmission.</p>
+      <div style="background-color: #f9f9f9; padding: 15px; text-align: center; color: #999; font-size: 11px;">
+        <p style="margin: 0;">PublicPlus Metropolitan Intelligence</p>
       </div>
     </div>
   `;
