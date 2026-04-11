@@ -2,19 +2,20 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 import nodemailer from "nodemailer";
 
+console.log("Loading Email Utility... EMAIL present:", !!process.env.EMAIL);
+
 // Configure Nodemailer Transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
-  pool: true, // Use pooling for better performance with multiple emails
-  maxConnections: 5,
-  maxMessages: 100,
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // use STARTTLS
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false, // Helps with some network/certificate issues
-  },
+    rejectUnauthorized: false
+  }
 });
 
 // Verify SMTP Connection on Startup
@@ -22,7 +23,7 @@ transporter.verify((error, success) => {
   if (error) {
     console.error("❌ SMTP Connection Error:", error.message);
   } else {
-    console.log("✅ SMTP Server is ready to send emails (Pooled)");
+    console.log("✅ SMTP Server is ready to send emails");
   }
 });
 
@@ -34,7 +35,7 @@ export const sendEmail = async (msg) => {
     }
 
     const mailOptions = {
-      from: `"PublicPlus Admin" <${process.env.EMAIL}>`,
+      from: process.env.EMAIL,
       to: msg.to,
       subject: msg.subject,
       html: msg.html,
