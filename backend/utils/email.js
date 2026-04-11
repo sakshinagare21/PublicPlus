@@ -1,26 +1,36 @@
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
-import sgMail from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 
-// Configure SendGrid with API Key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Configure Nodemailer Transporter
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // Use SSL for deployment safety
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.SENDGRID_API_KEY, // Use App Password here
+  },
+});
 
 // Debugging wrapper for all emails
 const sendEmail = async (msg) => {
   try {
-    await sgMail.send(msg);
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: msg.to,
+      subject: msg.subject,
+      html: msg.html,
+    };
+
+    await transporter.sendMail(mailOptions);
     console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject})`);
   } catch (error) {
-    console.error("❌ SendGrid Error:");
-    if (error.response) {
-      console.error("Body:", JSON.stringify(error.response.body, null, 2));
-    } else {
-      console.error(error.message);
-    }
+    console.error("❌ Nodemailer Error:", error.message);
     throw error;
   }
 };
-export { sgMail };
+export { transporter };
 
 const generateEmailTemplate = (title, subtitle, details, actionLabel, actionUrl, statusColor = "#3b82f6") => {
   return `

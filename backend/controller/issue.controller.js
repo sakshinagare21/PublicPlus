@@ -15,7 +15,7 @@ import {
     sendIssueResolvedEmail,
     sendIssueClosedEmail,
     sendIssueReportedEmailToCitizen,
-    sgMail
+    transporter
 } from "../utils/email.js";
 
 export const createIssue = async (req, res) => {

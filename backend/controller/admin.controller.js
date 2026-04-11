@@ -96,7 +96,7 @@ export const rejectDepartment = async (req, res) => {
       departmentName: department.departmentName,
     });
     // Send rejection email (Background)
-    sendDepartmentRejectedEmail(department).catch(err => console.log("Reject Email Fail:", err.message));
+    await sendDepartmentRejectedEmail(department).catch(err => console.log("Reject Email Fail:", err.message));
 
     res.json({
       message: "Department rejected successfully",
