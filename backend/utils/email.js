@@ -436,25 +436,25 @@ export const sendOTPEmail = async (email, otp) => {
 
 export const sendIssueReportedEmailToCitizen = async (userEmail, issue) => {
   const details = [
-    { label: " Mission ID\, value: \#\ + issue._id.toString().slice(-8).toUpperCase() },
- { label: \Mission Title\, value: issue.title },
- { label: \Category\, value: issue.category?.label || \General Infrastructure\ },
- { label: \Status\, value: \PROTOCOL INITIALIZED\ }
- ];
+    { label: "Mission ID", value: `#${issue._id.toString().slice(-8).toUpperCase()}` },
+    { label: "Mission Title", value: issue.title },
+    { label: "Category", value: issue.category?.label || "General Infrastructure" },
+    { label: "Status", value: "PROTOCOL INITIALIZED" }
+  ];
 
- const html = generateEmailTemplate(
- \Report Received\,
- \Citizen Broadcast Logged\,
- details,
- \Track Progress\,
- \https://public-plus.vercel.app/dashboard\,
- \#10b981\
- );
+  const html = generateEmailTemplate(
+    "Report Received",
+    "Citizen Broadcast Logged",
+    details,
+    "Track Progress",
+    "https://public-plus.vercel.app/dashboard",
+    "#10b981"
+  );
 
- await sendEmail({
- from: process.env.EMAIL,
- to: userEmail,
- subject: \[CONFIRMED] Report Logged: \ + issue.title,
- html
- });
+  await sendEmail({
+    from: process.env.EMAIL,
+    to: userEmail,
+    subject: `[CONFIRMED] Report Logged: ${issue.title}`,
+    html
+  });
 };
