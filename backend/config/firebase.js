@@ -24,6 +24,7 @@ const serviceAccount = {
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
+    storageBucket: "publicplus-b458a.firebasestorage.app"
 });
 console.log("firebase initialization")
 
