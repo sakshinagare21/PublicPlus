@@ -9,11 +9,11 @@ import path from "path";
  */
 
 // Configuration - Use Environment Variables for Render
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5001/detect";
+const AI_SERVICE_URL = (process.env.AI_SERVICE_URL || "http://localhost:5001/detect").trim();
 
 export const aiImageCheck = async (req, res, next) => {
-    // 🛡️ PASS-THROUGH (Disabled to prevent false AI detection on real photos)
-    return next();
+    // 🛡️ PASS-THROUGH (REMOVED: Now AI check is active)
+    // return next();
 
     try {
         const files = req.files || (req.file ? [req.file] : []);
@@ -22,7 +22,7 @@ export const aiImageCheck = async (req, res, next) => {
             return next();
         }
 
-        console.log(`[AI-Detector] Routing ${files.length} assets to AI microservice...`);
+        console.log(`[AI-Detector] Routing ${files.length} assets to AI microservice: ${AI_SERVICE_URL}`);
 
         // Check each file against the AI service
         for (const file of files) {
@@ -39,6 +39,8 @@ export const aiImageCheck = async (req, res, next) => {
                     },
                     timeout: 30000, // 30s timeout for ML inference
                 });
+
+                console.log(`[AI-Detector] Response for ${file.filename}:`, response.data);
 
                 const { is_ai, confidence, detected_as } = response.data;
 
