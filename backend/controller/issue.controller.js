@@ -178,7 +178,7 @@ export const createIssue = async (req, res) => {
         // 🔥 Send automated confirmation to citizen
         if (req.user?.email) {
             sendIssueReportedEmailToCitizen(req.user.email, issue).catch(err =>
-                console.log("Confirmation Email Background Error:", err.message)
+                console.log(`❌ Citizen Confirmation Email failed for ${req.user.email}:`, err.message)
             );
         }
 

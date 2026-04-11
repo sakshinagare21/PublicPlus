@@ -4,12 +4,16 @@ import nodemailer from "nodemailer";
 
 // Configure Nodemailer Transporter
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // Use SSL for deployment safety
+  service: "gmail",
+  pool: true, // Use pooling for better performance with multiple emails
+  maxConnections: 5,
+  maxMessages: 100,
   auth: {
     user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASS, // Using your new variable name
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false, // Helps with some network/certificate issues
   },
 });
 
@@ -18,24 +22,31 @@ transporter.verify((error, success) => {
   if (error) {
     console.error("❌ SMTP Connection Error:", error.message);
   } else {
-    console.log("✅ SMTP Server is ready to send emails");
+    console.log("✅ SMTP Server is ready to send emails (Pooled)");
   }
 });
 
 // Debugging wrapper for all emails
 export const sendEmail = async (msg) => {
   try {
+    if (!process.env.EMAIL || !process.env.EMAIL_PASS) {
+      throw new Error("Email credentials missing in environment variables");
+    }
+
     const mailOptions = {
-      from: process.env.EMAIL,
+      from: `"PublicPlus Admin" <${process.env.EMAIL}>`,
       to: msg.to,
       subject: msg.subject,
       html: msg.html,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject})`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject}) - ID: ${info.messageId}`);
+    return info;
   } catch (error) {
     console.error("❌ Nodemailer Error:", error.message);
+    // Log more details if available
+    if (error.response) console.error("SMTP Response:", error.response);
     throw error;
   }
 };
@@ -238,7 +249,7 @@ export const sendIssueAssignedToDepartmentEmail = async (department, issue, oper
   const details = [
     { label: "Mission ID", value: `#${issue._id.toString().slice(-8).toUpperCase()}` },
     { label: "Mission Title", value: issue.title },
-    { label: "Sector", value: issue.category?.label || "General" },
+    { label: "Sector", value: issue.category?.name || "General" },
     { label: "Priority", value: (issue.priority?.level || "Medium").toUpperCase() },
     { label: "Primary Zone", value: issue.zone || "Alpha Sector" },
     { label: "Deployment", value: operator ? `${operator.fullName}` : "Awaiting Selection" }
@@ -469,7 +480,7 @@ export const sendIssueReportedEmailToCitizen = async (userEmail, issue) => {
   const details = [
     { label: "Mission ID", value: `#${issue._id.toString().slice(-8).toUpperCase()}` },
     { label: "Mission Title", value: issue.title },
-    { label: "Category", value: issue.category?.label || "General Infrastructure" },
+    { label: "Category", value: issue.category?.name || "General Infrastructure" },
     { label: "Status", value: "PROTOCOL INITIALIZED" }
   ];
 
