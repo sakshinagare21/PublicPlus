@@ -8,7 +8,7 @@ import { detectZone } from "../services/zone.service.js";
 import { getTrafficLevel } from "../services/traffic.service.js";
 import { calculatePriority } from "../services/priority.service.js";
 import { validateImage } from "../services/image.service.js";
-import { uploadToFirebase } from "../utils/firebaseStorage.js";
+import { uploadToCloudinary } from "../utils/cloudinaryStorage.js";
 import { assignIssue } from "../services/assignissue.service.js";
 import {
     sendVerificationEmail,
@@ -812,7 +812,7 @@ export const uploadProof = async (req, res) => {
 
         let proofUrl = "";
         if (req.file) {
-            proofUrl = await uploadToFirebase(req.file, "proofs");
+            proofUrl = await uploadToCloudinary(req.file, "proofs");
         } else if (req.body.proofUrl) {
             proofUrl = req.body.proofUrl;
         } else {
@@ -951,7 +951,7 @@ export const verifyIssue = async (req, res) => {
 
         // Store citizen's verification image if uploaded
         if (req.file) {
-            issue.resolution.citizenVerificationImage = await uploadToFirebase(req.file, "verifications");
+            issue.resolution.citizenVerificationImage = await uploadToCloudinary(req.file, "verifications");
         }
 
         if (!issue.sla) issue.sla = {};

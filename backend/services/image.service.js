@@ -2,7 +2,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import Issue from "../models/issue.model.js";
-import { uploadToFirebase } from "../utils/firebaseStorage.js";
+import { uploadToCloudinary } from "../utils/cloudinaryStorage.js";
 
 export const validateImage = async (file) => {
   if (!file) return {};
@@ -28,12 +28,12 @@ export const validateImage = async (file) => {
       fraudScore += 40;
     }
 
-    /* ================= FIREBASE UPLOAD ================= */
-    // Note: uploadToFirebase will automatically delete the local file after success.
-    const publicUrl = await uploadToFirebase(file, "issues");
+    /* ================= CLOUDINARY UPLOAD ================= */
+    // Note: uploadToCloudinary will automatically delete the local file after success.
+    const publicUrl = await uploadToCloudinary(file, "issues");
 
     return {
-      url: publicUrl, // ✅ FIREBASE URL
+      url: publicUrl, // ✅ CLOUDINARY URL
       hash,
       flags: {
         isDuplicate,
