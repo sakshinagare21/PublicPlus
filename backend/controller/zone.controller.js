@@ -1,4 +1,20 @@
 import Zone from "../models/zone.model.js";
+import { detectZone } from "../services/zone.service.js";
+
+// @desc Detect zone based on coordinates
+// @route GET /api/zones/detect
+export const handleZoneDetection = async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    if (!lat || !lng) {
+      return res.status(400).json({ message: "Latitude and Longitude are required" });
+    }
+    const zoneName = await detectZone(lat, lng);
+    res.json({ zoneName });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // @desc Create a new zone
 // @route POST /api/zones

@@ -6,9 +6,13 @@ import {
   getSingleZone,
   updateZone,
   deleteZone,
+  handleZoneDetection,
 } from "../controller/zone.controller.js";
 
 const router = express.Router();
+
+// @route GET /api/zones/detect
+router.get("/detect", firebaseAuth, handleZoneDetection);
 
 // @route GET /api/zones
 router.get("/", firebaseAuth, getAllZones);

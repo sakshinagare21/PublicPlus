@@ -33,7 +33,6 @@ const ReportIssue = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [categories, setCategories] = useState([]);
-    const [zonesData, setZonesData] = useState([]);
     const [zone, setZone] = useState("");
     const token = localStorage.getItem("token");
 
@@ -73,20 +72,9 @@ const ReportIssue = () => {
         }
     };
 
-    const fetchZones = async () => {
-        try {
-            const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/zones`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setZonesData(res.data);
-        } catch (err) {
-            console.log("Error fetching zones");
-        }
-    };
-
+    // Removing client-side fetchZones as we use backend /api/zones/detect now
     useEffect(() => {
         fetchCategories();
-        fetchZones();
     }, []);
 
     const handleChange = (e) => {
@@ -138,13 +126,14 @@ const ReportIssue = () => {
 
         toast.loading("Acquiring satellite signal...", { id: "geo" });
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
+            async (pos) => {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 const newPos = { lat, lng };
                 setForm((prev) => ({ ...prev, lat, lng }));
                 setMarkerPosition(newPos);
-                setZone(detectZone(lat, lng, zonesData));
+                const zoneName = await detectZone(lat, lng, token);
+                setZone(zoneName);
                 map?.panTo(newPos);
                 map?.setZoom(17);
                 toast.success("Coordinates synchronized", { id: "geo" });
@@ -164,10 +153,14 @@ const ReportIssue = () => {
     }, [step, isLoaded, markerPosition]);
 
     useEffect(() => {
-        if (form.lat && form.lng) {
-            setZone(detectZone(form.lat, form.lng, zonesData));
-        }
-    }, [form.lat, form.lng, zonesData]);
+        const updateZone = async () => {
+            if (form.lat && form.lng) {
+                const zoneName = await detectZone(form.lat, form.lng, token);
+                setZone(zoneName);
+            }
+        };
+        updateZone();
+    }, [form.lat, form.lng, token]);
 
     const handleSubmit = async () => {
         if (isSubmitting) return;

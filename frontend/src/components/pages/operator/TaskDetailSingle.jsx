@@ -54,7 +54,6 @@ const TaskDetailSingle = () => {
     // Location State
     const [proofLat, setProofLat] = useState("");
     const [proofLng, setProofLng] = useState("");
-    const [zonesData, setZonesData] = useState([]);
     const [detectedZone, setDetectedZone] = useState(null);
     const [currentSector, setCurrentSector] = useState(null);
     const [taskDetectedZone, setTaskDetectedZone] = useState("");
@@ -124,44 +123,41 @@ const TaskDetailSingle = () => {
         fetchTask();
     }, [id]);
 
-    /* ================= FETCH ZONES ================= */
-    const fetchZones = async () => {
-        try {
-            const res = await axios.get(`${BASE_URL}/api/zones`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            });
-            setZonesData(res.data);
-        } catch (err) {
-            console.error("Zone Fetch Error:", err);
-        }
-    };
-
-    useEffect(() => {
-        fetchZones();
-    }, []);
+    // Removing local fetchZones as we now use backend detect API directly
+    const token = localStorage.getItem("token");
 
     /* ================= ZONE DETECTION ================= */
     useEffect(() => {
-        if (proofLat || proofLng) {
-            const zoneName = detectZone(proofLat, proofLng, zonesData);
-            setDetectedZone(zoneName);
-        } else {
-            setDetectedZone(null);
-        }
-    }, [proofLat, proofLng, zonesData]);
+        const detect = async () => {
+            if (proofLat || proofLng) {
+                const zoneName = await detectZone(proofLat, proofLng, token);
+                setDetectedZone(zoneName);
+            } else {
+                setDetectedZone(null);
+            }
+        };
+        detect();
+    }, [proofLat, proofLng, token]);
 
     useEffect(() => {
-        if (operatorLocation && zonesData.length > 0) {
-            const sector = detectZone(operatorLocation.lat, operatorLocation.lng, zonesData);
-            setCurrentSector(sector);
-        }
-    }, [operatorLocation, zonesData]);
+        const detect = async () => {
+            if (operatorLocation) {
+                const sector = await detectZone(operatorLocation.lat, operatorLocation.lng, token);
+                setCurrentSector(sector);
+            }
+        };
+        detect();
+    }, [operatorLocation, token]);
 
     useEffect(() => {
-        if (task && task.lat && task.lng && zonesData.length > 0) {
-            setTaskDetectedZone(detectZone(task.lat, task.lng, zonesData));
-        }
-    }, [task, zonesData]);
+        const detect = async () => {
+            if (task && task.lat && task.lng) {
+                const zoneName = await detectZone(task.lat, task.lng, token);
+                setTaskDetectedZone(zoneName);
+            }
+        };
+        detect();
+    }, [task, token]);
 
     /* ================= NAVIGATION LOGIC ================= */
     useEffect(() => {
