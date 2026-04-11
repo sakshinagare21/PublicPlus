@@ -1,12 +1,8 @@
-// utils/email.js
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 import sgMail from "@sendgrid/mail";
 
 // Configure SendGrid with API Key
-if (!process.env.SENDGRID_API_KEY) {
-  dotenv.config({ path: "./.env" });
-}
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Debugging wrapper for all emails
@@ -368,7 +364,7 @@ export const sendEscalationEmail = async (issue, department, operator) => {
     "https://public-plus.vercel.app/admin",
     "#ef4444"
   );
-  
+
   const subjects = `🚨 [CRITICAL] Mission Escalated: ${issue.title}`;
 
   await sendEmail({ from: process.env.EMAIL, to: process.env.ADMIN_EMAIL, subject: subjects, html });
@@ -391,7 +387,7 @@ export const sendCriticalEscalationEmail = async (issue) => {
     details,
     "OVERRIDE MISSION",
     "https://public-plus.vercel.app/admin/issues",
-    "#7f1d1d" 
+    "#7f1d1d"
   );
 
   const subject = `🚨 [EMERGENCY] Level 3 Breach: ${issue.title}`;

@@ -9,25 +9,26 @@ export const sendOTP = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
+    console.time("OTP-Flow");
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // PHASE 1: DATABASE SAVE
+    // PHASE 1: DATABASE
     try {
       await OTP.findOneAndUpdate(
         { email },
         { otp, createdAt: new Date() },
         { upsert: true, new: true }
       );
+      console.timeLog("OTP-Flow", "=> DB Save Complete");
     } catch (dbError) {
       console.error("Database Save Error:", dbError);
       return res.status(500).json({ message: "Failed to save OTP to database" });
     }
 
-    // PHASE 2: EMAIL SENDING (Backgrounded for speed)
-    sendOTPEmail(email, otp).catch(mailError => {
-      console.error("Background Email Error:", mailError.message);
-    });
+    // PHASE 2: EMAIL SENDING (Backgrounded)
+    sendOTPEmail(email, otp).catch(err => console.log("Email error:", err.message));
+    console.timeEnd("OTP-Flow");
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
