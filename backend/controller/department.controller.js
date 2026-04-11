@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 import Department from "../models/department.model.js";
 import Issue from "../models/issue.model.js";
 import Operator from "../models/operator.model.js";
-import { sendDepartmentRegistrationEmail } from "../utils/email.js";
+import { 
+  sendDepartmentRegistrationEmail,
+  sendDepartmentRegistrationConfirmation 
+} from "../utils/email.js";
 import { io } from "../server.js";
 import Notification from "../models/notification.model.js";
 import {
@@ -59,8 +62,9 @@ export const registerDepartment = async (req, res) => {
  assignedZones: assignedZones, // Dynamically assigned from Zone model
  });
 
- /* Send email to admin */
- await sendDepartmentRegistrationEmail(department);
+  /* Send email to admin & department */
+  await sendDepartmentRegistrationEmail(department);
+  sendDepartmentRegistrationConfirmation(department).catch(err => console.log("Dept Confirm Email Error:", err.message));
 
  /* Save notification in database */
  await Notification.create({

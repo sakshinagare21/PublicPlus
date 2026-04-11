@@ -90,6 +90,29 @@ export const sendDepartmentRegistrationEmail = async (department) => {
   });
 };
 
+export const sendDepartmentRegistrationConfirmation = async (department) => {
+  const details = [
+    { label: "Department", value: department.departmentName },
+    { label: "Code", value: department.departmentCode },
+    { label: "Status", value: "AWAITING ADMIN APPROVAL" }
+  ];
+  const html = generateEmailTemplate(
+    "Application Logged",
+    "Registration Received",
+    details,
+    null,
+    null,
+    "#3b82f6"
+  );
+
+  await sendEmail({
+    from: process.env.EMAIL,
+    to: department.email,
+    subject: "Application Received: " + department.departmentName,
+    html
+  });
+};
+
 export const sendDepartmentApprovedEmail = async (department) => {
   const details = [
     { label: "Department", value: department.departmentName },
