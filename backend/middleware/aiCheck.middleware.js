@@ -12,6 +12,9 @@ import path from "path";
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:5001/detect";
 
 export const aiImageCheck = async (req, res, next) => {
+    // 🛡️ PASS-THROUGH (Disabled to prevent false AI detection on real photos)
+    return next();
+
     try {
         const files = req.files || (req.file ? [req.file] : []);
 
