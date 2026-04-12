@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
 import OperatorLayout from "../../layout/OperatorLayout";
 import {
-    AlertCircle,
-    Clock,
+    AlertTriangle,
     CheckCircle,
-    MapPin,
-    MoreVertical,
+    Clock,
+    TrendingUp,
     Activity,
     Zap,
-    X,
+    MoreVertical,
+    ClipboardCheck,
     Eye,
     Camera,
     Calendar,
-    AlertTriangle,
-    ClipboardCheck
+    X
 } from "lucide-react";
 import axios from "axios";
 import { formatDistanceToNow } from "date-fns";
@@ -25,7 +24,9 @@ const OperatorDashboard = () => {
         pending: 0,
         inProgress: 0,
         completed: 0,
-        overdue: 0
+        overdue: 0,
+        priorityStats: [],
+        logs: []
     });
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -99,61 +100,147 @@ const OperatorDashboard = () => {
         setShowModal(true);
     };
 
+    const statsCards = [
+        { label: "OVERDUE TASKS", value: stats.overdue || 0, change: "Requires attention", changeType: "critical", icon: AlertTriangle },
+        { label: "ACTIVE MISSIONS", value: stats.inProgress || 0, change: "Current progress", changeType: "neutral", icon: Activity },
+        { label: "COMPLETED", value: stats.completed || 0, change: "Successfully handled", changeType: "success", icon: CheckCircle },
+    ];
+
+    const tagColors = {
+        REPORTED: "text-blue-400",
+        ASSIGNED: "text-purple-400",
+        IN_PROGRESS: "text-yellow-400",
+        RESOLVED: "text-green-400",
+        CLOSED: "text-gray-400",
+        REOPENED: "text-red-400",
+        ESCALATED: "text-orange-500",
+    };
+
     return (
         <OperatorLayout>
-            <div className="space-y-8" style={{ fontFamily: "Calibri, sans-serif" }}>
+            <div className="space-y-6 p-6 bg-background min-h-screen text-foreground font-sans animate-in fade-in duration-500 transition-colors">
 
-                {/* HEADER */}
-                <div className="flex justify-between items-end">
-                    <div>
-                        <h1 className="text-4xl font-bold text-foreground">
-                            Dashboard <span className="text-primary">Overview</span>
-                        </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            View your tasks and performance
-                        </p>
-                    </div>
+                <header className="mb-8">
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Operator Command</h1>
+                    <p className="text-muted-foreground text-sm mt-1">Real-time mission tracking and field oversight.</p>
+                </header>
 
-                    <div className="hidden md:flex items-center gap-2 text-sm text-primary px-4 py-2 bg-primary/5 rounded-full border border-primary/10">
-                        <Activity size={14} />
-                        System Active
-                    </div>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {statsCards.map((stat) => (
+                        <div key={stat.label} className="bg-card/60 backdrop-blur-sm border border-border rounded-2xl p-6 flex justify-between items-center shadow-lg transition-all hover:scale-105 duration-300">
+                            <div>
+                                <p className="text-xs font-semibold text-muted-foreground tracking-wider font-mono">{stat.label}</p>
+                                <p className="text-4xl font-black text-foreground mt-1 drop-shadow-md">{stat.value}</p>
+                                <p className={`text-xs mt-2 font-medium flex gap-1 ${stat.changeType === "critical"
+                                    ? "text-destructive"
+                                    : stat.changeType === "success"
+                                        ? "text-success"
+                                        : "text-primary"
+                                    }`}>
+                                    {stat.changeType !== "neutral" && <TrendingUp className="w-3.5 h-3.5" />}
+                                    {stat.change}
+                                </p>
+                            </div>
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${stat.changeType === "critical" ? "bg-destructive/20 text-destructive border border-destructive/20" :
+                                stat.changeType === "success" ? "bg-success/20 text-success border border-success/20" :
+                                    "bg-primary/20 text-primary border border-primary/20"
+                                }`}>
+                                <stat.icon size={28} />
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
-                {/* KPI CARDS */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-                    <StatCard title="Total Tasks" value={stats.total} />
-                    <StatCard title="Pending" value={stats.pending} />
-                    <StatCard title="In Progress" value={stats.inProgress} />
-                    <StatCard title="Completed" value={stats.completed} />
-                    <StatCard title="Overdue" value={stats.overdue} critical />
+                {/* Secondary Dashboard Sections */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+
+                    {/* Priority Workload (Matching Admin bar chart style) */}
+                    <div className="bg-card/60 border border-border rounded-2xl p-6 shadow-xl">
+                        <h3 className="font-bold text-foreground mb-6 tracking-wide text-sm flex justify-between items-center uppercase text-muted-foreground">
+                            Priority Workload
+                            <MoreVertical size={16} className="text-muted-foreground cursor-pointer hover:text-foreground transition" />
+                        </h3>
+
+                        <div className="space-y-6">
+                            {(!stats.priorityStats || stats.priorityStats.length === 0) ? (
+                                <p className="text-center text-muted-foreground py-10">Syncing priority distribution...</p>
+                            ) : (
+                                stats.priorityStats.map((dept) => (
+                                    <div key={dept.name} className="relative">
+                                        <div className="flex justify-between text-sm font-medium mb-2">
+                                            <span className="text-muted-foreground">{dept.name}</span>
+                                            <span className="text-foreground">{dept.count} Active</span>
+                                        </div>
+                                        <div className="h-2 bg-muted rounded-full overflow-hidden border border-border">
+                                            <div
+                                                className={`${dept.color} h-full rounded-full transition-all duration-1000 ease-out`}
+                                                style={{ width: `${dept.load}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* System Intelligence Logs (Operational Logs) */}
+                    <div className="bg-card/60 border border-border rounded-2xl p-6 shadow-xl font-mono text-sm relative overflow-hidden">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-bold text-foreground tracking-wide text-sm flex items-center gap-2">
+                                <Activity size={16} className="text-primary" />
+                                System Intelligence Logs
+                            </h3>
+                            <span className="flex h-3 w-3 relative">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
+                            </span>
+                        </div>
+
+                        <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            {(!stats.logs || stats.logs.length === 0) ? (
+                                <p className="text-center text-muted-foreground py-10">No recent activity detected</p>
+                            ) : (
+                                stats.logs.map((log, i) => (
+                                    <div key={i} className="py-2 border-b border-border hover:bg-muted/50 transition px-2 rounded">
+                                        <span className="text-muted-foreground text-[10px]">[{log.time}]</span>{" "}
+                                        <span className={`font-semibold text-[11px] ${tagColors[log.tag] || "text-muted-foreground"}`}>
+                                            {log.tag}:
+                                        </span>{" "}
+                                        <span className="text-muted-foreground text-[11px]">{log.msg}</span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
                 </div>
 
                 {/* TASK TABLE */}
-                <div>
+                <div className="pt-8">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-                            <Zap className="text-primary" size={20} />
-                            Priority Tasks
+                        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                            <ClipboardCheck className="text-primary" size={24} />
+                            Actionable Directives
                         </h2>
                         <button
                             onClick={() => navigate("/operator/tasks")}
-                            className="text-sm text-primary hover:text-foreground font-bold"
+                            className="text-xs font-bold text-primary hover:text-foreground tracking-widest uppercase bg-primary/10 px-4 py-2 rounded-full border border-primary/20 transition"
                         >
-                            View All Tasks
+                            View Full Grid
                         </button>
                     </div>
 
                     <div className="bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-2xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
-                                <thead className="bg-muted/50 border-b border-border text-muted-foreground text-sm font-medium">
+                                <thead className="bg-muted/50 border-b border-border text-muted-foreground text-xs font-bold uppercase tracking-widest">
                                     <tr>
-                                        <th className="text-left p-6">Task Details</th>
+                                        <th className="text-left p-6">Mission Detail</th>
                                         <th className="text-left p-6">Priority</th>
-                                        <th className="text-left p-6">Deadline</th>
+                                        <th className="text-left p-6">SLA Deadline</th>
                                         <th className="text-left p-6">Status</th>
-                                        <th className="text-right p-6">Actions</th>
+                                        <th className="text-right p-6">Execution</th>
                                     </tr>
                                 </thead>
 
@@ -169,38 +256,38 @@ const OperatorDashboard = () => {
                                         </tr>
                                     ) : priorityTasks.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="p-10 text-center text-muted-foreground font-bold tracking-widest opacity-40  ">
+                                            <td colSpan={5} className="p-10 text-center text-muted-foreground font-bold tracking-widest opacity-40">
                                                 No Critical Directives Detected
                                             </td>
                                         </tr>
                                     ) : priorityTasks.map((task) => (
-                                        <tr key={task._id} className="hover:bg-muted/30 group">
+                                        <tr key={task._id} className="hover:bg-muted/30 group transition-colors">
                                             <td className="p-6">
                                                 <p className="font-bold text-foreground group-hover:text-primary transition-colors">
                                                     {task.title}
                                                 </p>
-                                                <p className="text-xs text-muted-foreground">
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
                                                     {task.category?.label || "General Logistics"}
                                                 </p>
                                             </td>
 
                                             <td className="p-6">
-                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold border ${getPriorityStyle(task.priority?.level)}`}>
+                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-bold border uppercase tracking-widest ${getPriorityStyle(task.priority?.level)}`}>
                                                     {task.priority?.level || "Normal"}
                                                 </span>
                                             </td>
 
                                             <td className="p-6">
                                                 {task.sla?.resolutionDeadline ? (
-                                                    <div className={`flex items-center gap-2 text-xs font-bold ${task.sla.isBreached ? "text-red-500 animate-pulse" : "text-muted-foreground"}`}>
-                                                        <Clock size={14} />
+                                                    <div className={`flex items-center gap-2 text-[10px] font-bold ${task.sla.isBreached ? "text-red-500 animate-pulse" : "text-muted-foreground"}`}>
+                                                        <Clock size={12} />
                                                         {formatDistanceToNow(new Date(task.sla.resolutionDeadline), { addSuffix: true })}
                                                     </div>
-                                                ) : "No deadline"}
+                                                ) : "N/A"}
                                             </td>
 
                                             <td className="p-6">
-                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold border ${getStatusStyle(task.status)}`}>
+                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-bold border uppercase tracking-widest ${getStatusStyle(task.status)}`}>
                                                     {task.status?.replace('_', ' ')}
                                                 </span>
                                             </td>
@@ -210,7 +297,7 @@ const OperatorDashboard = () => {
                                                     <button
                                                         onClick={() => openTaskDetail(task)}
                                                         className="p-2 border border-border rounded-xl hover:bg-primary/10 hover:border-primary hover:text-primary transition-all shadow-sm"
-                                                        title="Inspect mission detail"
+                                                        title="Inspect detail"
                                                     >
                                                         <Eye size={18} />
                                                     </button>
@@ -219,12 +306,11 @@ const OperatorDashboard = () => {
                                                         disabled={task.status === "resolved" || task.status === "closed"}
                                                         onClick={() => navigate(`/operator/tasks/${task._id}`)}
                                                         className={`p-2 border rounded-xl transition-all shadow-sm
- ${task.status === "resolved" || task.status === "closed"
+                                                            ${task.status === "resolved" || task.status === "closed"
                                                                 ? "border-border text-muted-foreground cursor-not-allowed opacity-30"
                                                                 : "border-success/30 text-success hover:bg-success hover:text-white"
-                                                            }
- `}
-                                                        title="Upload Certification Proof"
+                                                            }`}
+                                                        title="Certify Outcome"
                                                     >
                                                         <Camera size={18} />
                                                     </button>
@@ -276,11 +362,11 @@ const OperatorDashboard = () => {
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Category</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Category</p>
                                             <p className="text-sm font-bold text-foreground">{selectedTask.category?.label || "General"}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Jurisdiction</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Jurisdiction</p>
                                             <p className="text-sm font-bold text-foreground">
                                                 {selectedTask.fullAddress ||
                                                     (selectedTask.location?.coordinates
@@ -289,27 +375,27 @@ const OperatorDashboard = () => {
                                             </p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest flex items-center gap-2 uppercase">
                                                 <Calendar size={12} className="text-primary" />
                                                 Assigned At
                                             </p>
                                             <p className="text-sm font-bold text-foreground">{new Date(selectedTask.createdAt).toLocaleDateString()}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                                            <p className="text-[10px] font-bold text-muted-foreground tracking-widest flex items-center gap-2 uppercase">
                                                 <Clock size={12} className="text-primary" />
                                                 Status
                                             </p>
-                                            <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-bold border mt-1 ${getStatusStyle(selectedTask.status)}`}>
-                                                {(selectedTask.status || "REPORTED").replace('_', ' ').toUpperCase()}
+                                            <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-bold border mt-1 uppercase tracking-widest ${getStatusStyle(selectedTask.status)}`}>
+                                                {(selectedTask.status || "REPORTED").replace('_', ' ')}
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-2 flex-grow">
-                                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Mission Description</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Mission Description</p>
                                         <div className="p-4 bg-muted/30 rounded-2xl border border-border">
-                                            <p className="text-sm text-foreground leading-relaxed  ">
+                                            <p className="text-sm text-foreground leading-relaxed">
                                                 "{selectedTask.description || "No tactical details provided by reporter."}"
                                             </p>
                                         </div>
@@ -323,11 +409,10 @@ const OperatorDashboard = () => {
                                             }}
                                             disabled={selectedTask.status === "resolved" || selectedTask.status === "closed"}
                                             className={`flex-1 py-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-[10px] tracking-widest transition-all shadow-xl
- ${selectedTask.status === "resolved" || selectedTask.status === "closed"
+                                                ${selectedTask.status === "resolved" || selectedTask.status === "closed"
                                                     ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
                                                     : "bg-success text-white hover:bg-success/90 shadow-success/20 active:scale-95"
-                                                }
- `}
+                                                }`}
                                         >
                                             <Camera size={18} />
                                             Certify Success
@@ -344,19 +429,4 @@ const OperatorDashboard = () => {
     );
 };
 
-/* STAT CARD */
-const StatCard = ({ title, value, critical = false }) => {
-    return (
-        <div className={`bg-card border rounded-[2.5rem] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 ${critical ? "border-destructive/30 border-dashed" : "border-border shadow-inner"}`}>
-            <p className={`text-[10px] font-bold tracking-widest mb-2 ${critical ? "text-destructive" : "text-muted-foreground opacity-60"}`}>
-                {title}
-            </p>
-            <h2 className={`text-3xl font-bold ${critical ? "text-destructive" : "text-foreground"}`}>
-                {value}
-            </h2>
-        </div>
-    );
-};
-
 export default OperatorDashboard;
-

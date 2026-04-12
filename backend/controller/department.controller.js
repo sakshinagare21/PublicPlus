@@ -693,23 +693,43 @@ export const getDetailedReports = async (req, res) => {
  const avgResolutionTime = totalResolved > 0 ? (totalResolutionTime / totalResolved).toFixed(1) : 0;
  const slaCompliance = issues.length > 0 ? ((totalResolved / issues.length) * 100).toFixed(1) : 0;
 
- res.status(200).json({
- monthlyStats,
- weeklyStats,
- categoryAnalysis,
- summary: {
- today: todayCount,
- week: weekCount,
- month: monthCount,
- totalResolved,
- avgResolutionTime,
- slaCompliance,
- totalIssues: issues.length
- },
- operatorStats: Object.values(operatorMap),
- reports: req.department.reports || [],
- activityLogs: req.department.activityLogs || []
- });
+  // 4. Detailed System Logs (derived from status history)
+  const recentStatusUpdates = await Issue.find({ assignedDepartment: departmentId })
+    .sort({ updatedAt: -1 })
+    .limit(10)
+    .select("title status statusHistory updatedAt");
+
+  const systemLogs = [];
+  recentStatusUpdates.forEach(issue => {
+    if (issue.statusHistory && issue.statusHistory.length > 0) {
+      const lastUpdate = issue.statusHistory[issue.statusHistory.length - 1];
+      systemLogs.push({
+        time: new Date(lastUpdate.updatedAt).toLocaleTimeString(),
+        tag: lastUpdate.status.toUpperCase(),
+        msg: `${issue.title}: ${lastUpdate.remark || "Status updated."}`,
+        timestamp: lastUpdate.updatedAt
+      });
+    }
+  });
+
+  res.status(200).json({
+    monthlyStats,
+    weeklyStats,
+    categoryAnalysis,
+    summary: {
+      today: todayCount,
+      week: weekCount,
+      month: monthCount,
+      totalResolved,
+      avgResolutionTime,
+      slaCompliance,
+      totalIssues: issues.length
+    },
+    operatorStats: Object.values(operatorMap),
+    reports: req.department.reports || [],
+    activityLogs: req.department.activityLogs || [],
+    systemLogs: systemLogs.sort((a, b) => b.timestamp - a.timestamp).slice(0, 6)
+  });
  } catch (error) {
  res.status(500).json({ message: error.message });
  }

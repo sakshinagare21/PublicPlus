@@ -179,7 +179,7 @@ const DepartmentDashboard = () => {
 
           {/* QUICK ACTIONS */}
           <div className="bg-card border rounded-[2rem] p-8 shadow-sm transition-all hover:shadow-lg animate-in fade-in slide-in-from-left-8 duration-700">
-            <h3 className="text-xl font-black   tracking-tight mb-1">Actions</h3>
+            <h3 className="text-xl font-black tracking-tight mb-1">Actions</h3>
 
             <div className="space-y-4">
               <Link
@@ -192,7 +192,7 @@ const DepartmentDashboard = () => {
 
               <Link
                 to="/department/zones"
-                className="flex justify-between items-center w-full p-6 border rounded-2xl font-black   tracking-tighter hover:bg-muted transition-all"
+                className="flex justify-between items-center w-full p-6 border rounded-2xl font-black tracking-tighter hover:bg-muted transition-all"
               >
                 <span>Zone Analytics</span>
                 <Activity size={20} />
@@ -200,47 +200,47 @@ const DepartmentDashboard = () => {
             </div>
           </div>
 
-          {/* ACTIVITY STREAM */}
-          <div className="bg-card border rounded-[2rem] p-8 shadow-sm animate-in fade-in slide-in-from-right-8 duration-700">
-            <div className="flex justify-between items-center mb-10">
-              <div>
-                <h3 className="text-xl font-black   tracking-tight ">Operational Logs</h3>
-                <p className="text-xs text-muted-foreground font-medium">
-                  Late-breaking system updates
-                </p>
-              </div>
-              <Clock size={18} className="text-muted-foreground opacity-30" />
+          {/* SYSTEM INTELLIGENCE LOGS */}
+          <div className="bg-card/60 backdrop-blur-sm border border-border rounded-[2rem] p-8 shadow-sm animate-in fade-in slide-in-from-right-8 duration-700 font-mono text-sm relative overflow-hidden">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-foreground tracking-wide text-sm flex items-center gap-2">
+                <Activity size={16} className="text-primary" />
+                System Intelligence Logs
+              </h3>
+              <span className="flex h-3 w-3 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
+              </span>
             </div>
 
-            <div className="space-y-6 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-              {data.activityLogs?.length > 0 ? (
-                data.activityLogs.slice(0, 10).map((log, i) => (
-                  <div key={i} className="flex gap-4 group transition-all duration-300">
-                    <div className="h-1.5 w-1.5 bg-blue-500 rounded-full mt-2 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center mb-1">
-                        <p className="text-[10px] font-black text-foreground tracking-widest">{log.action}</p>
-                        <span className="text-[10px] font-bold text-muted-foreground  ">
-                          {formatTimeGap(log.timestamp)}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground   font-medium leading-relaxed">
-                        System registered modification on {log.targetModel} identifier.
-                      </p>
-                    </div>
+            <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+              {(!data.systemLogs || data.systemLogs.length === 0) ? (
+                <p className="text-center text-muted-foreground py-10">No recent activity detected</p>
+              ) : (
+                data.systemLogs.map((log, i) => (
+                  <div key={i} className="py-2 border-b border-border hover:bg-muted/50 transition px-2 rounded">
+                    <span className="text-muted-foreground text-[10px]">[{log.time}]</span>{" "}
+                    <span className={`font-semibold text-[11px] ${
+                      log.tag === "REPORTED" ? "text-blue-400" :
+                      log.tag === "ASSIGNED" ? "text-purple-400" :
+                      log.tag === "IN_PROGRESS" ? "text-yellow-400" :
+                      log.tag === "RESOLVED" ? "text-green-400" :
+                      log.tag === "CLOSED" ? "text-gray-400" :
+                      log.tag === "REOPENED" ? "text-red-400" :
+                      log.tag === "ESCALATED" ? "text-orange-500" :
+                      "text-muted-foreground"
+                    }`}>
+                      {log.tag}:
+                    </span>{" "}
+                    <span className="text-muted-foreground text-[11px]">{log.msg}</span>
                   </div>
                 ))
-              ) : (
-                <div className="py-10 text-center opacity-20  ">
-                  <Activity size={40} className="mx-auto mb-4" />
-                  <p className="text-xs font-bold tracking-widest">No active logs detected</p>
-                </div>
               )}
             </div>
 
             <Link
               to="/department/history"
-              className="block w-full mt-8 py-3 text-center border-t border-dashed border-border text-[10px] font-black tracking-widest text-muted-foreground hover:text-primary transition-colors"
+              className="block w-full mt-6 py-3 text-center border-t border-dashed border-border text-[10px] font-black tracking-widest text-muted-foreground hover:text-primary transition-colors"
             >
               Access Complete Archives
             </Link>
