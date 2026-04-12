@@ -326,7 +326,9 @@ const TaskDetailSingle = () => {
             setShowUploadModal(false);
             fetchTask();
         } catch (error) {
-            toast.error("Transmission failed");
+            console.error("Upload Error Details:", error.response?.data);
+            const errorMessage = error.response?.data?.message || "Transmission failed";
+            toast.error(errorMessage);
         } finally {
             setIsUploading(false);
         }

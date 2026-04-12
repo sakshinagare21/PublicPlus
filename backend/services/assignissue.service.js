@@ -26,11 +26,14 @@ export const assignIssue = async (issue) => {
 
   /* ================= FALLBACK ================= */
   if (!operators.length) {
-    console.log("⚠️ No operator in zone → using General Pune Zone");
+    console.log("⚠️ No operator in zone → attempting General Pune Zone fallback");
 
     operators = await Operator.find({
       departmentId: department._id,
-      "assignedZone.zoneName": "General Pune Zone",
+      $or: [
+        { "assignedZone.zoneName": "General Pune Zone" },
+        { "assignedZone.zoneName": "General Zone" }
+      ],
       status: "active",
       approvalStatus: "approved",
     });

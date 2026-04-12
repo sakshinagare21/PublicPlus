@@ -555,7 +555,7 @@ export const getAdminStats = async (req, res) => {
         const resolved = await Issue.countDocuments({ status: "resolved" });
 
         // 2. Department Workloads
-        const allDepartments = await Department.find({ status: "Approved" });
+        const allDepartments = await Department.find({ approvalStatus: "approved" });
         const departmentStats = await Promise.all(
             allDepartments.map(async (dept) => {
                 const totalDept = await Issue.countDocuments({ assignedDepartment: dept._id });
@@ -804,7 +804,12 @@ export const uploadProof = async (req, res) => {
         const operatorZone = (req.operator.assignedZone?.zoneName || "").trim().toLowerCase();
         const issueZone = (issue.zone || "").trim().toLowerCase();
 
-        if (operatorZone && issueZone && operatorZone !== issueZone) {
+        // 🛡️ SECURITY OVERRIDE: If the system assigned this to the operator, ignore zone mismatch
+        // OR if the operator belongs to the catch-all 'General Pune Zone'.
+        const isAssignedToMe = issue.assignedTo?.toString() === req.operator._id.toString();
+        const isGeneralZoneOperator = operatorZone === "general pune zone" || operatorZone === "general zone";
+
+        if (!isAssignedToMe && operatorZone && issueZone && operatorZone !== issueZone && !isGeneralZoneOperator) {
             return res.status(403).json({
                 message: `Zone mismatch. Your zone is "${req.operator.assignedZone?.zoneName}" but this issue is in "${issue.zone}".`
             });
