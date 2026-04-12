@@ -220,16 +220,15 @@ const DepartmentDashboard = () => {
                 data.systemLogs.map((log, i) => (
                   <div key={i} className="py-2 border-b border-border hover:bg-muted/50 transition px-2 rounded">
                     <span className="text-muted-foreground text-[10px]">[{log.time}]</span>{" "}
-                    <span className={`font-semibold text-[11px] ${
-                      log.tag === "REPORTED" ? "text-blue-400" :
-                      log.tag === "ASSIGNED" ? "text-purple-400" :
-                      log.tag === "IN_PROGRESS" ? "text-yellow-400" :
-                      log.tag === "RESOLVED" ? "text-green-400" :
-                      log.tag === "CLOSED" ? "text-gray-400" :
-                      log.tag === "REOPENED" ? "text-red-400" :
-                      log.tag === "ESCALATED" ? "text-orange-500" :
-                      "text-muted-foreground"
-                    }`}>
+                    <span className={`font-semibold text-[11px] ${log.tag === "REPORTED" ? "text-blue-400" :
+                        log.tag === "ASSIGNED" ? "text-purple-400" :
+                          log.tag === "IN_PROGRESS" ? "text-yellow-400" :
+                            log.tag === "RESOLVED" ? "text-green-400" :
+                              log.tag === "CLOSED" ? "text-gray-400" :
+                                log.tag === "REOPENED" ? "text-red-400" :
+                                  log.tag === "ESCALATED" ? "text-orange-500" :
+                                    "text-muted-foreground"
+                      }`}>
                       {log.tag}:
                     </span>{" "}
                     <span className="text-muted-foreground text-[11px]">{log.msg}</span>

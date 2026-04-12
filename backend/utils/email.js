@@ -1,34 +1,37 @@
-import sgMail from "@sendgrid/mail";
+import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 
-// Configure SendGrid API Key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-console.log("Loading Email Utility (SendGrid)... API Key present:", !!process.env.SENDGRID_API_KEY);
+console.log("Loading Email Utility (Brevo)... API Key present:", !!process.env.BERVO_API_KEY);
 
 // Debugging wrapper for all emails
 export const sendEmail = async (msg) => {
   try {
-    if (!process.env.SENDGRID_API_KEY) {
-      throw new Error("SendGrid API Key missing in environment variables");
+    if (!process.env.BERVO_API_KEY) {
+      throw new Error("Brevo API Key missing in environment variables (BERVO_API_KEY)");
     }
 
-    const message = {
-      to: msg.to,
-      from: process.env.EMAIL, // Ensure this matches your SendGrid verified sender
+    const data = {
+      sender: { email: process.env.EMAIL || "publicplusadmin@gmail.com", name: "PublicPlus" },
+      to: [{ email: msg.to }],
       subject: msg.subject,
-      html: msg.html,
+      htmlContent: msg.html,
     };
 
-    const response = await sgMail.send(message);
-    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject}) - Status: ${response[0].statusCode}`);
-    return response;
+    const response = await axios.post("https://api.brevo.com/v3/smtp/email", data, {
+      headers: {
+        "api-key": process.env.BERVO_API_KEY,
+        "content-type": "application/json",
+      },
+    });
+
+    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject}) - Status: ${response.status}`);
+    return response.data;
   } catch (error) {
     if (error.response) {
-      console.error("❌ SendGrid Error Details:", JSON.stringify(error.response.body, null, 2));
+      console.error("❌ Brevo Error Details:", JSON.stringify(error.response.data, null, 2));
     }
-    console.error("❌ SendGrid Error:", error.message);
+    console.error("❌ Brevo Error:", error.message);
     throw error;
   }
 };
@@ -45,6 +48,7 @@ const transporter = {
   verify: (cb) => cb(null, true)
 };
 export { transporter };
+
 
 
 const generateEmailTemplate = (title, subtitle, details, actionLabel, actionUrl, statusColor = "#3b82f6") => {
