@@ -1,53 +1,43 @@
-import axios from "axios";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 
-console.log("Loading Email Utility (Brevo)... API Key present:", !!process.env.BERVO_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  auth: {
+    user: process.env.EMAIL || "publicplusadmin@gmail.com",
+    pass: process.env.BERVO_API_KEY,
+  },
+});
+
+console.log("Loading Email Utility (Brevo SMTP)... Status:", !!process.env.BERVO_API_KEY);
 
 // Debugging wrapper for all emails
 export const sendEmail = async (msg) => {
   try {
     if (!process.env.BERVO_API_KEY) {
-      throw new Error("Brevo API Key missing in environment variables (BERVO_API_KEY)");
+      throw new Error("Brevo SMTP Key missing in environment variables (BERVO_API_KEY)");
     }
 
-    const data = {
-      sender: { email: process.env.EMAIL || "publicplusadmin@gmail.com", name: "PublicPlus" },
-      to: [{ email: msg.to }],
+    const mailOptions = {
+      from: `"PublicPlus" <${process.env.EMAIL || "publicplusadmin@gmail.com"}>`,
+      to: msg.to,
       subject: msg.subject,
-      htmlContent: msg.html,
+      html: msg.html,
     };
 
-    const response = await axios.post("https://api.brevo.com/v3/smtp/email", data, {
-      headers: {
-        "api-key": process.env.BERVO_API_KEY,
-        "content-type": "application/json",
-      },
-    });
-
-    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject}) - Status: ${response.status}`);
-    return response.data;
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`📧 Email sent to ${msg.to} (Subject: ${msg.subject}) - ID: ${info.messageId}`);
+    return info;
   } catch (error) {
-    if (error.response) {
-      console.error("❌ Brevo Error Details:", JSON.stringify(error.response.data, null, 2));
-    }
-    console.error("❌ Brevo Error:", error.message);
+    console.error("❌ SMTP Error:", error.message);
     throw error;
   }
 };
 
-// Placeholder for backward compatibility if anywhere uses 'transporter'
-const transporter = {
-  sendMail: async (options) => {
-    return await sendEmail({
-      to: options.to,
-      subject: options.subject,
-      html: options.html
-    });
-  },
-  verify: (cb) => cb(null, true)
-};
 export { transporter };
+
 
 
 
