@@ -32,6 +32,7 @@ import DepartmentReports from "./components/pages/Department/DepartmentReports";
 import DepartmentNotifications from "./components/pages/Department/DepartmentNotifications";
 import DepartmentSettings from "./components/pages/Department/DepartmentSettings";
 import DepartmentProfile from "./components/pages/Department/DepartmentProfile";
+import DepartmentHistory from "./components/pages/Department/DepartmentHistory";
 import OperatorRequests from "./components/pages/Department/OperatorRequests";
 import IssueTypeForm from "./components/pages/Department/IssueTypeForm";
 import OperatorDetails from "./components/pages/Department/OperatorDetail";
@@ -126,6 +127,7 @@ function App() {
             <Route path="/department/settings/issue-types" element={<ProtectedRoute allowedRoles={['department']}><IssueTypeForm /></ProtectedRoute>} />
             <Route path="/department/settings/zones" element={<ProtectedRoute allowedRoles={['department']}><ZoneConfiguration /></ProtectedRoute>} />
             <Route path="/department/operator/:operatorId" element={<ProtectedRoute allowedRoles={['department']}><OperatorDetails /></ProtectedRoute>} />
+            <Route path="/department/history" element={<ProtectedRoute allowedRoles={['department']}><DepartmentHistory /></ProtectedRoute>} />
 
             {/* USER ROUTES (PROTECTED) */}
             <Route path='/dashboard' element={<ProtectedRoute allowedRoles={['citizen']}><Dashboard /></ProtectedRoute>} />
