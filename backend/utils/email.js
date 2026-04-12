@@ -6,10 +6,11 @@ const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
   port: 587,
   auth: {
-    user: process.env.EMAIL || "publicplusadmin@gmail.com",
+    user: process.env.BREVO_SMTP_USER || process.env.EMAIL || "publicplusadmin@gmail.com",
     pass: process.env.BERVO_API_KEY,
   },
 });
+
 
 console.log("Loading Email Utility (Brevo SMTP)... Status:", !!process.env.BERVO_API_KEY);
 
