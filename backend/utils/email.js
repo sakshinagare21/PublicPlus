@@ -4,8 +4,9 @@ dotenv.config({ path: "./.env" });
 
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
-  port: 587,
+  port: 2525,
   auth: {
+
     user: process.env.BREVO_SMTP_USER || process.env.EMAIL || "publicplusadmin@gmail.com",
     pass: process.env.BERVO_API_KEY,
   },
