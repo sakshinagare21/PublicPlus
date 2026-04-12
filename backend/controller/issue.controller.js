@@ -469,29 +469,47 @@ export const getOperatorStats = async (req, res) => {
     try {
         const operatorId = req.operator._id;
 
-        const total = await Issue.countDocuments({
-            assignedTo: operatorId,
+        // 1. Core Counts
+        const total = await Issue.countDocuments({ assignedTo: operatorId });
+        const pending = await Issue.countDocuments({ assignedTo: operatorId, status: "reported" });
+        const inProgress = await Issue.countDocuments({ assignedTo: operatorId, status: "in_progress" });
+        const completed = await Issue.countDocuments({ assignedTo: operatorId, status: { $in: ["resolved", "closed"] } });
+        const overdue = await Issue.countDocuments({ assignedTo: operatorId, "sla.isBreached": true });
+
+        // 2. Priority Distribution (Workload equivalent)
+        const critical = await Issue.countDocuments({ assignedTo: operatorId, "priority.level": "critical", status: { $ne: "resolved" } });
+        const high = await Issue.countDocuments({ assignedTo: operatorId, "priority.level": "high", status: { $ne: "resolved" } });
+        const medium = await Issue.countDocuments({ assignedTo: operatorId, "priority.level": "medium", status: { $ne: "resolved" } });
+        const low = await Issue.countDocuments({ assignedTo: operatorId, "priority.level": "low", status: { $ne: "resolved" } });
+
+        const priorityStats = [
+            { name: "CRITICAL", load: total > 0 ? Math.round((critical / total) * 100) : 0, color: "bg-red-500", count: critical },
+            { name: "HIGH", load: total > 0 ? Math.round((high / total) * 100) : 0, color: "bg-orange-500", count: high },
+            { name: "MEDIUM", load: total > 0 ? Math.round((medium / total) * 100) : 0, color: "bg-blue-500", count: medium },
+            { name: "LOW", load: total > 0 ? Math.round((low / total) * 100) : 0, color: "bg-green-500", count: low },
+        ];
+
+        // 3. Personal Activity Logs
+        const recentIssues = await Issue.find({ assignedTo: operatorId })
+            .sort({ updatedAt: -1 })
+            .limit(10)
+            .select("title status statusHistory updatedAt");
+
+        const logs = [];
+        recentIssues.forEach(issue => {
+            if (issue.statusHistory && issue.statusHistory.length > 0) {
+                const lastUpdate = issue.statusHistory[issue.statusHistory.length - 1];
+                logs.push({
+                    time: new Date(lastUpdate.updatedAt).toLocaleTimeString(),
+                    tag: lastUpdate.status.toUpperCase(),
+                    msg: `${issue.title}: ${lastUpdate.remark || "Status updated."}`,
+                    timestamp: lastUpdate.updatedAt
+                });
+            }
         });
 
-        const pending = await Issue.countDocuments({
-            assignedTo: operatorId,
-            status: "reported",
-        });
-
-        const inProgress = await Issue.countDocuments({
-            assignedTo: operatorId,
-            status: "in_progress",
-        });
-
-        const completed = await Issue.countDocuments({
-            assignedTo: operatorId,
-            status: { $in: ["resolved", "closed"] },
-        });
-
-        const overdue = await Issue.countDocuments({
-            assignedTo: operatorId,
-            "sla.isBreached": true,
-        });
+        // Sort logs by newest first
+        const sortedLogs = logs.sort((a, b) => b.timestamp - a.timestamp).slice(0, 6);
 
         res.json({
             total,
@@ -499,8 +517,11 @@ export const getOperatorStats = async (req, res) => {
             inProgress,
             completed,
             overdue,
+            priorityStats,
+            logs: sortedLogs
         });
     } catch (error) {
+        console.error("Operator Stats Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
