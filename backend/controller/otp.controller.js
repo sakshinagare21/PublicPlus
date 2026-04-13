@@ -1,5 +1,6 @@
 import OTP from "../models/otp.model.js";
 import { sendOTPEmail } from "../utils/email.js";
+import bcrypt from "bcryptjs";
 
 export const sendOTP = async (req, res) => {
   try {
@@ -13,11 +14,15 @@ export const sendOTP = async (req, res) => {
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Hash OTP before saving to database
+    const salt = await bcrypt.genSalt(10);
+    const hashedOtp = await bcrypt.hash(otp, salt);
+
     // PHASE 1: DATABASE
     try {
       await OTP.findOneAndUpdate(
         { email },
-        { otp, createdAt: new Date() },
+        { otp: hashedOtp, createdAt: new Date() },
         { upsert: true, new: true }
       );
       console.timeLog("OTP-Flow", "=> DB Save Complete");
@@ -27,6 +32,7 @@ export const sendOTP = async (req, res) => {
     }
 
     // PHASE 2: EMAIL SENDING (Backgrounded)
+    // Send the plain text otp to user
     sendOTPEmail(email, otp).catch(err => console.log("Email error:", err.message));
     console.timeEnd("OTP-Flow");
 
@@ -51,7 +57,10 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "OTP expired or not found" });
     }
 
-    if (otpRecord.otp !== otp) {
+    // Compare hashed OTP
+    const isOTPValid = await bcrypt.compare(otp, otpRecord.otp);
+
+    if (!isOTPValid) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 

@@ -184,6 +184,7 @@ export default function Departments() {
                                         <th className="p-3">Department</th>
                                         <th className="p-3">Email</th>
                                         <th className="p-3">City</th>
+                                        <th className="p-3">Zones</th>
                                         <th className="p-3">Status</th>
                                     </tr>
                                 </thead>
@@ -191,7 +192,7 @@ export default function Departments() {
                                 <tbody>
                                     {filteredDepartments.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="py-12 text-muted-foreground  ">
+                                            <td colSpan="5" className="py-12 text-muted-foreground  ">
                                                 <div className="flex flex-col items-center gap-2">
                                                     <p className="text-lg">📭</p>
                                                     <p>No departments available</p>
@@ -211,6 +212,19 @@ export default function Departments() {
 
                                                 <td className="p-3">{dept.city}</td>
 
+                                                <td className="p-3">
+                                                    <div className="flex flex-wrap justify-center gap-1">
+                                                        {dept.assignedZones && dept.assignedZones.length > 0 ? (
+                                                            dept.assignedZones.map((z, idx) => (
+                                                                <span key={idx} className="bg-muted px-2 py-0.5 rounded text-[10px]">
+                                                                    {z.zoneName}
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-muted-foreground italic">No Zones</span>
+                                                        )}
+                                                    </div>
+                                                </td>
 
                                                 <td className="p-3">
                                                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
