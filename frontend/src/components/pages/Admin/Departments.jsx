@@ -318,8 +318,8 @@ export default function Departments() {
                                     ) : (
                                         zones.map((zone, i) => (
                                             <tr key={i} className="bg-muted/30 hover:bg-muted/50 transition-colors rounded-lg text-foreground">
-                                                <td className="p-3 font-semibold">{zone.zoneName}</td>
-                                                <td className="p-3 font-mono">{zone.zoneCode}</td>
+                                                <td className="p-3 font-semibold">{zone.areaName}</td>
+                                                <td className="p-3 font-mono">{zone.zoneId}</td>
                                             </tr>
                                         ))
                                     )}

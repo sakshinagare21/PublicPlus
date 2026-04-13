@@ -110,30 +110,28 @@ export const createIssue = async (req, res) => {
                     $maxDistance: 50,
                 },
             },
-            status: { $in: ["reported", "assigned", "in_progress", "reopened", "escalated", "resolved", "closed"] }
+            status: { $in: ["reported", "assigned", "in_progress", "reopened", "escalated"] }
         });
 
-        // 2. Helper to check 90% word similarity
-        const is90PercentMatch = (s1, s2) => {
+        // 2. Helper to check 80% word similarity
+        const is80PercentMatch = (s1, s2) => {
             const normalize = (s) => s.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/).filter(w => w.length > 2);
             const w1 = normalize(s1);
             const w2 = normalize(s2);
             if (w1.length === 0 || w2.length === 0) return false;
             const set2 = new Set(w2);
             const intersection = w1.filter(word => set2.has(word));
-            return (intersection.length / Math.max(w1.length, w2.length)) >= 0.9;
+            return (intersection.length / Math.max(w1.length, w2.length)) >= 0.8;
         };
 
         const duplicateIssue = potentialDuplicates.find(issue =>
-            is90PercentMatch(issue.description.text, descriptionText || "")
+            is80PercentMatch(issue.description.text, descriptionText || "")
         );
 
         if (duplicateIssue) {
             return res.status(409).json({
                 success: false,
-                message: duplicateIssue.status === "resolved" || duplicateIssue.status === "closed"
-                    ? "This issue was recently marked as resolved. If the problem persists, please wait 24 hours."
-                    : "A very similar report already exists nearby. Please upvote the existing issue to speed up resolution.",
+                message: "A very similar report already exists nearby. Please upvote the existing issue to speed up resolution.",
                 duplicateFound: true,
                 existingIssue: {
                     _id: duplicateIssue._id,
