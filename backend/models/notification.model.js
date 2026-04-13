@@ -26,7 +26,8 @@ const notificationSchema = new mongoose.Schema({
       "issue_reopened",
       "task_escalated",
       "trust_update",
-      "task_unassigned"
+      "task_unassigned",
+      "task_assigned"
     ],
     required: true
   },

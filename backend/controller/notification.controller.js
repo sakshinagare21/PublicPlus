@@ -1,4 +1,8 @@
 import Notification from "../models/notification.model.js";
+import Admin from "../models/superadmin.model.js";
+import Department from "../models/department.model.js";
+import Operator from "../models/operator.model.js";
+import User from "../models/user.model.js";
 
 /* ================= GET ALL ADMIN NOTIFICATIONS ================= */
 export const getAdminNotifications = async (req, res) => {
@@ -235,25 +239,51 @@ export const markUserNotificationRead = async (req, res) => {
 };
 
 export const getUnreadCount = async (req, res) => {
- try {
-  let filter = { isRead: false };
-  if (req.admin) filter.targetRole = "admin";
-  else if (req.department) {
-    filter.targetRole = "department";
-    filter.departmentId = req.department._id;
+  try {
+    const firebaseUID = req.firebaseUser.uid;
+    let filter = { isRead: false };
+
+    // Try to identify the caller if not already attached by middleware
+    if (!req.admin && !req.department && !req.operator && !req.user) {
+      // Check Admin
+      const adminDoc = await Admin.findOne({ firebaseUID });
+      if (adminDoc) req.admin = adminDoc;
+      else {
+        // Check Department
+        const deptDoc = await Department.findOne({ firebaseUID });
+        if (deptDoc) req.department = deptDoc;
+        else {
+          // Check Operator
+          const opDoc = await Operator.findOne({ firebaseUID });
+          if (opDoc) req.operator = opDoc;
+          else {
+            // Check User (Citizen)
+            const userDoc = await User.findOne({ firebaseUID });
+            if (userDoc) req.user = userDoc;
+          }
+        }
+      }
+    }
+
+    if (req.admin) {
+      filter.targetRole = "admin";
+    } else if (req.department) {
+      filter.targetRole = "department";
+      filter.departmentId = req.department._id;
+    } else if (req.operator) {
+      filter.targetRole = "operator";
+      filter.operatorId = req.operator._id;
+    } else if (req.user) {
+      filter.targetRole = "user";
+      filter.userId = req.user._id;
+    } else {
+      return res.status(404).json({ message: "User role not identified" });
+    }
+
+    const count = await Notification.countDocuments(filter);
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-  else if (req.operator) {
-    filter.targetRole = "operator";
-    filter.operatorId = req.operator._id;
-  }
-  else if (req.user) {
-    filter.targetRole = "user";
-    filter.userId = req.user._id;
-  }
-  const count = await Notification.countDocuments(filter);
-  res.json({ count });
- } catch (error) {
-  res.status(500).json({ message: error.message });
- }
 };
 

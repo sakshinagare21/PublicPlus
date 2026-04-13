@@ -626,7 +626,7 @@ const Issues = () => {
                     onClick={() => setReassignMode(true)}
                     className="flex-[1.5] flex items-center justify-center gap-2 bg-foreground text-background font-black text-[11px] tracking-widest py-4 rounded-xl hover:opacity-90 transition-all active:scale-95"
                   >
-                    <RefreshCcw size={16} /> REASSIGN MISSION
+                    <RefreshCcw size={16} /> {task.operator === "Awaiting Operator" ? "ASSIGN MISSION" : "REASSIGN MISSION"}
                   </button>
                 )}
                 
