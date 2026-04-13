@@ -233,3 +233,27 @@ export const markUserNotificationRead = async (req, res) => {
  res.status(500).json({ message: error.message });
  }
 };
+
+export const getUnreadCount = async (req, res) => {
+ try {
+  let filter = { isRead: false };
+  if (req.admin) filter.targetRole = "admin";
+  else if (req.department) {
+    filter.targetRole = "department";
+    filter.departmentId = req.department._id;
+  }
+  else if (req.operator) {
+    filter.targetRole = "operator";
+    filter.operatorId = req.operator._id;
+  }
+  else if (req.user) {
+    filter.targetRole = "user";
+    filter.userId = req.user._id;
+  }
+  const count = await Notification.countDocuments(filter);
+  res.json({ count });
+ } catch (error) {
+  res.status(500).json({ message: error.message });
+ }
+};
+

@@ -71,6 +71,12 @@ const Issues = () => {
   const [zone, setZone] = useState("");
   const [priority, setPriority] = useState("");
 
+  /* Reassignment State */
+  const [deptOperators, setDeptOperators] = useState([]);
+  const [reassignMode, setReassignMode] = useState(false);
+  const [selectedOperator, setSelectedOperator] = useState("");
+  const [reassignLoading, setReassignLoading] = useState(false);
+
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -173,8 +179,46 @@ const Issues = () => {
   };
 
   useEffect(() => {
-    if (selectedId) fetchTask(selectedId);
+    if (selectedId) {
+      fetchTask(selectedId);
+      fetchOperators(); // Refresh operators when modal opens
+    }
   }, [selectedId]);
+
+  const fetchOperators = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/operators`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDeptOperators(res.data);
+    } catch (err) {
+      console.error("Fetch Operators Error:", err);
+    }
+  };
+
+  const handleReassign = async () => {
+    if (!selectedOperator) return toast.error("Select a tactical node (operator)");
+    
+    try {
+      setReassignLoading(true);
+      const token = localStorage.getItem("token");
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/issues/${task.id}/reassign`, 
+        { operatorId: selectedOperator },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success("Mission Reassigned Successfully");
+      setReassignMode(false);
+      setSelectedId(null);
+      setTask(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Reassignment Transmission Failed");
+    } finally {
+      setReassignLoading(false);
+    }
+  };
 
   const filteredIssues = issuesData
     .filter((issue) => activeTab === "All" || issue.status === activeTab)
@@ -392,7 +436,12 @@ const Issues = () => {
                 <h2 className="text-3xl font-semibold tracking-tight leading-tight">{task.title}</h2>
               </div>
               <button
-                onClick={() => { setSelectedId(null); setTask(null); }}
+                onClick={() => { 
+                  setSelectedId(null); 
+                  setTask(null); 
+                  setReassignMode(false); 
+                  setSelectedOperator("");
+                }}
                 className="p-2.5 hover:bg-muted rounded-full transition-all text-muted-foreground hover:text-foreground"
               >
                 <X size={22} />
@@ -516,8 +565,71 @@ const Issues = () => {
                 </div>
               </div>
 
+              {/* 🔥 REASSIGNMENT SELECTION UI */}
+              {reassignMode && (
+                <div className="p-8 bg-primary/5 border border-primary/20 rounded-3xl space-y-6 animate-in slide-in-from-top-4 duration-300">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-black tracking-widest text-primary uppercase flex items-center gap-2">
+                       <Users size={16} /> Reassign Tactical Node
+                    </h3>
+                    <button onClick={() => setReassignMode(false)} className="text-[10px] font-black underline uppercase text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest leading-relaxed">
+                      Hand-pick an operator to take over this mission. This will override existing protocol assignments.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                       {deptOperators.map(op => (
+                         <div 
+                           key={op._id}
+                           onClick={() => setSelectedOperator(op._id)}
+                           className={`p-4 rounded-xl border transition-all cursor-pointer flex justify-between items-center ${
+                             selectedOperator === op._id 
+                             ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-[1.02]" 
+                             : "bg-card border-border hover:border-primary/50"
+                           }`}
+                         >
+                           <div className="flex items-center gap-3">
+                              <div className={`h-2 w-2 rounded-full ${op.status === 'active' ? 'bg-success' : 'bg-muted-foreground'}`} />
+                              <div>
+                                <p className="text-xs font-bold">{op.fullName}</p>
+                                <p className={`text-[9px] ${selectedOperator === op._id ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                  {op.assignedZone?.zoneName || "General Sector"}
+                                </p>
+                              </div>
+                           </div>
+                           <div className="text-right">
+                              <p className="text-[9px] font-black uppercase opacity-60">LOAD</p>
+                              <p className="text-xs font-black">{op.currentActiveTasks}/{op.maxCapacity}</p>
+                           </div>
+                         </div>
+                       ))}
+                    </div>
+
+                    <button
+                      onClick={handleReassign}
+                      disabled={reassignLoading || !selectedOperator}
+                      className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-black text-xs tracking-[0.2em] shadow-xl shadow-primary/30 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 uppercase"
+                    >
+                      {reassignLoading ? "Transmitting..." : "Confirm Reassignment"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* ACTION BUTTONS (Simplified) */}
               <div className="flex gap-4 pt-6">
+                {!reassignMode && (
+                   <button
+                    onClick={() => setReassignMode(true)}
+                    className="flex-[1.5] flex items-center justify-center gap-2 bg-foreground text-background font-black text-[11px] tracking-widest py-4 rounded-xl hover:opacity-90 transition-all active:scale-95"
+                  >
+                    <RefreshCcw size={16} /> REASSIGN MISSION
+                  </button>
+                )}
+                
                 <button
                   onClick={async () => {
                     if (task.rawStatus === "escalated" || task.rawStatus === "pending_verification") {
@@ -530,6 +642,7 @@ const Issues = () => {
                     }
                     setSelectedId(null);
                     setTask(null);
+                    setReassignMode(false);
                     fetchData();
                   }}
                   className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-black text-[11px] tracking-widest py-4 rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95"
@@ -537,7 +650,12 @@ const Issues = () => {
                   OK
                 </button>
                 <button
-                  onClick={() => { setSelectedId(null); setTask(null); }}
+                  onClick={() => { 
+                    setSelectedId(null); 
+                    setTask(null); 
+                    setReassignMode(false); 
+                    setSelectedOperator("");
+                  }}
                   className="flex-1 bg-muted border font-black text-[11px] tracking-widest py-4 rounded-xl hover:bg-background transition-all active:scale-95"
                 >
                   CANCEL

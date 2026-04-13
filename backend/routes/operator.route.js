@@ -13,6 +13,7 @@ import {
 import {
   getOperatorProfileByDept,
   getOperatorStatsByDept,
+  deleteOperator
 } from "../controller/operator.controller.js";
 import { verifyDepartment } from "../middleware/firebase.middleware.js";
 const upload = multer({ dest: "uploads/" });
@@ -46,4 +47,12 @@ router.get(
   verifyDepartment,
   getOperatorStatsByDept
 );
-export default router;
+
+router.delete(
+  "/department/operator/:operatorId",
+  firebaseAuth,
+  verifyDepartment,
+  deleteOperator
+);
+
+export default router;

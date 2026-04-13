@@ -20,28 +20,31 @@ const OperatorLayout = ({ children }) => {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [operator, setOperator] = useState(null);
+    const [unreadCount, setUnreadCount] = useState(0);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     /* ================= FETCH OPERATOR ================= */
-    const fetchOperator = async () => {
+    const fetchData = async () => {
         try {
-            const res = await axios.get(
-                `${import.meta.env.VITE_API_BASE_URL}/api/operator/profile`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                },
-            );
+            const token = localStorage.getItem("token");
+            const [opRes, countRes] = await Promise.all([
+                 axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/operator/profile`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/unread-count`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
 
-            setOperator(res.data);
+            setOperator(opRes.data);
+            setUnreadCount(countRes.data.count);
         } catch (err) {
             console.error("Operator fetch error:", err);
         }
     };
 
     useEffect(() => {
-        fetchOperator();
+        fetchData();
     }, []);
 
     /* ================= LOGOUT ================= */
@@ -121,13 +124,20 @@ const OperatorLayout = ({ children }) => {
 
                     <NavLink
                         to="/operator/notifications"
-                        className={({ isActive }) => `flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 font-medium text-sm ${isActive
+                        className={({ isActive }) => `flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300 font-medium text-sm ${isActive
                             ? "bg-primary text-primary-foreground shadow-lg scale-[1.02]"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
                             }`}
                     >
-                        <Bell size={20} />
-                        <span>Notifications</span>
+                        <div className="flex items-center gap-4">
+                            <Bell size={20} />
+                            <span>Notifications</span>
+                        </div>
+                        {unreadCount > 0 && (
+                            <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-red-500/20 animate-bounce">
+                                {unreadCount}
+                            </span>
+                        )}
                     </NavLink>
                 </nav>
 

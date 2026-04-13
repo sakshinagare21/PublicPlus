@@ -24,6 +24,7 @@ const DepartmentLayout = ({ children }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [deptInfo, setDeptInfo] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
@@ -32,18 +33,25 @@ const DepartmentLayout = ({ children }) => {
   };
 
   useEffect(() => {
-    const fetchDept = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setDeptInfo(res.data);
+        const [deptRes, countRes] = await Promise.all([
+           axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/unread-count`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+        
+        setDeptInfo(deptRes.data);
+        setUnreadCount(countRes.data.count);
       } catch (err) {
         console.error("Layout fetch error:", err);
       }
     };
-    fetchDept();
+    fetchData();
   }, []);
 
   return (
@@ -138,10 +146,17 @@ const DepartmentLayout = ({ children }) => {
 
             <NavLink
               to="/department/notifications"
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-600/20 transition"
+              className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-600/20 transition group"
             >
-              <Bell size={18} />
-              Notifications
+              <div className="flex items-center gap-3">
+                <Bell size={18} />
+                Notifications
+              </div>
+              {unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-red-500/20 animate-bounce">
+                  {unreadCount}
+                </span>
+              )}
             </NavLink>
 
             {/* SETTINGS */}

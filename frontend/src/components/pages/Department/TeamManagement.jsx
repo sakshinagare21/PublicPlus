@@ -322,6 +322,32 @@ const TeamManagement = () => {
                                     % EFFICIENCY
                                 </p>
                             </div>
+
+                            {/* DECOMMISSION BUTTON */}
+                            <div className="mt-10 pt-8 border-t border-border">
+                                <button
+                                    onClick={async () => {
+                                        if (window.confirm(`CRITICAL PROTOCOL: Are you  want to delete  ${operatorDetails.fullName}? \n\nAll current tasks assigned to this operator will be released back into the unassigned pool.`)) {
+                                            try {
+                                                await axios.delete(
+                                                    `${import.meta.env.VITE_API_BASE_URL}/api/operator/department/operator/${operatorDetails._id}`,
+                                                    { headers: { Authorization: `Bearer ${token}` } }
+                                                );
+                                                toast.success("Operator Deleted successfully");
+                                                setSelectedOperator(null);
+                                                setOperatorDetails(null);
+                                                window.location.reload(); // Refresh to update team list
+                                            } catch (err) {
+                                                toast.error("Deletion Authorization Failed");
+                                            }
+                                        }
+                                    }}
+                                    className="w-full bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-2xl font-black text-xs tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-lg shadow-red-500/5 active:scale-95 uppercase"
+                                >
+                                    Remove Operator
+                                </button>
+                                <p className="text-[9px] text-center text-muted-foreground mt-3 font-medium uppercase tracking-tighter">Warning: This action is irreversible and triggers automatic task re-assignment</p>
+                            </div>
                         </div>
                     </div>
                 </div>

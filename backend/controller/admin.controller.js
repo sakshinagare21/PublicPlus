@@ -111,7 +111,6 @@ import Admin from "../models/superadmin.model.js";
 
 export const getAdminDashboard = async (req, res) => {
   try {
-    console.log("FIREBASE USER:", req.firebaseUser);
 
     const firebaseUID = req.firebaseUser?.uid;
 
@@ -124,7 +123,6 @@ export const getAdminDashboard = async (req, res) => {
 
     const admin = await Admin.findOne({ firebaseUID });
 
-    console.log("ADMIN:", admin);
 
     if (!admin) {
       return res.status(401).json({

@@ -1253,3 +1253,69 @@ export const getNearbyIssues = async (req, res) => {
     }
 };
 
+/* Reassign Issue to Operator (Department Admin) */
+export const reassignIssue = async (req, res) => {
+    try {
+        const { operatorId, remark } = req.body;
+        const { issueId } = req.params;
+
+        const issue = await Issue.findById(issueId);
+
+        if (!issue) {
+            return res.status(404).json({ message: "Issue not found" });
+        }
+
+        // Check if issue belongs to department
+        if (issue.assignedDepartment?.toString() !== req.department._id.toString()) {
+            return res.status(401).json({ message: "You can only reassign issues belonging to your department" });
+        }
+
+        // Verify operator belongs to department
+        const operator = await Operator.findOne({ _id: operatorId, departmentId: req.department._id });
+        if (!operator) {
+            return res.status(404).json({ message: "Target operator not found in your department" });
+        }
+
+        const oldOperatorId = issue.assignedTo;
+        
+        // Update Issue
+        issue.assignedTo = operatorId;
+        issue.status = "assigned"; // Ensure it's marked as assigned
+
+        if (!issue.statusHistory) issue.statusHistory = [];
+        issue.statusHistory.push({
+            status: "assigned",
+            remark: `Manual reassignment by Dept Admin. ${remark || ""}`,
+            updatedAt: new Date()
+        });
+
+        await issue.save();
+
+        // Update Operator Task Counts
+        // Decrease old operator count if they were different
+        if (oldOperatorId && oldOperatorId.toString() !== operatorId.toString()) {
+            await Operator.findByIdAndUpdate(oldOperatorId, { $inc: { currentActiveTasks: -1 } });
+        }
+        
+        // Increase new operator count
+        await Operator.findByIdAndUpdate(operatorId, { $inc: { currentActiveTasks: 1, totalTasksAssigned: 1 } });
+
+        // Notification to new operator
+        await Notification.create({
+            title: "New Task Assigned",
+            message: `You have been reassigned to mission: ${issue.title}`,
+            type: "task_assigned",
+            targetRole: "operator",
+            operatorId: operatorId,
+            issueId: issue._id,
+            createdBy: req.department._id,
+            createdByModel: "Department"
+        });
+
+        res.status(200).json({ success: true, message: "Issue reassigned successfully", issue });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+

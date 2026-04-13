@@ -25,7 +25,8 @@ import {
   downvoteIssue,
   escalateIssue,
   getNearbyIssues,
-  updateIssueStatus
+  updateIssueStatus,
+  reassignIssue
 } from "../controller/issue.controller.js";
 
 const router = express.Router();
@@ -65,12 +66,18 @@ router.get(
   verifyDepartment,
   getDepartmentStats
 );
-
 router.put(
   "/:issueId/status",
-  firebaseAuth, // Changed from departmentAuth if you use unified firebaseAuth
+  firebaseAuth,
   verifyDepartment,
   updateIssueStatus
+);
+
+router.put(
+  "/:issueId/reassign",
+  firebaseAuth,
+  verifyDepartment,
+  reassignIssue
 );
 
 

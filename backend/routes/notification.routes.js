@@ -10,7 +10,8 @@ import {
   getDepartmentNotifications,
   getUserNotifications,
   markUserNotificationRead,
-  getOperatorNotifications
+  getOperatorNotifications,
+  getUnreadCount
 } from "../controller/notification.controller.js";
 
 const router = express.Router();
@@ -74,5 +75,7 @@ router.get(
 router.get("/user", firebaseAuth, attachUser, getUserNotifications);
 router.put("/user/read/:id", firebaseAuth, attachUser, markUserNotificationRead);
 router.put("/user/read-all", firebaseAuth, attachUser, markAllAsRead);
+
+router.get("/unread-count", firebaseAuth, getUnreadCount);
 
 export default router;

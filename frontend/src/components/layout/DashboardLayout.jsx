@@ -40,7 +40,24 @@ const DashboardLayout = ({ children }) => {
   const { user, role, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/unread-count`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setUnreadCount(data.count || 0);
+      } catch (err) {
+        console.error("Failed to fetch unread count:", err);
+      }
+    };
+    fetchUnread();
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -90,8 +107,15 @@ const DashboardLayout = ({ children }) => {
 
           {navItems.map((item) => (
             <Link key={item.path} to={item.path} className={getNavClass(item.path)}>
-              <item.icon className="h-5 w-5" />
-              {item.label}
+              <div className="flex items-center gap-3">
+                 <item.icon className="h-5 w-5" />
+                 {item.label}
+              </div>
+              {item.label === "Notifications" && unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </Link>
           ))}
 
@@ -149,7 +173,11 @@ const DashboardLayout = ({ children }) => {
             <ThemeToggle />
             <Link to="/notifications" className="relative rounded-lg p-2 hover:bg-accent transition">
               <Bell className="h-5 w-5 text-muted-foreground" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
+              {unreadCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-black text-white shadow-sm ring-2 ring-card animate-bounce">
+                  {unreadCount}
+                </span>
+              )}
             </Link>
 
             <div className="flex items-center gap-3 border-l border-border pl-4">

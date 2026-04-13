@@ -5,6 +5,76 @@ import { io } from "../server.js";
 import Issue from "../models/issue.model.js";
 /*register operator controller */
 import Department from "../models/department.model.js";
+import Notification from "../models/notification.model.js";
+
+/* Delete and Decommission Operator */
+export const deleteOperator = async (req, res) => {
+  try {
+    const { operatorId } = req.params;
+    const departmentId = req.department._id;
+
+    const operator = await Operator.findOne({ _id: operatorId, departmentId });
+
+    if (!operator) {
+      return res.status(404).json({ message: "Operator not found in your department" });
+    }
+
+    // 1. Move all non-completed issues to "unassigned" status
+    const affectedIssues = await Issue.find({
+      assignedTo: operatorId,
+      status: { $in: ["assigned", "in_progress", "escalated"] }
+    });
+
+    if (affectedIssues.length > 0) {
+      await Issue.updateMany(
+        { assignedTo: operatorId, status: { $in: ["assigned", "in_progress", "escalated"] } },
+        {
+          $set: { assignedTo: null, status: "reported" },
+          $push: {
+            statusHistory: {
+              status: "reported",
+              remark: `Automatically unassigned due to operator (${operator.fullName}) removal.`,
+              updatedAt: new Date()
+            }
+          }
+        }
+      );
+
+      // 2. Notify Department Admin about the orphaned tasks
+      await Notification.create({
+        title: "Urgent: Unassigned Tasks",
+        message: `${operator.fullName} was removed. ${affectedIssues.length} tasks are now unassigned and require immediate attention.`,
+        type: "task_unassigned",
+        targetRole: "department",
+        departmentId: departmentId,
+      });
+    }
+
+    // 3. Remove from Department's operators list
+    await Department.findByIdAndUpdate(departmentId, {
+      $pull: { operators: operatorId, pendingOperators: operatorId }
+    });
+
+    // 4. Delete the operator record
+    await Operator.findByIdAndDelete(operatorId);
+
+    // 5. Emit real-time alert
+    io.to(departmentId.toString()).emit("operator-removed", {
+      operatorName: operator.fullName,
+      unassignedCount: affectedIssues.length
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Operator removed successfully. ${affectedIssues.length} tasks have been returned to the unassigned pool.`
+    });
+
+  } catch (error) {
+    console.error("Delete Operator Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 export const registerOperator = async (req, res) => {
  try {

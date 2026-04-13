@@ -48,22 +48,32 @@ export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [admin, setAdmin] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
-    const fetchAdmin = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok) setAdmin(data);
+        const [adminRes, countRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/profile`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/unread-count`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+        
+        const adminData = await adminRes.json();
+        const countData = await countRes.json();
+        
+        if (adminRes.ok) setAdmin(adminData);
+        setUnreadCount(countData.count || 0);
       } catch (err) {
-        console.error("Failed to fetch admin:", err);
+        console.error("Failed to fetch layout data:", err);
       }
     };
-    fetchAdmin();
+    fetchData();
   }, []);
 
   const handleLogout = () => {
@@ -104,14 +114,22 @@ export default function AdminLayout({ children }) {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive
+                `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`
               }
             >
-              <item.icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+              <div className="flex items-center gap-3">
+                <item.icon className="w-5 h-5 shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </div>
+
+              {!collapsed && item.label === "Notifications" && unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-lg animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
