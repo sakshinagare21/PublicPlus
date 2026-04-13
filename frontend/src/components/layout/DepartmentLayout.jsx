@@ -41,7 +41,7 @@ const DepartmentLayout = ({ children }) => {
            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/departments/me`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/unread-count`, {
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/notification/unread-count`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);

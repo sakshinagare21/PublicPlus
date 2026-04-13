@@ -47,7 +47,7 @@ const DashboardLayout = ({ children }) => {
     const fetchUnread = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/unread-count`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notification/unread-count`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -65,7 +65,7 @@ const DashboardLayout = ({ children }) => {
   };
 
   const getNavClass = (path) => {
-    return `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${location.pathname === path
+    return `flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${location.pathname === path
       ? "bg-primary/20 text-primary"
       : "text-muted-foreground hover:bg-accent hover:text-foreground"
       }`;
@@ -112,7 +112,7 @@ const DashboardLayout = ({ children }) => {
                  {item.label}
               </div>
               {item.label === "Notifications" && unreadCount > 0 && (
-                <span className="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-red-500/20 animate-pulse">
                   {unreadCount}
                 </span>
               )}

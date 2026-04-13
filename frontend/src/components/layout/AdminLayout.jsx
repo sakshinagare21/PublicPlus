@@ -60,7 +60,7 @@ export default function AdminLayout({ children }) {
           fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notifications/unread-count`, {
+          fetch(`${import.meta.env.VITE_API_BASE_URL}/api/notification/unread-count`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
