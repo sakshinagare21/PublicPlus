@@ -80,6 +80,14 @@ const departmentSchema = new mongoose.Schema(
         },
 
         lastLogin: Date,
+        loginHistory: [
+            {
+                ipAddress: String,
+                deviceInfo: String,
+                loginTime: Date,
+            },
+        ],
+
 
         /* ================= ZONES ================= */
 

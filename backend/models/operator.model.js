@@ -103,6 +103,15 @@ const operatorSchema = new mongoose.Schema(
         /* ================= OPTIONAL (ADVANCED) ================= */
 
         lastAssignedAt: Date, // for fair distribution
+        lastLogin: Date,
+        loginHistory: [
+            {
+                ipAddress: String,
+                deviceInfo: String,
+                loginTime: Date,
+            },
+        ],
+
     },
     { timestamps: true }
 );

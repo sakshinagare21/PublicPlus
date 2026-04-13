@@ -135,6 +135,12 @@ export const getAdminDashboard = async (req, res) => {
 
     // Update last login
     admin.lastLogin = new Date();
+    admin.loginHistory.push({
+      ipAddress: req.ip,
+      deviceInfo: req.headers["user-agent"],
+      loginTime: new Date(),
+    });
+
     await admin.save();
 
     /* ================= STATS ================= */

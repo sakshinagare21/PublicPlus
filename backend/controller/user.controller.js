@@ -59,6 +59,12 @@ export const firebaseLogin = async (req, res) => {
         }
 
         user.lastLogin = new Date();
+        user.loginHistory.push({
+            ipAddress: req.ip,
+            deviceInfo: req.headers["user-agent"],
+            loginTime: new Date(),
+        });
+
         await user.save();
 
         res.json(user);

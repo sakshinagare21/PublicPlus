@@ -33,7 +33,15 @@ const userSchema = new Schema({
  default: "active"
  },
 
- lastLogin: Date,
+  lastLogin: Date,
+  loginHistory: [
+    {
+      ipAddress: String,
+      deviceInfo: String,
+      loginTime: Date,
+    },
+  ],
+
 
 
  /* ================= PROFILE ================= */

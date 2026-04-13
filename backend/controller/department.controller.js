@@ -117,6 +117,11 @@ export const departmentLogin = async (req, res) => {
  /* update login */
 
  department.lastLogin = new Date();
+ department.loginHistory.push({
+  ipAddress: req.ip,
+  deviceInfo: req.headers["user-agent"],
+  loginTime: new Date(),
+ });
 
  await department.save();
 

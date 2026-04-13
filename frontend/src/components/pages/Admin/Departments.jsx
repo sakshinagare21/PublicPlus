@@ -14,7 +14,6 @@ export default function Departments() {
 
     const [departments, setDepartments] = useState([]);
     const [teamMembers, setTeamMembers] = useState([]);
-    const [zones, setZones] = useState([]);
 
     const [stats, setStats] = useState({
         totalDepartments: 0,
@@ -70,30 +69,13 @@ export default function Departments() {
         }
     };
 
-    const fetchZones = async () => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/zones`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            const data = await res.json();
-
-            if (data.success) {
-                setZones(data.zones || []);
-            }
-
-        } catch {
-            toast.error("Failed to load zones");
-        }
-    };
 
     useEffect(() => {
         setLoading(true);
 
         Promise.all([
             fetchDepartments(),
-            fetchOperators(),
-            fetchZones()
+            fetchOperators()
         ]).finally(() => setLoading(false));
 
     }, []);
@@ -155,7 +137,7 @@ export default function Departments() {
                     {/* MODERN TABS */}
                     <div className="flex gap-2 p-4 bg-muted/30 border-b border-border transition-colors">
 
-                        {["Department List", "Zone Mapping", "Team Members"].map((tab) => (
+                        {["Department List", "Team Members"].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -239,7 +221,7 @@ export default function Departments() {
 
                             </table>
 
-                        ) : activeTab === "Team Members" ? (
+                        ) : (
 
                             <table className="w-full text-sm text-center border-separate border-spacing-y-2">
 
@@ -287,43 +269,6 @@ export default function Departments() {
                                                     </span>
                                                 </td>
 
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-
-                            </table>
-
-                        ) : (
-
-                            <table className="w-full text-sm text-center border-separate border-spacing-y-2">
-
-                                <thead>
-                                    <tr className="text-xs text-muted-foreground transition-colors">
-                                        <th className="p-3">Zone Name</th>
-                                        <th className="p-3">Zone Code</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {zones.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="2" className="py-12 text-muted-foreground  ">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <p className="text-lg">📭</p>
-                                                    <p>No zones available</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        zones.map((zone) => (
-                                            <tr key={zone._id} className="bg-muted/30 hover:bg-muted/50 transition-colors rounded-lg text-foreground">
-                                                <td className="p-3 font-semibold text-center">
-                                                    {zone.areaName || zone.zoneName || zone.name || "Unnamed Zone"}
-                                                </td>
-                                                <td className="p-3 font-mono text-center">
-                                                    {zone.zoneId || zone.zoneCode || zone._id || "No Code"}
-                                                </td>
                                             </tr>
                                         ))
                                     )}

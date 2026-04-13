@@ -83,6 +83,11 @@ export const operatorLogin = async (req, res) => {
  }
 
  operator.lastLogin = new Date();
+ operator.loginHistory.push({
+  ipAddress: req.ip,
+  deviceInfo: req.headers["user-agent"],
+  loginTime: new Date(),
+ });
 
  await operator.save();
 
