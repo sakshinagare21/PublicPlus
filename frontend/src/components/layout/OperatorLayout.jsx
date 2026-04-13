@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import ThemeToggle from "../common/ThemeToggle";
 import FAQChatbot from "../common/FAQChatbot";
 import { useEffect, useState } from "react";
@@ -19,6 +19,7 @@ import LogoutConfirmModal from "../common/LogoutConfirmModal";
 const OperatorLayout = ({ children }) => {
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [operator, setOperator] = useState(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -45,7 +46,7 @@ const OperatorLayout = ({ children }) => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [location.pathname]);
 
     /* ================= LOGOUT ================= */
     const handleLogout = () => {

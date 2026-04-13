@@ -1,4 +1,4 @@
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import ThemeToggle from "../common/ThemeToggle";
 import LogoutConfirmModal from "../common/LogoutConfirmModal";
 import FAQChatbot from "../common/FAQChatbot";
@@ -23,6 +23,7 @@ import {
 const DepartmentLayout = ({ children }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [deptInfo, setDeptInfo] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -52,7 +53,7 @@ const DepartmentLayout = ({ children }) => {
       }
     };
     fetchData();
-  }, []);
+  }, [location.pathname]);
 
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">

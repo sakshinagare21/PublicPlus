@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import ThemeToggle from "../common/ThemeToggle";
 import LogoutConfirmModal from "../common/LogoutConfirmModal";
 import {
@@ -21,7 +21,7 @@ import {
   UserCircle,
   LogOut
 } from "lucide-react";
-import { useEffect } from "react";
+
 import FAQChatbot from "../common/FAQChatbot";
 import { useAuth } from "../../context/AuthContext";
 
@@ -46,6 +46,7 @@ const bottomItems = [
 export default function AdminLayout({ children }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [admin, setAdmin] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -74,7 +75,7 @@ export default function AdminLayout({ children }) {
       }
     };
     fetchData();
-  }, []);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -120,11 +121,16 @@ export default function AdminLayout({ children }) {
                 }`
               }
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 relative">
                 <item.icon className="w-5 h-5 shrink-0" />
                 {!collapsed && <span>{item.label}</span>}
+                
+                {/* Collapsed Badge (Dot) */}
+                {collapsed && item.label === "Notifications" && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-card shadow-sm animate-pulse" />
+                )}
               </div>
-
+              
               {!collapsed && item.label === "Notifications" && unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-lg animate-pulse">
                   {unreadCount}
