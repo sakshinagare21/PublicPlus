@@ -5,6 +5,7 @@ import {
   getPendingDepartments,
   approveDepartment,
   rejectDepartment,
+  deleteDepartment,
   getAllZones,getAllOperators,
   getAllUsers,
   getAllAccounts,
@@ -50,4 +51,8 @@ router.get("/users",firebaseAuth, verifyAdmin, getAllUsers);
 router.get("/accounts", firebaseAuth, verifyAdmin, getAllAccounts);
 router.get("/profile", firebaseAuth, verifyAdmin, getAdminProfile);
 router.put("/update-trust/:id", firebaseAuth, verifyAdmin, updateTrustScore);
+
+/* ================= DEPARTMENT DELETION ================= */
+router.delete("/department/:id", firebaseAuth, verifyAdmin, deleteDepartment);
+
 export default router;

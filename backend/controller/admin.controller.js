@@ -6,6 +6,7 @@ import Issue from "../models/issue.model.js";
 import Zone from "../models/zone.model.js";
 import { io } from "../server.js";
 import Notification from "../models/notification.model.js";
+import admin from "../config/firebase.js";
 /*==================Department decision============*/
 //get all pending departments request
 export const getPendingDepartments = async (req, res) => {
@@ -398,4 +399,46 @@ export const updateTrustScore = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+/* ================= DELETE DEPARTMENT (WITH SYNC) ================= */
+
+export const deleteDepartment = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const department = await Department.findById(id);
+
+        if (!department) {
+            return res.status(404).json({
+                success: false,
+                message: "Department node not found in registry."
+            });
+        }
+
+        // 🔥 1. FIREBASE AUTH SYNC
+        if (department.firebaseUID) {
+            try {
+                await admin.auth().deleteUser(department.firebaseUID);
+                console.log(`[FIREBASE] Admin access revoked for: ${department.departmentName}`);
+            } catch (fbError) {
+                console.error("[FIREBASE ERROR] Deletion failed:", fbError.message);
+                // Continue to DB wipe even if FB user was already gone
+            }
+        }
+
+        // 🔥 2. DATABASE WIPE
+        await Department.findByIdAndDelete(id);
+
+        res.json({
+            success: true,
+            message: `Department ${department.departmentName} has been completely decommissioned from all systems.`
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };

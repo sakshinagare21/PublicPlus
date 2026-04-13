@@ -13,6 +13,7 @@ Delete User (Soft Delete)
 */
 
 import User from "../models/user.model.js";
+import admin from "../config/firebase.js";
 
 // Helper function to calculate age from DOB
 const calculateAge = (dob) => {

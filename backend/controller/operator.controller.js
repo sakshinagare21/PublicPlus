@@ -6,6 +6,7 @@ import Issue from "../models/issue.model.js";
 /*register operator controller */
 import Department from "../models/department.model.js";
 import Notification from "../models/notification.model.js";
+import admin from "../config/firebase.js";
 
 /* Delete and Decommission Operator */
 export const deleteOperator = async (req, res) => {
@@ -52,10 +53,21 @@ export const deleteOperator = async (req, res) => {
 
     // 3. Remove from Department's operators list
     await Department.findByIdAndUpdate(departmentId, {
-      $pull: { operators: operatorId, pendingOperators: operatorId }
+        $pull: { operators: operatorId }
     });
 
-    // 4. Delete the operator record
+    // 🔥 FIREBASE AUTH SYNC: Remove from Firebase Authentication
+    if (operator.firebaseUID) {
+        try {
+            await admin.auth().deleteUser(operator.firebaseUID);
+            console.log(`Firebase Identity node ${operator.firebaseUID} removed.`);
+        } catch (fbError) {
+            console.error("Firebase Deletion Error:", fbError.message);
+            // We continue even if Firebase delete fails (e.g. user already deleted manually)
+        }
+    }
+
+    // 🔥 MONGO DELETE
     await Operator.findByIdAndDelete(operatorId);
 
     // 5. Emit real-time alert
