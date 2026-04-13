@@ -316,10 +316,14 @@ export default function Departments() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        zones.map((zone, i) => (
-                                            <tr key={i} className="bg-muted/30 hover:bg-muted/50 transition-colors rounded-lg text-foreground">
-                                                <td className="p-3 font-semibold">{zone.areaName}</td>
-                                                <td className="p-3 font-mono">{zone.zoneId}</td>
+                                        zones.map((zone) => (
+                                            <tr key={zone._id} className="bg-muted/30 hover:bg-muted/50 transition-colors rounded-lg text-foreground">
+                                                <td className="p-3 font-semibold text-center">
+                                                    {zone.areaName || zone.zoneName || zone.name || "Unnamed Zone"}
+                                                </td>
+                                                <td className="p-3 font-mono text-center">
+                                                    {zone.zoneId || zone.zoneCode || zone._id || "No Code"}
+                                                </td>
                                             </tr>
                                         ))
                                     )}
