@@ -272,4 +272,5 @@ export const getUnreadCount = async (req, res) => {
     console.error("Unread count error:", error);
     res.status(500).json({ message: error.message });
   }
+};
 
