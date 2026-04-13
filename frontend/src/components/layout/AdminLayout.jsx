@@ -121,18 +121,18 @@ export default function AdminLayout({ children }) {
                 }`
               }
             >
-              <div className="flex items-center gap-3 relative">
+              <div className="flex items-center gap-3 relative flex-1 min-w-0">
                 <item.icon className="w-5 h-5 shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
+                {!collapsed && <span className="truncate">{item.label}</span>}
                 
                 {/* Collapsed Badge (Dot) */}
                 {collapsed && item.label === "Notifications" && unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-card shadow-sm animate-pulse" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-card shadow-sm animate-pulse" />
                 )}
               </div>
               
               {!collapsed && item.label === "Notifications" && unreadCount > 0 && (
-                <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-lg animate-pulse">
+                <span className="ml-2 bg-red-500 text-white text-[10px] font-black h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full shadow-lg border border-white/10 animate-pulse">
                   {unreadCount}
                 </span>
               )}
