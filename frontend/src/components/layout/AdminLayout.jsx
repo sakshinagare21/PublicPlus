@@ -64,10 +64,10 @@ export default function AdminLayout({ children }) {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
-        
+
         const adminData = await adminRes.json();
         const countData = await countRes.json();
-        
+
         if (adminRes.ok) setAdmin(adminData);
         setUnreadCount(countData.count || 0);
       } catch (err) {
@@ -84,7 +84,7 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
-      <LogoutConfirmModal 
+      <LogoutConfirmModal
         isOpen={showLogoutConfirm}
         onConfirm={handleLogout}
         onCancel={() => setShowLogoutConfirm(false)}
@@ -103,7 +103,7 @@ export default function AdminLayout({ children }) {
 
           {!collapsed && (
             <span className="font-bold tracking-tight">
-              CIVIC-OS
+              Public Plus
             </span>
           )}
         </div>
@@ -124,13 +124,13 @@ export default function AdminLayout({ children }) {
               <div className="flex items-center gap-3 relative flex-1 min-w-0">
                 <item.icon className="w-5 h-5 shrink-0" />
                 {!collapsed && <span className="truncate">{item.label}</span>}
-                
+
                 {/* Collapsed Badge (Dot) */}
                 {collapsed && item.label === "Notifications" && unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-card shadow-sm animate-pulse" />
                 )}
               </div>
-              
+
               {!collapsed && item.label === "Notifications" && unreadCount > 0 && (
                 <span className="ml-2 bg-red-500 text-white text-[10px] font-black h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full shadow-lg border border-white/10 animate-pulse">
                   {unreadCount}

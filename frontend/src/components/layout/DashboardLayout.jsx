@@ -78,7 +78,7 @@ const DashboardLayout = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-background text-foreground transition-colors duration-300">
-      <LogoutConfirmModal 
+      <LogoutConfirmModal
         isOpen={showLogoutConfirm}
         onConfirm={handleLogout}
         onCancel={() => setShowLogoutConfirm(false)}
@@ -91,10 +91,8 @@ const DashboardLayout = ({ children }) => {
             <Building2 className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <span className="text-lg font-bold text-foreground">civic intel</span>
-            <p className="text-[10px] tracking-wider text-muted-foreground">
-              urban accountability
-            </p>
+            <span className="text-lg font-bold text-foreground">Plubic Plus</span>
+
           </div>
         </div>
 
@@ -108,8 +106,8 @@ const DashboardLayout = ({ children }) => {
           {navItems.map((item) => (
             <Link key={item.path} to={item.path} className={getNavClass(item.path)}>
               <div className="flex items-center gap-3">
-                 <item.icon className="h-5 w-5" />
-                 {item.label}
+                <item.icon className="h-5 w-5" />
+                {item.label}
               </div>
               {item.label === "Notifications" && unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-red-500/20 animate-pulse">
