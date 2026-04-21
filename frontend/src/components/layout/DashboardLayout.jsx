@@ -91,7 +91,7 @@ const DashboardLayout = ({ children }) => {
             <Building2 className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <span className="text-lg font-bold text-foreground">Plubic Plus</span>
+            <span className="text-lg font-bold text-foreground">Public Plus</span>
 
           </div>
         </div>

@@ -22,12 +22,16 @@ import contactRoutes from "./routes/contact.route.js";
 import otpRoutes from "./routes/otp.routes.js";
 
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
+import { apiLimiter } from "./middleware/rateLimiter.js";
 
 const app = express();
+
 
 // =============================
 // MIDDLEWARE
 // =============================
+
+app.use(apiLimiter);
 
 const allowedOrigins = [
   "http://localhost:5173",

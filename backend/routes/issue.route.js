@@ -4,6 +4,7 @@ import { attachUser } from "../middleware/firebase.middleware.js";
 import { verifyDepartment } from "../middleware/firebase.middleware.js";
 import { uploadIssueImages, uploadProofImage } from "../middleware/upload.js";
 import { aiImageCheck } from "../middleware/aiCheck.middleware.js";
+import { reportLimiter } from "../middleware/rateLimiter.js";
 import {
   createIssue,
   getMyIssues,
@@ -36,6 +37,7 @@ router.post(
   "/",
   firebaseAuth,
   attachUser,
+  reportLimiter,
   uploadIssueImages.array("images", 5),
   aiImageCheck,
   createIssue

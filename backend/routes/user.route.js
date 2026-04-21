@@ -15,6 +15,7 @@ import {
 } from "../controller/user.controller.js";
 
 import { firebaseAuth, attachUser } from "../middleware/firebase.middleware.js";
+import { loginLimiter } from "../middleware/rateLimiter.js";
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ const router = express.Router();
 router.post("/create-profile", firebaseAuth, createProfile);
 
 // login (firebase verify only)
-router.post("/login", firebaseAuth, firebaseLogin);
+router.post("/login", loginLimiter, firebaseAuth, firebaseLogin);
 
 
 // ================= USER PROTECTED ROUTES =================
