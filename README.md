@@ -1,118 +1,222 @@
-I have analyzed your entire system architecture, including the core logic in the controllers, the smart background services, and the AI integration. 
+# 🚀 PublicPlus – Civic Intelligence & Reporting System
 
-Below is a comprehensive, professional **README.md** file tailored for your project. This document details every functionality, role-based capability, and the full technology stack.
+PublicPlus is a modern civic issue management platform built to improve communication between citizens and local authorities. The system helps people report city-related problems, while government departments and operators can manage, track, and resolve issues efficiently.
 
----
-
-### 📝 Project README Artifact
-
-I have generated a high-density README that you can use for your project documentation or GitHub repository.
-
-C:\Users\Admin\.gemini\antigravity\brain\0e0a8c67-085c-49a7-a459-208bcd9e078f\artifacts\README.md
+The platform combines real-time tracking, AI-based image verification, automated task assignment, and SLA monitoring to create a transparent and reliable civic management experience.
 
 ---
 
-# 🚀 PublicPlus: Advanced Civic Intelligence & Reporting System
+# 🛠 Tech Stack
 
-**PublicPlus** is a high-performance, full-stack civic management ecosystem designed to bridge the gap between citizens and urban governance. It utilizes AI-driven image verification, real-time geospatial tracking, and an automated SLA (Service Level Agreement) escalation engine to ensure urban issues are resolved efficiently and transparently.
+## Frontend
 
----
+* **Framework:** React.js 19 (Vite)
+* **Styling:** Tailwind CSS
+* **State Management:** React Context API
+* **Real-Time Updates:** Socket.io-client
+* **Maps & Geolocation:** Leaflet and Google Maps API
+* **Charts & Analytics:** Recharts
+* **Animations & Icons:** Framer Motion and Lucide React
 
-## 🛠 Tech Stack Details
+## Backend
 
-### **Frontend (Presentation Layer)**
-*   **Framework**: React.js 19 (Vite)
-*   **Styling**: Tailwind CSS (Glassmorphism UI)
-*   **State Management**: React Context API
-*   **Real-time Communication**: Socket.io-client
-*   **Geospatial**: Leaflet & Google Maps API (Clustered markers, Reverse Geocoding)
-*   **Data Visualization**: Recharts (Dynamic Bar/Pie/Area charts)
-*   **Icons & UI**: Lucide React & Framer Motion (Micro-animations)
+* **Runtime Environment:** Node.js
+* **Framework:** Express.js
+* **Database:** MongoDB with Mongoose
+* **Authentication:** JWT and Bcryptjs
+* **Real-Time Communication:** Socket.io
+* **Automation & Scheduling:** Node-cron
 
-### **Backend (Application Layer)**
-*   **Runtime**: Node.js (Esm Modules)
-*   **Framework**: Express.js (Role-Based Middleware)
-*   **Database ODM**: Mongoose (MongoDB)
-*   **Real-time Engine**: Socket.io (Bi-directional mission updates)
-*   **Automation**: Node-cron (Escalation & SLA monitoring)
-*   **Security**: JWT (Stateless Auth) & Bcryptjs (Secure Hashing)
+## AI Service
 
-### **AI & Intelligence Service**
-*   **Language**: Python 3.x
-*   **Framework**: PyTorch (EfficientNet-V2 architecture)
-*   **Primary Function**: **Fake Image Detection** (Discerns between real civic issue photos and AI-generated/tampered images).
-*   **Integration**: Flask-based API worker.
+* **Language:** Python
+* **Framework:** PyTorch
+* **Model Used:** EfficientNet-V2
+* **Purpose:** Detect fake or AI-generated complaint images
+* **Integration:** Flask API
 
-### **Storage & Infrastructure**
-*   **Database**: MongoDB Atlas (Cloud)
-*   **Image Storage**: Cloudinary (Automatic resizing and optimization)
-*   **Email Engine**: Brevo (SMTP Relay)
-*   **Push Notifications**: Firebase Cloud Messaging (FCM)
+## Storage & Services
 
----
-
-## 👥 Role-Based Functionalities
-
-### **1. 🏙️ Citizen (The Reporter)**
-*   **Secure Auth**: Register and Login with **OTP Verification** via email.
-*   **Smart Reporting**: Submit issues with photos, description, and auto-detected GPS location.
-*   **Transparency**: Track the live status of complaints (Reported -> In-Progress -> Resolved).
-*   **Crowdsourced Priority**: **Upvote/Downvote** nearby issues to signal urgency to the Admin.
-*   **Communication**: Receive real-time socket alerts and formal email confirmations.
-
-### **2. 👷 Operator (The Field Worker)**
-*   **Task Management**: View a prioritized list of assigned missions.
-*   **Mission Execution**: Change status to 'In Progress' and upload **Photo Evidence** upon completion.
-*   **Personal Analytics**: Track personal efficiency, completed tasks vs. pending workload.
-*   **Overload Protection**: System prevents assignment if the operator exceeds their `maxCapacity`.
-*   **SLA Awareness**: Live countdown timers showing time remaining before an SLA breach.
-
-### **3. 🏢 Department Admin (The Manager)**
-*   **Workload Oversight**: View all issues assigned to their specific department (e.g., Water, Road, Electricity).
-*   **Intelligent Assignment**: Manually reassign tasks or rely on the system's **Least-Load Algorithm**.
-*   **Quality Control**: Approve or Reject resolution proofs submitted by operators.
-*   **Escalation Handling**: Receive critical alerts for tasks that have breached their resolution deadline.
-
-### **4. 🛡️ Super Admin (The Command Center)**
-*   **System Configuration**: Define Issue Categories, Zones, and SLA Windows (Critical/High/Medium/Low).
-*   **Entity Management**: Create and manage Departments and Operators.
-*   **Global Intelligence**: View a city-wide **Heatmap** of issues and real-time resolution speed analytics.
-*   **System Integrity**: Access detailed logs of every status change and escalation event.
+* **Cloud Database:** MongoDB Atlas
+* **Image Storage:** Cloudinary
+* **Email Service:** Brevo SMTP
+* **Push Notifications:** Firebase Cloud Messaging (FCM)
 
 ---
 
-## ⚡ Key Intelligent Algorithms
+# 👥 User Roles & Features
 
-### **1. Automated Triage & Assignment**
-The system uses a **Least-Load Multi-Fallback Algorithm**:
-1. Checks for active operators in the specific **Zone**.
-2. If none, falls back to the **General Zone**.
-3. Selects the agent with the lowest `currentActiveTasks` who is under their `maxCapacity`.
+## 1. 🏙 Citizen (Reporter)
 
-### **2. Duplicate Detection System**
-*   **Spatial Check**: Queries MongoDB for issues within a **50-meter radius**.
-*   **Semantic Check**: Uses an **80% String Similarity Match** logic to compare report descriptions, preventing redundant data entry.
+Citizens can report civic issues directly from the platform.
 
-### **3. SLA Escalation Engine**
-A recursive background service that:
-*   Increments the **Escalation Level** (1 to 3).
-*   Recalculates new deadlines based on the breach severity.
-*   Triggers **Multi-channel alerts** (Push, Email, and Dashboard) to senior management.
+### Features
 
----
+* Register and login securely using OTP verification
+* Report issues with:
 
-## 🌐 Deployment Details
-*   **Frontend**: Hosted on **Vercel** with optimized production builds.
-*   **Backend API**: Deployed on **Render/Railway** with environment secret protection.
-*   **Database**: Clustered deployment on **MongoDB Atlas** with IP whitelisting.
-*   **AI Module**: Containerized deployment ensuring separate resources for PyTorch processing.
+  * Images
+  * Description
+  * Auto-detected GPS location
+* Track complaint status in real time:
+
+  * Reported
+  * In Progress
+  * Resolved
+* Upvote or downvote nearby complaints based on urgency
+* Receive instant notifications and email confirmations
 
 ---
 
-## 🧪 Testing Summary
-*   **Unit Testing**: Specialized tests for the Priority Calculation and Similarity Match logic.
-*   **Integration Testing**: End-to-end flows for User -> API -> AI-Worker -> DB.
-*   **Performance**: Optimized for concurrent socket connections and large-scale image uploads via Cloudinary pipes.
+## 2. 👷 Operator (Field Worker)
+
+Operators handle tasks assigned by departments.
+
+### Features
+
+* View assigned complaints and priorities
+* Update task status during field work
+* Upload image proof after completing work
+* Track personal performance statistics
+* View pending and completed tasks
+* Get protected from overload using max-capacity limits
+* Monitor SLA timers before deadlines are breached
 
 ---
-*Developed by the PublicPlus Engineering Team.*
+
+## 3. 🏢 Department Admin
+
+Department Admins manage complaints related to their department.
+
+### Features
+
+* Monitor all complaints assigned to the department
+* Reassign tasks when necessary
+* Approve or reject operator resolution proofs
+* Receive escalation alerts for delayed complaints
+* Use intelligent task assignment based on operator workload
+
+---
+
+## 4. 🛡 Super Admin
+
+The Super Admin manages the complete system.
+
+### Features
+
+* Create and manage departments and operators
+* Configure issue categories and SLA timings
+* Monitor city-wide complaint analytics
+* View heatmaps and performance statistics
+* Access logs for escalations and status updates
+
+---
+
+# ⚡ Intelligent System Features
+
+## 1. Automated Task Assignment
+
+The system automatically assigns complaints using a Least-Load Algorithm.
+
+### Workflow
+
+1. Search operators in the complaint zone
+2. If unavailable, search in fallback zones
+3. Select the operator with:
+
+   * Lowest active workload
+   * Available capacity
+
+This ensures balanced task distribution.
+
+---
+
+## 2. Duplicate Complaint Detection
+
+The platform avoids duplicate complaint submissions using:
+
+### Spatial Matching
+
+* Detects complaints within a 50-meter radius
+
+### Semantic Matching
+
+* Compares complaint descriptions using similarity matching logic
+
+This improves data quality and reduces repeated reports.
+
+---
+
+## 3. SLA Escalation Engine
+
+A background automation service continuously checks complaint deadlines.
+
+### Features
+
+* Automatically increases escalation levels
+* Recalculates deadlines after breaches
+* Sends alerts through:
+
+  * Push notifications
+  * Emails
+  * Dashboard notifications
+
+---
+
+# 🌐 Deployment
+
+## Frontend
+
+* Hosted on Vercel
+
+## Backend
+
+* Deployed on Render or Railway
+
+## Database
+
+* MongoDB Atlas Cloud Cluster
+
+## AI Service
+
+* Containerized Python deployment for isolated AI processing
+
+---
+
+# 🧪 Testing & Performance
+
+### Unit Testing
+
+* Priority calculation logic
+* Similarity detection logic
+
+### Integration Testing
+
+* User → API → AI Service → Database workflow
+
+### Performance Optimization
+
+* Optimized Socket.io communication
+* Efficient Cloudinary image uploads
+* Supports large-scale concurrent users
+
+---
+
+# ✨ Key Highlights
+
+* Real-time civic issue tracking
+* AI-powered fake image detection
+* Smart task assignment system
+* SLA monitoring and escalation handling
+* Interactive maps and analytics dashboard
+* Secure authentication and role-based access
+
+---
+
+# 📌 Conclusion
+
+PublicPlus is designed to make civic issue management faster, smarter, and more transparent. By combining AI, automation, real-time communication, and geospatial intelligence, the platform helps authorities respond to public complaints more effectively while giving citizens a better reporting experience.
+
+---
+
+Developed by the PublicPlus Engineering Team.
