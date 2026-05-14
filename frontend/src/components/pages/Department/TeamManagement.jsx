@@ -82,10 +82,6 @@ const TeamManagement = () => {
                         </p>
                     </div>
 
-                    <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-primary/20">
-                        <Plus size={16} />
-                        Add New Operator
-                    </button>
                 </div>
 
                 {/* Tabs */}

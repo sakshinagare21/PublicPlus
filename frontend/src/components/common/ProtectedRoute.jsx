@@ -37,8 +37,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   // 2. Check Authorization (Role must match)
   if (allowedRoles && !allowedRoles.includes(role)) {
-    console.error(`[AuthGuard] Role mismatch at ${location.pathname}. Required: ${allowedRoles}, Current: ${role}.`);
-    toast.error("Unauthorized Access");
+    const errorMsg = `Unauthorized Access: This page requires [${allowedRoles}] but you are logged in as [${role || 'Guest'}]`;
+    console.error(`[AuthGuard] ${errorMsg} at ${location.pathname}`);
+    toast.error(errorMsg, { duration: 5000 }); // Show for 5 seconds so it can be read
     return <Navigate to="/" replace />;
   }
 

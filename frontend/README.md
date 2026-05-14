@@ -114,5 +114,5 @@ A recursive background service that:
 *   **Integration Testing**: End-to-end flows for User -> API -> AI-Worker -> DB.
 *   **Performance**: Optimized for concurrent socket connections and large-scale image uploads via Cloudinary pipes.
 
----
+
 *Developed by the PublicPlus Engineering Team.*

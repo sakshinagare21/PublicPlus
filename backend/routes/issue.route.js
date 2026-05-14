@@ -3,7 +3,7 @@ import { firebaseAuth, verifyOperator, verifyAdmin } from "../middleware/firebas
 import { attachUser } from "../middleware/firebase.middleware.js";
 import { verifyDepartment } from "../middleware/firebase.middleware.js";
 import { uploadIssueImages, uploadProofImage } from "../middleware/upload.js";
-import { aiImageCheck } from "../middleware/aiCheck.middleware.js";
+
 import { reportLimiter } from "../middleware/rateLimiter.js";
 import {
   createIssue,
@@ -39,7 +39,6 @@ router.post(
   attachUser,
   reportLimiter,
   uploadIssueImages.array("images", 5),
-  aiImageCheck,
   createIssue
 );
 
@@ -95,10 +94,10 @@ router.get("/admin/stats", firebaseAuth, verifyAdmin, getAdminStats);
 router.get("/:issueId", firebaseAuth, getIssueById);
 
 /* ================= ADVANCED WORKFLOW ================= */
-router.post("/:id/upload-proof", firebaseAuth, verifyOperator, uploadProofImage.single("proof"), aiImageCheck, uploadProof);
+router.post("/:id/upload-proof", firebaseAuth, verifyOperator, uploadProofImage.single("proof"), uploadProof);
 router.get("/:id/timer", firebaseAuth, getTimer);
-router.post("/:id/verify", firebaseAuth, attachUser, uploadProofImage.single("verificationImage"), aiImageCheck, verifyIssue);
+router.post("/:id/verify", firebaseAuth, attachUser, uploadProofImage.single("verificationImage"), verifyIssue);
 router.post("/:id/reopen", firebaseAuth, attachUser, uploadProofImage.single("proof"), reopenIssue);
-router.post("/:id/escalate", firebaseAuth, verifyOperator, uploadProofImage.single("proof"), aiImageCheck, escalateIssue);
+router.post("/:id/escalate", firebaseAuth, verifyOperator, uploadProofImage.single("proof"), escalateIssue);
 
 export default router;
